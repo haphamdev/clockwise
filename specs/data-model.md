@@ -198,8 +198,17 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 | token | VARCHAR(255) | UNIQUE, NOT NULL | Secure random token |
 | expires_at | TIMESTAMP | NOT NULL | |
 | status | ENUM | NOT NULL, DEFAULT 'pending' | pending, accepted, revoked |
-| team_assignments | JSONB | NOT NULL | Array of {team_id, role} for initial assignment |
 | created_at | TIMESTAMP | NOT NULL | |
+
+### invitation_team_assignment
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PK | |
+| invitation_id | UUID | FK → invitation, ON DELETE CASCADE | |
+| team_id | UUID | FK → team | |
+| role | ENUM | NOT NULL | manager, member |
+
+**Unique**: (invitation_id, team_id)
 
 ---
 
