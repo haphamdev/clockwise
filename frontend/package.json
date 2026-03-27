@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint src",
-    "test": "echo 'No tests configured yet'",
-    "test:e2e": "echo 'No E2E tests configured yet'"
+    "test": "echo 'No tests configured yet' && exit 0",
+    "test:e2e": "echo 'No E2E tests configured yet' && exit 0"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.0",
