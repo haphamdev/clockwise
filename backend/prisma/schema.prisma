@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  pending
+  active
+  deactivated
+}
+
+enum TeamMemberRole {
+  manager
+  member
+}
+
+enum ProjectStatus {
+  active
+  archived
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  revoked
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(255)
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users       User[]
+  teams       Team[]
+  projects    Project[]
+  invitations Invitation[]
+
+  @@map("organization")
+}
+
+model User {
+  id          String     @id @default(uuid())
+  orgId       String     @map("org_id")
+  email       String     @unique @db.VarChar(255)
+  name        String     @db.VarChar(255)
+  avatarUrl   String?    @map("avatar_url") @db.VarChar(512)
+  isAdmin     Boolean    @default(false) @map("is_admin")
+  status      UserStatus @default(pending)
+  lastLoginAt DateTime?  @map("last_login_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  org              Organization   @relation(fields: [orgId], references: [id])
+  teamMemberships  TeamMember[]
+  projectMemberships ProjectMember[]
+  ownedProjects    Project[]      @relation("ProjectOwner")
+  timeLogs         TimeLog[]
+  createdTasks     Task[]
+  sentInvitations  Invitation[]   @relation("InvitedBy")
+
+  @@map("user")
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  orgId       String   @map("org_id")
+  name        String   @db.VarChar(255)
+  description String?  @db.Text
+  isArchived  Boolean  @default(false) @map("is_archived")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  org                   Organization               @relation(fields: [orgId], references: [id])
+  members               TeamMember[]
+  invitationAssignments InvitationTeamAssignment[]
+
+  @@unique([orgId, name])
+  @@map("team")
+}
+
+model TeamMember {
+  id        String         @id @default(uuid())
+  teamId    String         @map("team_id")
+  userId    String         @map("user_id")
+  role      TeamMemberRole
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  team Team @relation(fields: [teamId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@map("team_member")
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  orgId       String        @map("org_id")
+  name        String        @db.VarChar(255)
+  description String?       @db.Text
+  status      ProjectStatus @default(active)
+  ownerId     String        @map("owner_id")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  org     Organization    @relation(fields: [orgId], references: [id])
+  owner   User            @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members ProjectMember[]
+  tasks   Task[]
+  timeLogs TimeLog[]
+
+  @@map("project")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([projectId, userId])
+  @@map("project_member")
+}
+
+model Task {
+  id              String   @id @default(uuid())
+  projectId       String   @map("project_id")
+  label           String   @db.VarChar(100)
+  labelNormalized String   @map("label_normalized") @db.VarChar(100)
+  createdBy       String   @map("created_by")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  project  Project   @relation(fields: [projectId], references: [id])
+  creator  User      @relation(fields: [createdBy], references: [id])
+  timeLogs TimeLog[]
+
+  @@unique([projectId, labelNormalized])
+  @@map("task")
+}
+
+model TimeLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  projectId String   @map("project_id")
+  taskId    String   @map("task_id")
+  date      DateTime @db.Date
+  hours     Decimal  @db.Decimal(5, 2)
+  notes     String?  @db.Text
+  isDeleted Boolean  @default(false) @map("is_deleted")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+  task    Task    @relation(fields: [taskId], references: [id])
+
+  @@index([userId, date, isDeleted])
+  @@index([projectId, date, isDeleted])
+  @@index([taskId])
+  @@map("time_log")
+}
+
+model Invitation {
+  id        String           @id @default(uuid())
+  orgId     String           @map("org_id")
+  email     String           @db.VarChar(255)
+  invitedBy String           @map("invited_by")
+  token     String           @unique @db.VarChar(255)
+  expiresAt DateTime         @map("expires_at")
+  status    InvitationStatus @default(pending)
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  org             Organization              @relation(fields: [orgId], references: [id])
+  sender          User                      @relation("InvitedBy", fields: [invitedBy], references: [id])
+  teamAssignments InvitationTeamAssignment[]
+
+  @@map("invitation")
+}
+
+model InvitationTeamAssignment {
+  id           String         @id @default(uuid())
+  invitationId String         @map("invitation_id")
+  teamId       String         @map("team_id")
+  role         TeamMemberRole
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  team       Team       @relation(fields: [teamId], references: [id])
+
+  @@unique([invitationId, teamId])
+  @@map("invitation_team_assignment")
+}
