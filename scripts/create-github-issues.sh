@@ -25,12 +25,20 @@ gh label create "enhancement"      --color "A2EEEF" --force
 # 2. Create milestones via API
 create_milestone() {
   local title="$1" desc="$2"
-  gh api repos/{owner}/{repo}/milestones \
+  local output
+  if output=$(gh api repos/{owner}/{repo}/milestones \
     --method POST \
     --field title="$title" \
-    --field description="$desc" >/dev/null 2>&1 \
-    && echo "Created milestone: $title" \
-    || echo "Milestone '$title' already exists"
+    --field description="$desc" 2>&1); then
+    echo "Created milestone: $title"
+  else
+    if echo "$output" | grep -q "already_exists"; then
+      echo "Milestone '$title' already exists — skipping"
+    else
+      echo "ERROR creating milestone '$title': $output" >&2
+      return 1
+    fi
+  fi
 }
 
 create_milestone "Epic 0: DevOps & Test Infrastructure" "GitHub setup, CI/CD, Jest, Testcontainers, Playwright"
@@ -45,7 +53,17 @@ create_milestone "Epic 6: Reporting & Dashboard" "Dashboards, Report Builder, Ex
 create_issue() {
   local title="$1" labels="$2" milestone="$3"
   cat > "$TMPFILE"
+
+  # Skip if an issue with this exact title already exists (open or closed)
+  if gh issue list --search "in:title \"$title\"" --state all --limit 1 --json title --jq '.[].title' 2>/dev/null | grep -qF "$title"; then
+    echo "Issue '$title' already exists — skipping"
+    return 0
+  fi
+
   gh issue create --title "$title" --label "$labels" --milestone "$milestone" --body-file "$TMPFILE"
+
+  # Brief pause to avoid hitting GitHub's secondary rate limits
+  sleep 1
 }
 
 # --- Epic 0 ---
