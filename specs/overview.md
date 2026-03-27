@@ -110,6 +110,9 @@ Org-level settings, user management, team setup.
 | `specs/data-model.md`         | Database schema, ERD                 | Done   |
 | `specs/api-design.md`         | REST endpoints, DTOs                 | Done   |
 | `specs/infrastructure.md`     | Docker, deployment, environments     | Done   |
+| `specs/implementation-plan.md`| User stories, task breakdown, phases | Done   |
+| `specs/test-setup.md`         | Jest, Testcontainers, Playwright     | Done   |
+| `specs/github-ci-setup.md`    | GitHub repo, Actions CI, issues      | Done   |
 
 ---
 
