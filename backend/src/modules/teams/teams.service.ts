@@ -1,9 +1,17 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { AppException } from '../../common/exceptions/app.exception';
-import { ErrorCode } from '../../common/exceptions/error-codes';
+import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { TeamsRepository } from './teams.repository';
 import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
+import {
+  TeamNotFoundException,
+  TeamAlreadyExistsException,
+  TeamArchivedException,
+  TeamLastManagerException,
+  TeamMemberAlreadyExistsException,
+  TeamMemberNotFoundException,
+  TeamUserNotFoundException,
+  TeamNotAMemberException,
+} from '../../common/exceptions/team.exceptions';
 
 @Injectable()
 export class TeamsService {
@@ -34,17 +42,13 @@ export class TeamsService {
   ): Promise<TeamWithMembers> {
     const team = await this.teamsRepository.findById(teamId);
     if (!team) {
-      throw new AppException(ErrorCode.TEAM.NOT_FOUND, 'Team not found', HttpStatus.NOT_FOUND);
+      throw new TeamNotFoundException();
     }
 
     if (!isAdmin) {
       const isMember = team.members.some((m) => m.userId === userId);
       if (!isMember) {
-        throw new AppException(
-          ErrorCode.TEAM.NOT_A_MEMBER,
-          'You are not a member of this team',
-          HttpStatus.FORBIDDEN,
-        );
+        throw new TeamNotAMemberException();
       }
     }
 
@@ -54,11 +58,7 @@ export class TeamsService {
   async create(orgId: string, data: { name: string; description?: string }): Promise<TeamEntity> {
     const existing = await this.teamsRepository.findByName(orgId, data.name);
     if (existing) {
-      throw new AppException(
-        ErrorCode.TEAM.ALREADY_EXISTS,
-        `A team named "${data.name}" already exists`,
-        HttpStatus.CONFLICT,
-      );
+      throw new TeamAlreadyExistsException();
     }
 
     return this.teamsRepository.create({ orgId, ...data });
@@ -75,11 +75,7 @@ export class TeamsService {
     if (data.name && data.name !== team.name) {
       const existing = await this.teamsRepository.findByName(orgId, data.name);
       if (existing) {
-        throw new AppException(
-          ErrorCode.TEAM.ALREADY_EXISTS,
-          `A team named "${data.name}" already exists`,
-          HttpStatus.CONFLICT,
-        );
+        throw new TeamAlreadyExistsException();
       }
     }
 
@@ -103,20 +99,12 @@ export class TeamsService {
 
     const user = await this.usersService.findById(userId);
     if (!user || user.orgId !== orgId || user.status !== 'active') {
-      throw new AppException(
-        ErrorCode.TEAM.USER_NOT_FOUND,
-        'User not found or not active in this organization',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new TeamUserNotFoundException();
     }
 
     const existing = await this.teamsRepository.findMember(teamId, userId);
     if (existing) {
-      throw new AppException(
-        ErrorCode.TEAM.MEMBER_ALREADY_EXISTS,
-        'User is already a member of this team',
-        HttpStatus.CONFLICT,
-      );
+      throw new TeamMemberAlreadyExistsException();
     }
 
     return this.teamsRepository.addMember(teamId, userId, role);
@@ -133,11 +121,7 @@ export class TeamsService {
 
     const member = await this.teamsRepository.findMember(teamId, userId);
     if (!member) {
-      throw new AppException(
-        ErrorCode.TEAM.MEMBER_NOT_FOUND,
-        'User is not a member of this team',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new TeamMemberNotFoundException();
     }
 
     if (member.role === 'manager' && role === 'member') {
@@ -153,11 +137,7 @@ export class TeamsService {
 
     const member = await this.teamsRepository.findMember(teamId, userId);
     if (!member) {
-      throw new AppException(
-        ErrorCode.TEAM.MEMBER_NOT_FOUND,
-        'User is not a member of this team',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new TeamMemberNotFoundException();
     }
 
     if (member.role === 'manager') {
@@ -170,29 +150,21 @@ export class TeamsService {
   private async getTeamOrThrow(teamId: string, orgId: string): Promise<TeamEntity> {
     const team = await this.teamsRepository.findEntityById(teamId);
     if (!team || team.orgId !== orgId) {
-      throw new AppException(ErrorCode.TEAM.NOT_FOUND, 'Team not found', HttpStatus.NOT_FOUND);
+      throw new TeamNotFoundException();
     }
     return team;
   }
 
   private ensureNotArchived(team: TeamEntity): void {
     if (team.isArchived) {
-      throw new AppException(
-        ErrorCode.TEAM.ARCHIVED,
-        'Cannot modify an archived team',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new TeamArchivedException();
     }
   }
 
   private async ensureNotLastManager(teamId: string): Promise<void> {
     const managerCount = await this.teamsRepository.countManagers(teamId);
     if (managerCount <= 1) {
-      throw new AppException(
-        ErrorCode.TEAM.LAST_MANAGER,
-        'Team must have at least one manager',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new TeamLastManagerException();
     }
   }
 }

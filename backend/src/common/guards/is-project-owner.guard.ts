@@ -1,12 +1,11 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
-import { AppException } from '../exceptions/app.exception';
-import { ErrorCode } from '../exceptions/error-codes';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotAuthenticatedException } from '../exceptions/auth.exceptions';
+import {
+  ProjectContextRequiredException,
+  ProjectNotFoundException,
+  ProjectNotOwnerException,
+} from '../exceptions/project.exceptions';
 
 /**
  * Guard that checks if the current user is the owner of the target project
@@ -24,11 +23,7 @@ export class IsProjectOwnerGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new AppException(
-        ErrorCode.AUTH.NOT_AUTHENTICATED,
-        'Not authenticated',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new NotAuthenticatedException();
     }
 
     if (user.isAdmin) {
@@ -37,11 +32,7 @@ export class IsProjectOwnerGuard implements CanActivate {
 
     const projectId = request.params.projectId ?? request.params.id;
     if (!projectId) {
-      throw new AppException(
-        ErrorCode.PROJECT.CONTEXT_REQUIRED,
-        'Project context required for this endpoint',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ProjectContextRequiredException();
     }
 
     const project = await this.prisma.project.findUnique({
@@ -50,19 +41,11 @@ export class IsProjectOwnerGuard implements CanActivate {
     });
 
     if (!project) {
-      throw new AppException(
-        ErrorCode.PROJECT.NOT_FOUND,
-        'Project not found',
-        HttpStatus.NOT_FOUND,
-      );
+      throw new ProjectNotFoundException();
     }
 
     if (project.ownerId !== user.id) {
-      throw new AppException(
-        ErrorCode.PROJECT.NOT_OWNER,
-        'Only the project owner can perform this action',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new ProjectNotOwnerException();
     }
 
     return true;

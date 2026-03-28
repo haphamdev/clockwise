@@ -1,9 +1,13 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
-import { AppException } from '../../common/exceptions/app.exception';
-import { ErrorCode } from '../../common/exceptions/error-codes';
+import {
+  NoInvitationException,
+  AccountDeactivatedException,
+  InvalidRefreshTokenException,
+  AccountNotActiveException,
+} from '../../common/exceptions/auth.exceptions';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
 
@@ -31,19 +35,11 @@ export class AuthService {
     const user = await this.usersService.findByEmail(profile.email);
 
     if (!user) {
-      throw new AppException(
-        ErrorCode.AUTH.NO_INVITATION,
-        'No invitation found for this email. Contact your admin to get access.',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new NoInvitationException();
     }
 
     if (user.status === 'deactivated') {
-      throw new AppException(
-        ErrorCode.AUTH.ACCOUNT_DEACTIVATED,
-        'Your account has been deactivated. Contact your admin.',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new AccountDeactivatedException();
     }
 
     if (user.status === 'pending') {
@@ -84,28 +80,16 @@ export class AuthService {
     const user = await this.usersService.findByIdWithRefreshToken(userId);
 
     if (!user || !user.refreshToken) {
-      throw new AppException(
-        ErrorCode.AUTH.INVALID_REFRESH_TOKEN,
-        'Invalid refresh token',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new InvalidRefreshTokenException();
     }
 
     if (user.status !== 'active') {
-      throw new AppException(
-        ErrorCode.AUTH.ACCOUNT_NOT_ACTIVE,
-        'Account is not active',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new AccountNotActiveException();
     }
 
     const hashedToken = this.hashToken(refreshToken);
     if (hashedToken !== user.refreshToken) {
-      throw new AppException(
-        ErrorCode.AUTH.INVALID_REFRESH_TOKEN,
-        'Invalid refresh token',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new InvalidRefreshTokenException();
     }
 
     return this.login(user);

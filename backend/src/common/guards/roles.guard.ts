@@ -1,14 +1,12 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { AppException } from '../exceptions/app.exception';
-import { ErrorCode } from '../exceptions/error-codes';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotAuthenticatedException } from '../exceptions/auth.exceptions';
+import {
+  TeamContextRequiredException,
+  TeamInsufficientRoleException,
+} from '../exceptions/team.exceptions';
 
 /**
  * Guard that checks if the current user has one of the required roles
@@ -38,11 +36,7 @@ export class RolesGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new AppException(
-        ErrorCode.AUTH.NOT_AUTHENTICATED,
-        'Not authenticated',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new NotAuthenticatedException();
     }
 
     // Admins bypass team-scoped role checks
@@ -52,11 +46,7 @@ export class RolesGuard implements CanActivate {
 
     const teamId = request.params.teamId;
     if (!teamId) {
-      throw new AppException(
-        ErrorCode.TEAM.CONTEXT_REQUIRED,
-        'Team context required for this endpoint',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new TeamContextRequiredException();
     }
 
     const membership = await this.prisma.teamMember.findUnique({
@@ -67,11 +57,7 @@ export class RolesGuard implements CanActivate {
     });
 
     if (!membership || !requiredRoles.includes(membership.role)) {
-      throw new AppException(
-        ErrorCode.TEAM.INSUFFICIENT_ROLE,
-        'You do not have the required role in this team',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new TeamInsufficientRoleException();
     }
 
     return true;

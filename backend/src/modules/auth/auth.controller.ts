@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Req, Res, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
-import { AppException } from '../../common/exceptions/app.exception';
-import { ErrorCode } from '../../common/exceptions/error-codes';
+import {
+  NoRefreshTokenException,
+  InvalidRefreshTokenException,
+  UserNotFoundException,
+} from '../../common/exceptions/auth.exceptions';
 import { AuthService, JwtPayload } from './auth.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
@@ -54,11 +57,7 @@ export class AuthController {
   ): Promise<AccessTokenResponseDto> {
     const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
     if (!refreshToken) {
-      throw new AppException(
-        ErrorCode.AUTH.NO_REFRESH_TOKEN,
-        'No refresh token provided',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new NoRefreshTokenException();
     }
 
     let payload: JwtPayload;
@@ -67,11 +66,7 @@ export class AuthController {
         secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
       });
     } catch {
-      throw new AppException(
-        ErrorCode.AUTH.INVALID_REFRESH_TOKEN,
-        'Invalid refresh token',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new InvalidRefreshTokenException();
     }
 
     const tokens = await this.authService.refreshTokens(payload.sub, refreshToken);
@@ -103,11 +98,7 @@ export class AuthController {
     const fullUser = await this.usersService.findById(user.id);
 
     if (!fullUser) {
-      throw new AppException(
-        ErrorCode.AUTH.USER_NOT_FOUND,
-        'User not found',
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UserNotFoundException();
     }
 
     return {
