@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
-import { AppException } from '../../common';
+import { AppException } from '../../common/exceptions/app.exception';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { UserEntity, UserWithRefreshToken } from '../users/entities/user.entity';

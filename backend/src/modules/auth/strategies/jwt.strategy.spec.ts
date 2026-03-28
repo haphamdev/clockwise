@@ -1,4 +1,4 @@
-import { AppException } from '../../../common';
+import { AppException } from '../../../common/exceptions/app.exception';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersService } from '../../users/users.service';

@@ -4,7 +4,8 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { AppException, ErrorCode } from '../exceptions';
+import { AppException } from '../exceptions/app.exception';
+import { ErrorCode } from '../exceptions/error-codes';
 
 /**
  * Guard that restricts access to admin users only.

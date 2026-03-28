@@ -2,7 +2,8 @@ import { Injectable, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
-import { AppException, ErrorCode } from '../../common';
+import { AppException } from '../../common/exceptions/app.exception';
+import { ErrorCode } from '../../common/exceptions/error-codes';
 import { UsersService } from '../users/users.service';
 import { UserEntity } from '../users/entities/user.entity';
 
