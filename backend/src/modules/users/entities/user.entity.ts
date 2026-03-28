@@ -7,9 +7,12 @@ export interface UserEntity {
   isAdmin: boolean;
   status: 'pending' | 'active' | 'deactivated';
   lastLoginAt: Date | null;
-  refreshToken: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface UserWithRefreshToken extends UserEntity {
+  refreshToken: string | null;
 }
 
 export interface TeamMembershipInfo {

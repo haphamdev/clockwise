@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
@@ -34,14 +30,12 @@ export class AuthService {
 
     if (!user) {
       throw new UnauthorizedException(
-        "No invitation found for this email. Contact your admin to get access.",
+        'No invitation found for this email. Contact your admin to get access.',
       );
     }
 
     if (user.status === 'deactivated') {
-      throw new ForbiddenException(
-        'Your account has been deactivated. Contact your admin.',
-      );
+      throw new ForbiddenException('Your account has been deactivated. Contact your admin.');
     }
 
     if (user.status === 'pending') {
@@ -79,7 +73,7 @@ export class AuthService {
     userId: string,
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const user = await this.usersService.findById(userId);
+    const user = await this.usersService.findByIdWithRefreshToken(userId);
 
     if (!user || !user.refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');

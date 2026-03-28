@@ -1,21 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiOkResponse } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
 import { AuthService, JwtPayload } from './auth.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { UserProfileDto } from './dto/auth-response.dto';
+import { UserProfileDto, AccessTokenResponseDto } from './dto/auth-response.dto';
 import { UsersService } from '../users/users.service';
 
 const REFRESH_COOKIE_NAME = 'refresh_token';
@@ -48,14 +40,16 @@ export class AuthController {
     this.setRefreshTokenCookie(res, tokens.refreshToken);
 
     const frontendUrl = this.configService.getOrThrow<string>('FRONTEND_URL');
-    res.redirect(
-      `${frontendUrl}/auth/callback?token=${tokens.accessToken}`,
-    );
+    res.redirect(`${frontendUrl}/auth/callback#token=${tokens.accessToken}`);
   }
 
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token' })
-  async refresh(@Req() req: Request, @Res() res: Response) {
+  @ApiOkResponse({ type: AccessTokenResponseDto })
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AccessTokenResponseDto> {
     const refreshToken = req.cookies?.[REFRESH_COOKIE_NAME];
     if (!refreshToken) {
       throw new UnauthorizedException('No refresh token provided');
@@ -70,27 +64,24 @@ export class AuthController {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const tokens = await this.authService.refreshTokens(
-      payload.sub,
-      refreshToken,
-    );
+    const tokens = await this.authService.refreshTokens(payload.sub, refreshToken);
 
     this.setRefreshTokenCookie(res, tokens.refreshToken);
-    res.json({ accessToken: tokens.accessToken });
+    return { accessToken: tokens.accessToken };
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout and invalidate refresh token' })
-  async logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const user = req.user as UserEntity;
     await this.authService.logout(user.id);
 
     res.clearCookie(REFRESH_COOKIE_NAME, {
       path: '/api/v1/auth',
     });
-    res.json({ message: 'Logged out' });
+    return { message: 'Logged out' };
   }
 
   @Get('me')

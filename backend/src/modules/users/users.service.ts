@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from './users.repository';
-import { UserEntity, UserWithTeams } from './entities/user.entity';
+import { UserEntity, UserWithRefreshToken, UserWithTeams } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -14,10 +14,11 @@ export class UsersService {
     return this.usersRepository.findById(id);
   }
 
-  async updateRefreshToken(
-    userId: string,
-    hashedToken: string | null,
-  ): Promise<void> {
+  async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
+    return this.usersRepository.findByIdWithRefreshToken(id);
+  }
+
+  async updateRefreshToken(userId: string, hashedToken: string | null): Promise<void> {
     return this.usersRepository.updateRefreshToken(userId, hashedToken);
   }
 

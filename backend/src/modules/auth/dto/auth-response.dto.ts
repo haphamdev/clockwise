@@ -31,6 +31,11 @@ export class UserProfileDto {
   teams: TeamMembershipDto[];
 }
 
+export class AccessTokenResponseDto {
+  @ApiProperty()
+  accessToken: string;
+}
+
 export class AuthResponseDto {
   @ApiProperty()
   accessToken: string;

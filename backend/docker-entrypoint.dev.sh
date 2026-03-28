@@ -5,4 +5,10 @@ set -e
 echo "Generating Prisma client..."
 pnpm prisma:generate
 
+echo "Applying migrations..."
+pnpm prisma:migrate:deploy
+
+echo "Seeding database..."
+npx ts-node prisma/seed.ts
+
 exec "$@"

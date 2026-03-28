@@ -18,43 +18,39 @@ export class ApiError extends Error {
   }
 }
 
-let isRefreshing = false;
 let refreshPromise: Promise<string | null> | null = null;
 
 async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const res = await fetch('/api/v1/auth/refresh', {
-      method: 'POST',
-      credentials: 'include',
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = fetch('/api/v1/auth/refresh', {
+    method: 'POST',
+    credentials: 'include',
+  })
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const data = await res.json();
+      setAccessToken(data.accessToken);
+      return data.accessToken as string | null;
+    })
+    .catch(() => null)
+    .finally(() => {
+      refreshPromise = null;
     });
 
-    if (!res.ok) {
-      return null;
-    }
-
-    const data = await res.json();
-    setAccessToken(data.accessToken);
-    return data.accessToken;
-  } catch {
-    return null;
-  }
+  return refreshPromise;
 }
 
-export async function apiClient<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function apiClient<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
 
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
-  if (
-    options.body &&
-    typeof options.body === 'string' &&
-    !headers.has('Content-Type')
-  ) {
+  if (options.body && typeof options.body === 'string' && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -65,15 +61,7 @@ export async function apiClient<T>(
   });
 
   if (res.status === 401 && accessToken) {
-    // Try to refresh the token once
-    if (!isRefreshing) {
-      isRefreshing = true;
-      refreshPromise = refreshAccessToken();
-    }
-
-    const newToken = await refreshPromise;
-    isRefreshing = false;
-    refreshPromise = null;
+    const newToken = await refreshAccessToken();
 
     if (newToken) {
       headers.set('Authorization', `Bearer ${newToken}`);

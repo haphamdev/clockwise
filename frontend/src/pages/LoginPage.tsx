@@ -4,9 +4,7 @@ export function LoginPage() {
       <div className="w-full max-w-sm space-y-6 text-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Clockwise</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in to track your time
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">Sign in to track your time</p>
         </div>
         <a
           href="/api/v1/auth/google"
