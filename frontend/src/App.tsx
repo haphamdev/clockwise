@@ -1,4 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { LoginPage } from '@/pages/LoginPage';
+import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -14,15 +18,53 @@ function PlaceholderPage({ title }: { title: string }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<PlaceholderPage title="Sign in to Clockwise" />} />
-        <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
-        <Route path="/time-logs" element={<PlaceholderPage title="My Time Logs" />} />
-        <Route path="/projects" element={<PlaceholderPage title="Projects" />} />
-        <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
-        <Route path="/admin" element={<PlaceholderPage title="Admin Panel" />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <PlaceholderPage title="Dashboard" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/time-logs"
+            element={
+              <ProtectedRoute>
+                <PlaceholderPage title="My Time Logs" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <PlaceholderPage title="Projects" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <PlaceholderPage title="Reports" />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <PlaceholderPage title="Admin Panel" />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

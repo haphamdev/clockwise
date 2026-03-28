@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -9,9 +11,11 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
     }),
     PrismaModule,
+    AuthModule,
+    UsersModule,
     // Feature modules will be added here as they are implemented:
-    // AuthModule, UsersModule, TeamsModule, ProjectsModule,
-    // TasksModule, TimeLogsModule, ReportsModule, OrgModule
+    // TeamsModule, ProjectsModule, TasksModule, TimeLogsModule,
+    // ReportsModule, OrgModule
   ],
   controllers: [AppController],
 })
