@@ -1,4 +1,4 @@
-import { UnauthorizedException } from '@nestjs/common';
+import { AppException } from '../../../common';
 import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersService } from '../../users/users.service';
@@ -47,7 +47,7 @@ describe('JwtStrategy', () => {
 
     await expect(
       strategy.validate({ sub: 'bad-id', email: 'x@x.com', isAdmin: false }),
-    ).rejects.toThrow(UnauthorizedException);
+    ).rejects.toThrow(AppException);
   });
 
   it('should throw for deactivated user', async () => {
@@ -58,7 +58,7 @@ describe('JwtStrategy', () => {
 
     await expect(
       strategy.validate({ sub: 'user-1', email: 'test@example.com', isAdmin: false }),
-    ).rejects.toThrow(UnauthorizedException);
+    ).rejects.toThrow(AppException);
   });
 
   it('should throw for pending user', async () => {
@@ -69,6 +69,6 @@ describe('JwtStrategy', () => {
 
     await expect(
       strategy.validate({ sub: 'user-1', email: 'test@example.com', isAdmin: false }),
-    ).rejects.toThrow(UnauthorizedException);
+    ).rejects.toThrow(AppException);
   });
 });

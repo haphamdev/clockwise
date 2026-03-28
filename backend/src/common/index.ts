@@ -9,6 +9,9 @@ export {
   ProjectOwner,
 } from './decorators/auth.decorators';
 
+// Exceptions
+export { AppException, ErrorCode } from './exceptions';
+
 // Guards
 export { IsAdminGuard } from './guards/is-admin.guard';
 export { IsProjectOwnerGuard } from './guards/is-project-owner.guard';

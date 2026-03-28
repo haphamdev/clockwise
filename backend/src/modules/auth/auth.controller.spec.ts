@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException } from '@nestjs/common';
+import { AppException } from '../../common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response } from 'express';
@@ -113,7 +113,7 @@ describe('AuthController', () => {
       const res = mockRes();
 
       await expect(controller.refresh(req, res as unknown as Response)).rejects.toThrow(
-        UnauthorizedException,
+        AppException,
       );
     });
 
@@ -125,7 +125,7 @@ describe('AuthController', () => {
       });
 
       await expect(controller.refresh(req, res as unknown as Response)).rejects.toThrow(
-        UnauthorizedException,
+        AppException,
       );
     });
 
@@ -192,7 +192,7 @@ describe('AuthController', () => {
       const req = { user: mockUser } as unknown as Request;
       usersService.findById.mockResolvedValue(null);
 
-      await expect(controller.me(req)).rejects.toThrow(UnauthorizedException);
+      await expect(controller.me(req)).rejects.toThrow(AppException);
     });
   });
 });

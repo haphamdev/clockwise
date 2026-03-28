@@ -1,9 +1,10 @@
 import {
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import { AppException, ErrorCode } from '../exceptions';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -26,7 +27,11 @@ export class TeamMemberGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('Not authenticated');
+      throw new AppException(
+        ErrorCode.AUTH.NOT_AUTHENTICATED,
+        'Not authenticated',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     if (user.isAdmin) {
@@ -35,8 +40,10 @@ export class TeamMemberGuard implements CanActivate {
 
     const teamId = request.params.teamId;
     if (!teamId) {
-      throw new ForbiddenException(
+      throw new AppException(
+        ErrorCode.TEAM.CONTEXT_REQUIRED,
         'Team context required for this endpoint',
+        HttpStatus.FORBIDDEN,
       );
     }
 
@@ -48,7 +55,11 @@ export class TeamMemberGuard implements CanActivate {
     });
 
     if (!membership) {
-      throw new ForbiddenException('You are not a member of this team');
+      throw new AppException(
+        ErrorCode.TEAM.NOT_A_MEMBER,
+        'You are not a member of this team',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     return true;

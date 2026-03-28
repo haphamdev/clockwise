@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { AppException } from '../../common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { UserEntity, UserWithRefreshToken } from '../users/entities/user.entity';
@@ -63,19 +63,19 @@ describe('AuthService', () => {
   describe('validateOAuthUser', () => {
     const profile = { email: 'test@example.com', name: 'Test', avatarUrl: 'http://avatar.url' };
 
-    it('should throw UnauthorizedException when no user found (invitation-only)', async () => {
+    it('should throw AppException when no user found (invitation-only)', async () => {
       usersService.findByEmail.mockResolvedValue(null);
 
       await expect(service.validateOAuthUser(profile)).rejects.toThrow(
-        UnauthorizedException,
+        AppException,
       );
     });
 
-    it('should throw ForbiddenException for deactivated users', async () => {
+    it('should throw AppException for deactivated users', async () => {
       usersService.findByEmail.mockResolvedValue({ ...mockUser, status: 'deactivated' });
 
       await expect(service.validateOAuthUser(profile)).rejects.toThrow(
-        ForbiddenException,
+        AppException,
       );
     });
 
@@ -138,7 +138,7 @@ describe('AuthService', () => {
       usersService.findByIdWithRefreshToken.mockResolvedValue(null);
 
       await expect(service.refreshTokens('bad-id', refreshToken)).rejects.toThrow(
-        UnauthorizedException,
+        AppException,
       );
     });
 
@@ -147,11 +147,11 @@ describe('AuthService', () => {
       usersService.findByIdWithRefreshToken.mockResolvedValue(user);
 
       await expect(service.refreshTokens(mockUser.id, refreshToken)).rejects.toThrow(
-        UnauthorizedException,
+        AppException,
       );
     });
 
-    it('should throw ForbiddenException for non-active accounts', async () => {
+    it('should throw AppException for non-active accounts', async () => {
       const user: UserWithRefreshToken = {
         ...mockUser,
         status: 'deactivated',
@@ -160,7 +160,7 @@ describe('AuthService', () => {
       usersService.findByIdWithRefreshToken.mockResolvedValue(user);
 
       await expect(service.refreshTokens(mockUser.id, refreshToken)).rejects.toThrow(
-        ForbiddenException,
+        AppException,
       );
     });
 
@@ -172,7 +172,7 @@ describe('AuthService', () => {
       usersService.findByIdWithRefreshToken.mockResolvedValue(user);
 
       await expect(service.refreshTokens(mockUser.id, refreshToken)).rejects.toThrow(
-        UnauthorizedException,
+        AppException,
       );
     });
 
