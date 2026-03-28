@@ -6,30 +6,30 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### Epic 0: DevOps & Test Infrastructure
+### Epic 0: DevOps & Test Infrastructure ✅
 
-#### US-0a: GitHub Repository & CI Setup
+#### US-0a: GitHub Repository & CI Setup ✅
 > As a **developer**, I want the local repo connected to GitHub with CI/CD pipelines via GitHub Actions, so that every push and PR is validated automatically.
 > → _Detailed spec: `specs/github-ci-setup.md`_
 
-#### US-0b: Test Infrastructure Setup
+#### US-0b: Test Infrastructure Setup ✅
 > As a **developer**, I want Jest (backend + frontend non-UI), Playwright (frontend UI), and Testcontainers (Postgres for backend) configured, so that all features can be tested from the start.
 > → _Detailed spec: `specs/test-setup.md`_
 
 ---
 
-### Epic 1: Foundation
+### Epic 1: Foundation ✅
 
-#### US-1: Seed Organization & Admin Bootstrap
+#### US-1: Seed Organization & Admin Bootstrap ✅
 > As a **system deployer**, I want the system to seed a default organization and an initial Admin user on first run, so that there is an entry point to configure the app.
 
-#### US-2: Google OAuth Login
+#### US-2: Google OAuth Login ✅
 > As a **user**, I want to sign in with my Google account, so that I can access the app without creating a separate password.
 
-#### US-3: JWT Session Management
+#### US-3: JWT Session Management ✅
 > As an **authenticated user**, I want my session to persist via JWT tokens with auto-refresh, so that I don't have to re-login frequently.
 
-#### US-4: Role-Based Access Guard
+#### US-4: Role-Based Access Guard ✅
 > As the **system**, I want to enforce role-based permissions on all API endpoints, so that users can only perform actions they are authorized for.
 
 ---
@@ -119,7 +119,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ## Task Breakdown
 
-### US-0a: GitHub Repository & CI Setup
+### US-0a: GitHub Repository & CI Setup ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
@@ -134,7 +134,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### US-0b: Test Infrastructure Setup
+### US-0b: Test Infrastructure Setup ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
@@ -153,7 +153,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### US-1: Seed Organization & Admin Bootstrap
+### US-1: Seed Organization & Admin Bootstrap ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
@@ -163,7 +163,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### US-2: Google OAuth Login
+### US-2: Google OAuth Login ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
@@ -178,7 +178,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### US-3: JWT Session Management
+### US-3: JWT Session Management ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
@@ -192,7 +192,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### US-4: Role-Based Access Guard
+### US-4: Role-Based Access Guard ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
@@ -434,10 +434,10 @@ Stories are ordered by dependency — each story builds on the ones before it.
 ## Implementation Order Summary
 
 ```
-Phase 0 — DevOps & Test Infrastructure (US-0a → US-0b)
+Phase 0 — DevOps & Test Infrastructure (US-0a → US-0b) ✅
   GitHub setup, CI/CD, Jest + Testcontainers, Playwright.
 
-Phase 1 — Foundation (US-1 → US-4)
+Phase 1 — Foundation (US-1 → US-4) ✅
   Seed DB, Google OAuth, JWT sessions, role guards.
 
 Phase 2 — Admin & Teams (US-5 → US-9)
