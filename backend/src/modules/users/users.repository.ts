@@ -3,6 +3,7 @@ import { User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   UserEntity,
+  UserWithRefreshToken,
   UserWithTeams,
   TeamMembershipInfo,
 } from './entities/user.entity';
@@ -29,10 +30,7 @@ export class UsersRepository {
     return user ? this.toEntityWithTeams(user) : null;
   }
 
-  async updateRefreshToken(
-    userId: string,
-    hashedToken: string | null,
-  ): Promise<void> {
+  async updateRefreshToken(userId: string, hashedToken: string | null): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: hashedToken },
@@ -63,6 +61,13 @@ export class UsersRepository {
     });
   }
 
+  async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+    return user ? { ...this.toEntity(user), refreshToken: user.refreshToken } : null;
+  }
+
   private toEntity(user: User): UserEntity {
     return {
       id: user.id,
@@ -73,7 +78,6 @@ export class UsersRepository {
       isAdmin: user.isAdmin,
       status: user.status,
       lastLoginAt: user.lastLoginAt,
-      refreshToken: user.refreshToken,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

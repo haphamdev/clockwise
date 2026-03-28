@@ -1,98 +1,30 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from 'react';
-import { apiClient, setAccessToken, getAccessToken, ApiError } from '@/lib/api-client';
-
-interface TeamMembership {
-  teamId: string;
-  teamName: string;
-  role: string;
-}
-
-export interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  avatarUrl: string | null;
-  isAdmin: boolean;
-  teams: TeamMembership[];
-}
-
-interface AuthContextType {
-  user: UserProfile | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: () => void;
-  logout: () => Promise<void>;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { useMemo, type ReactNode } from 'react';
+import { AuthContext } from '@/lib/auth/auth-context';
+import { useUser } from '@/lib/auth/use-user';
+import { useLogout } from '@/lib/auth/use-logout';
+import { useOAuthCallback } from '@/lib/auth/use-oauth-callback';
+import type { AuthContextType } from '@/lib/auth/types';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: user, isLoading } = useUser();
+  const logoutMutation = useLogout();
+  const oauthMutation = useOAuthCallback();
 
-  const fetchUser = useCallback(async () => {
-    if (!getAccessToken()) {
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const profile = await apiClient<UserProfile>('/auth/me');
-      setUser(profile);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        setAccessToken(null);
-        setUser(null);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const login = useCallback(() => {
-    window.location.href = '/api/v1/auth/google';
-  }, []);
-
-  const logout = useCallback(async () => {
-    try {
-      await apiClient('/auth/logout', { method: 'POST' });
-    } catch {
-      // Logout failed on server, still clear locally
-    }
-    setAccessToken(null);
-    setUser(null);
-  }, []);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user: user ?? null,
+      isAuthenticated: !!user,
+      isLoading,
+      login: () => {
+        window.location.href = '/api/v1/auth/google';
+      },
+      logout: () => logoutMutation.mutateAsync(),
+      handleOAuthCallback: async (token: string) => {
+        await oauthMutation.mutateAsync(token);
+      },
+    }),
+    [user, isLoading, logoutMutation, oauthMutation],
   );
-}
 
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

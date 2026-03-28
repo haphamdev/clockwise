@@ -21,7 +21,23 @@ async function main() {
     },
   });
 
-  console.log('Seed complete: default organization created.');
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (adminEmail) {
+    await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {},
+      create: {
+        orgId: DEFAULT_ORG_ID,
+        email: adminEmail,
+        name: 'Admin',
+        isAdmin: true,
+        status: 'pending',
+      },
+    });
+    console.log(`Seed complete: admin user created (${adminEmail}).`);
+  } else {
+    console.log('Seed complete. Set ADMIN_EMAIL to create an initial admin user.');
+  }
 }
 
 main()

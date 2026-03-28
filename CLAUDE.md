@@ -77,6 +77,26 @@ Organization → Teams → TeamMembers (user + role)
 
 Tasks are auto-created when a user logs time with a new identifier. Tasks are scoped per-project.
 
+### Backend Type Layering
+
+The backend enforces strict separation between three type layers:
+
+- **Entity** (`modules/<mod>/entities/`) — Plain TypeScript interfaces that represent domain objects. Used everywhere: services, controllers, guards. No library-specific imports.
+- **DTO** (`modules/<mod>/dto/`) — Classes used in controllers for API request/response shapes. Decorated with `@ApiProperty()` and class-validator decorators.
+- **Model** (Prisma) — Prisma-generated types from `@prisma/client`. Only ever imported inside `*.repository.ts` files and `src/prisma/`.
+
+**Rule:** `@prisma/client` must never be imported outside of repository and prisma files. Repositories convert Prisma models to entities via transformer methods before returning them. Services and controllers work exclusively with entities and DTOs.
+
+### File Size & Single Responsibility
+
+Keep files small and single-purpose — aim for ~100 lines, hard max 300 lines. Split code by responsibility:
+
+- **API client functions** (`lib/<domain>/<domain>-api.ts`) — plain async functions, no React
+- **Query keys** (`lib/<domain>/<domain>-keys.ts`) — query key factories
+- **Hooks** (`lib/<domain>/use-<name>.ts`) — one hook per file, wraps useQuery/useMutation
+- **Types** (`lib/<domain>/types.ts`) — shared interfaces/types for a domain
+- **UI components** — one component per file, no data-fetching logic
+
 ### Key Conventions
 
 - Backend column mapping: Prisma fields are camelCase, DB columns are snake_case (via `@map`)
