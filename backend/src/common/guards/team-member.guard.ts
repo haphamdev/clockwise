@@ -1,12 +1,7 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
-import { AppException } from '../exceptions/app.exception';
-import { ErrorCode } from '../exceptions/error-codes';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotAuthenticatedException } from '../exceptions/auth.exceptions';
+import { TeamContextRequiredException, TeamNotAMemberException } from '../exceptions/team.exceptions';
 
 /**
  * Guard that verifies the current user is a member of the team
@@ -28,11 +23,7 @@ export class TeamMemberGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new AppException(
-        ErrorCode.AUTH.NOT_AUTHENTICATED,
-        'Not authenticated',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new NotAuthenticatedException();
     }
 
     if (user.isAdmin) {
@@ -41,11 +32,7 @@ export class TeamMemberGuard implements CanActivate {
 
     const teamId = request.params.teamId;
     if (!teamId) {
-      throw new AppException(
-        ErrorCode.TEAM.CONTEXT_REQUIRED,
-        'Team context required for this endpoint',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new TeamContextRequiredException();
     }
 
     const membership = await this.prisma.teamMember.findUnique({
@@ -56,11 +43,7 @@ export class TeamMemberGuard implements CanActivate {
     });
 
     if (!membership) {
-      throw new AppException(
-        ErrorCode.TEAM.NOT_A_MEMBER,
-        'You are not a member of this team',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new TeamNotAMemberException();
     }
 
     return true;
