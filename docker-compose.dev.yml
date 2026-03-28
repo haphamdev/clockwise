@@ -5,7 +5,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
-      - "5173:5173"
+      - '5173:5173'
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -17,13 +17,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./backend:/app
       - /app/node_modules
+      - ./backend/logs:/app/logs
     environment:
       NODE_ENV: development
 
   db:
     ports:
-      - "5432:5432"
+      - '5432:5432'

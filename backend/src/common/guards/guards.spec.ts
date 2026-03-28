@@ -4,10 +4,16 @@ import { IsAdminGuard } from './is-admin.guard';
 import { RolesGuard } from './roles.guard';
 import { TeamMemberGuard } from './team-member.guard';
 import { IsProjectOwnerGuard } from './is-project-owner.guard';
+import { PrismaService } from '../../prisma/prisma.service';
+
+interface MockUser {
+  id: string;
+  isAdmin: boolean;
+}
 
 // Helper to build a mock ExecutionContext
 function createMockContext(overrides: {
-  user?: any;
+  user?: MockUser;
   params?: Record<string, string>;
 }): ExecutionContext {
   const request = {
@@ -42,13 +48,13 @@ describe('IsAdminGuard', () => {
 
 describe('RolesGuard', () => {
   let guard: RolesGuard;
-  let reflector: jest.Mocked<Reflector>;
-  let prisma: any;
+  let reflector: jest.Mocked<Pick<Reflector, 'getAllAndOverride'>>;
+  let prisma: { teamMember: { findUnique: jest.Mock } };
 
   beforeEach(() => {
-    reflector = { getAllAndOverride: jest.fn() } as any;
+    reflector = { getAllAndOverride: jest.fn() };
     prisma = { teamMember: { findUnique: jest.fn() } };
-    guard = new RolesGuard(reflector, prisma);
+    guard = new RolesGuard(reflector as unknown as Reflector, prisma as unknown as PrismaService);
   });
 
   it('should allow when no roles required', async () => {
@@ -115,11 +121,11 @@ describe('RolesGuard', () => {
 
 describe('TeamMemberGuard', () => {
   let guard: TeamMemberGuard;
-  let prisma: any;
+  let prisma: { teamMember: { findUnique: jest.Mock } };
 
   beforeEach(() => {
     prisma = { teamMember: { findUnique: jest.fn() } };
-    guard = new TeamMemberGuard(prisma);
+    guard = new TeamMemberGuard(prisma as unknown as PrismaService);
   });
 
   it('should allow admin without checking membership', async () => {
@@ -164,11 +170,11 @@ describe('TeamMemberGuard', () => {
 
 describe('IsProjectOwnerGuard', () => {
   let guard: IsProjectOwnerGuard;
-  let prisma: any;
+  let prisma: { project: { findUnique: jest.Mock } };
 
   beforeEach(() => {
     prisma = { project: { findUnique: jest.fn() } };
-    guard = new IsProjectOwnerGuard(prisma);
+    guard = new IsProjectOwnerGuard(prisma as unknown as PrismaService);
   });
 
   it('should allow admin without checking ownership', async () => {

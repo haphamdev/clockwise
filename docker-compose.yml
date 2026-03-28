@@ -18,6 +18,9 @@ services:
       - .env
     environment:
       NODE_ENV: production
+      LOG_DIR: /app/logs
+    volumes:
+      - backend_logs:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -42,6 +45,7 @@ services:
 
 volumes:
   postgres_data:
+  backend_logs:
 
 networks:
   clockwise:
