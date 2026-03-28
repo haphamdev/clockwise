@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Request, Response } from 'express';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
@@ -26,11 +27,21 @@ describe('AuthController', () => {
     updatedAt: new Date(),
   };
 
-  const mockRes = () => {
-    const res: any = {};
-    res.cookie = jest.fn().mockReturnValue(res);
-    res.clearCookie = jest.fn().mockReturnValue(res);
-    res.redirect = jest.fn().mockReturnValue(res);
+  interface MockResponse {
+    cookie: jest.Mock;
+    clearCookie: jest.Mock;
+    redirect: jest.Mock;
+  }
+
+  const mockRes = (): MockResponse => {
+    const res: MockResponse = {
+      cookie: jest.fn(),
+      clearCookie: jest.fn(),
+      redirect: jest.fn(),
+    };
+    res.cookie.mockReturnValue(res);
+    res.clearCookie.mockReturnValue(res);
+    res.redirect.mockReturnValue(res);
     return res;
   };
 
@@ -77,13 +88,13 @@ describe('AuthController', () => {
   describe('googleCallback', () => {
     it('should redirect with access token in URL hash', async () => {
       const res = mockRes();
-      const req = { user: mockUser } as any;
+      const req = { user: mockUser } as unknown as Request;
       authService.login.mockResolvedValue({
         accessToken: 'at-123',
         refreshToken: 'rt-123',
       });
 
-      await controller.googleCallback(req, res);
+      await controller.googleCallback(req, res as unknown as Response);
 
       expect(res.cookie).toHaveBeenCalledWith(
         'refresh_token',
@@ -98,28 +109,28 @@ describe('AuthController', () => {
 
   describe('refresh', () => {
     it('should throw when no refresh cookie', async () => {
-      const req = { cookies: {} } as any;
+      const req = { cookies: {} } as unknown as Request;
       const res = mockRes();
 
-      await expect(controller.refresh(req, res)).rejects.toThrow(
+      await expect(controller.refresh(req, res as unknown as Response)).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
     it('should throw on invalid JWT in cookie', async () => {
-      const req = { cookies: { refresh_token: 'bad-token' } } as any;
+      const req = { cookies: { refresh_token: 'bad-token' } } as unknown as Request;
       const res = mockRes();
       jwtService.verify.mockImplementation(() => {
         throw new Error('invalid');
       });
 
-      await expect(controller.refresh(req, res)).rejects.toThrow(
+      await expect(controller.refresh(req, res as unknown as Response)).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
     it('should return new access token and set new refresh cookie', async () => {
-      const req = { cookies: { refresh_token: 'valid-rt' } } as any;
+      const req = { cookies: { refresh_token: 'valid-rt' } } as unknown as Request;
       const res = mockRes();
       jwtService.verify.mockReturnValue({ sub: 'user-1', email: 'test@example.com', isAdmin: false });
       authService.refreshTokens.mockResolvedValue({
@@ -127,7 +138,7 @@ describe('AuthController', () => {
         refreshToken: 'new-rt',
       });
 
-      const result = await controller.refresh(req, res);
+      const result = await controller.refresh(req, res as unknown as Response);
 
       expect(result).toEqual({ accessToken: 'new-at' });
       expect(res.cookie).toHaveBeenCalledWith(
@@ -140,10 +151,10 @@ describe('AuthController', () => {
 
   describe('logout', () => {
     it('should clear refresh token and cookie', async () => {
-      const req = { user: mockUser } as any;
+      const req = { user: mockUser } as unknown as Request;
       const res = mockRes();
 
-      const result = await controller.logout(req, res);
+      const result = await controller.logout(req, res as unknown as Response);
 
       expect(authService.logout).toHaveBeenCalledWith('user-1');
       expect(res.clearCookie).toHaveBeenCalledWith(
@@ -156,7 +167,7 @@ describe('AuthController', () => {
 
   describe('me', () => {
     it('should return user profile with teams', async () => {
-      const req = { user: mockUser } as any;
+      const req = { user: mockUser } as unknown as Request;
       const fullUser: UserWithTeams = {
         ...mockUser,
         teamMemberships: [
@@ -178,7 +189,7 @@ describe('AuthController', () => {
     });
 
     it('should throw when user not found in DB', async () => {
-      const req = { user: mockUser } as any;
+      const req = { user: mockUser } as unknown as Request;
       usersService.findById.mockResolvedValue(null);
 
       await expect(controller.me(req)).rejects.toThrow(UnauthorizedException);

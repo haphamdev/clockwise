@@ -1,4 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersService } from '../../users/users.service';
 import { UserWithTeams } from '../../users/entities/user.entity';
@@ -24,11 +25,11 @@ describe('JwtStrategy', () => {
   beforeEach(() => {
     usersService = {
       findById: jest.fn(),
-    } as any;
+    } as unknown as jest.Mocked<UsersService>;
 
     const configService = {
       getOrThrow: jest.fn().mockReturnValue('test-jwt-secret'),
-    } as any;
+    } as unknown as ConfigService;
 
     strategy = new JwtStrategy(usersService, configService);
   });
