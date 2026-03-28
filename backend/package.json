@@ -51,6 +51,9 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.7.0"
   },
+  "prisma": {
+    "seed": "npx ts-node prisma/seed.ts"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@nestjs/core",
