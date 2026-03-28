@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { AppExceptionFilter } from './common/exceptions';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -13,6 +14,9 @@ async function bootstrap() {
 
   // Global API prefix
   app.setGlobalPrefix('api/v1');
+
+  // Global exception filter
+  app.useGlobalFilters(new AppExceptionFilter());
 
   // Validation
   app.useGlobalPipes(

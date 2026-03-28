@@ -1,9 +1,10 @@
-import { ExecutionContext, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { IsAdminGuard } from './is-admin.guard';
 import { RolesGuard } from './roles.guard';
 import { TeamMemberGuard } from './team-member.guard';
 import { IsProjectOwnerGuard } from './is-project-owner.guard';
+import { AppException } from '../exceptions';
 import { PrismaService } from '../../prisma/prisma.service';
 
 interface MockUser {
@@ -37,12 +38,12 @@ describe('IsAdminGuard', () => {
 
   it('should deny non-admin users', () => {
     const ctx = createMockContext({ user: { id: '1', isAdmin: false } });
-    expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(ctx)).toThrow(AppException);
   });
 
   it('should deny when no user', () => {
     const ctx = createMockContext({ user: undefined });
-    expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(ctx)).toThrow(AppException);
   });
 });
 
@@ -82,7 +83,7 @@ describe('RolesGuard', () => {
       params: {},
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 
   it('should deny when user has wrong role', async () => {
@@ -93,7 +94,7 @@ describe('RolesGuard', () => {
       params: { teamId: 'team-1' },
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 
   it('should deny when user is not a team member', async () => {
@@ -104,7 +105,7 @@ describe('RolesGuard', () => {
       params: { teamId: 'team-1' },
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 
   it('should allow when user has required role', async () => {
@@ -155,7 +156,7 @@ describe('TeamMemberGuard', () => {
       params: { teamId: 'team-1' },
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 
   it('should deny when no teamId param', async () => {
@@ -164,7 +165,7 @@ describe('TeamMemberGuard', () => {
       params: {},
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 });
 
@@ -204,17 +205,17 @@ describe('IsProjectOwnerGuard', () => {
       params: { projectId: 'proj-1' },
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(ForbiddenException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 
-  it('should throw NotFoundException when project does not exist', async () => {
+  it('should throw AppException when project does not exist', async () => {
     prisma.project.findUnique.mockResolvedValue(null);
     const ctx = createMockContext({
       user: { id: 'user-1', isAdmin: false },
       params: { projectId: 'bad-id' },
     });
 
-    await expect(guard.canActivate(ctx)).rejects.toThrow(NotFoundException);
+    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
   });
 
   it('should use :id param as fallback for :projectId', async () => {

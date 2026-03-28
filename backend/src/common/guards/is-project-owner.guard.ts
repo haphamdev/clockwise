@@ -1,10 +1,10 @@
 import {
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
+  HttpStatus,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
+import { AppException, ErrorCode } from '../exceptions';
 import { PrismaService } from '../../prisma/prisma.service';
 
 /**
@@ -23,7 +23,11 @@ export class IsProjectOwnerGuard implements CanActivate {
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('Not authenticated');
+      throw new AppException(
+        ErrorCode.AUTH.NOT_AUTHENTICATED,
+        'Not authenticated',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     if (user.isAdmin) {
@@ -32,8 +36,10 @@ export class IsProjectOwnerGuard implements CanActivate {
 
     const projectId = request.params.projectId ?? request.params.id;
     if (!projectId) {
-      throw new ForbiddenException(
+      throw new AppException(
+        ErrorCode.PROJECT.CONTEXT_REQUIRED,
         'Project context required for this endpoint',
+        HttpStatus.FORBIDDEN,
       );
     }
 
@@ -43,12 +49,18 @@ export class IsProjectOwnerGuard implements CanActivate {
     });
 
     if (!project) {
-      throw new NotFoundException('Project not found');
+      throw new AppException(
+        ErrorCode.PROJECT.NOT_FOUND,
+        'Project not found',
+        HttpStatus.NOT_FOUND,
+      );
     }
 
     if (project.ownerId !== user.id) {
-      throw new ForbiddenException(
+      throw new AppException(
+        ErrorCode.PROJECT.NOT_OWNER,
         'Only the project owner can perform this action',
+        HttpStatus.FORBIDDEN,
       );
     }
 

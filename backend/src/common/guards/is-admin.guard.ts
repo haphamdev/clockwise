@@ -1,9 +1,10 @@
 import {
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
+  HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import { AppException, ErrorCode } from '../exceptions';
 
 /**
  * Guard that restricts access to admin users only.
@@ -16,7 +17,11 @@ export class IsAdminGuard implements CanActivate {
     const user = request.user;
 
     if (!user?.isAdmin) {
-      throw new ForbiddenException('Admin access required');
+      throw new AppException(
+        ErrorCode.ADMIN.ACCESS_REQUIRED,
+        'Admin access required',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     return true;
