@@ -4,7 +4,7 @@ import { IsAdminGuard } from './is-admin.guard';
 import { RolesGuard } from './roles.guard';
 import { TeamMemberGuard } from './team-member.guard';
 import { IsProjectOwnerGuard } from './is-project-owner.guard';
-import { AppException } from '../exceptions';
+import { AppException } from '../exceptions/app.exception';
 import { PrismaService } from '../../prisma/prisma.service';
 
 interface MockUser {

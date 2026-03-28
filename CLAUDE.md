@@ -104,6 +104,7 @@ Keep files small and single-purpose — aim for ~100 lines, hard max 300 lines. 
 - Team archival uses `isArchived`, project archival uses `status: archived`
 - Org settings stored as JSONB on the `organization` table
 - API errors use `AppException` with machine-readable codes: `{ statusCode, error, code, message }`. Error codes are defined in `src/common/exceptions/error-codes.ts`, namespaced by module (e.g. `AUTH_NO_INVITATION`, `TEAM_INSUFFICIENT_ROLE`). Always throw `new AppException(ErrorCode.X.Y, 'message', HttpStatus.Z)` instead of raw NestJS exceptions.
+- No barrel imports — do not create `index.ts` re-export files. Always import directly from the source file (e.g. `from './exceptions/app.exception'` not `from './exceptions'`).
 
 ## Specs
 
