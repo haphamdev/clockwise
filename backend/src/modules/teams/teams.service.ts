@@ -133,6 +133,18 @@ export class TeamsService {
     await this.teamsRepository.removeMember(teamId, userId);
   }
 
+  /**
+   * Lightweight check that a team exists, belongs to the org, and is not archived.
+   * Used by InvitationsService to validate team assignments without loading members.
+   */
+  async validateTeamExists(teamId: string, orgId: string): Promise<void> {
+    const team = await this.teamsRepository.findEntityById(teamId);
+    if (!team || team.orgId !== orgId) {
+      throw new TeamNotFoundException();
+    }
+    this.ensureNotArchived(team);
+  }
+
   private async getTeamOrThrow(teamId: string, orgId: string): Promise<TeamEntity> {
     const team = await this.teamsRepository.findEntityById(teamId);
     if (!team || team.orgId !== orgId) {

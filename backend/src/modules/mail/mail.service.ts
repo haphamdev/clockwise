@@ -6,7 +6,7 @@ import { createTransport, Transporter } from 'nodemailer';
 export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
   private transporter: Transporter | null = null;
-  private mailFrom: string;
+  private mailFrom = '';
 
   constructor(private readonly configService: ConfigService) {}
 

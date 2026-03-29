@@ -14,6 +14,10 @@ export class UsersService {
     return this.usersRepository.findById(id);
   }
 
+  async createPendingUser(orgId: string, email: string): Promise<UserEntity> {
+    return this.usersRepository.createPendingUser(orgId, email);
+  }
+
   async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
     return this.usersRepository.findByIdWithRefreshToken(id);
   }
