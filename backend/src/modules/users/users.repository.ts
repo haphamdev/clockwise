@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   UserEntity,
@@ -66,6 +66,124 @@ export class UsersRepository {
       where: { id: userId },
       data: { lastLoginAt: new Date() },
     });
+  }
+
+  async findAll(
+    orgId: string,
+    options: {
+      page: number;
+      limit: number;
+      search?: string;
+      status?: string;
+      teamId?: string;
+    },
+  ): Promise<{ data: UserWithTeams[]; total: number }> {
+    const where: Prisma.UserWhereInput = {
+      orgId,
+      ...(options.status && { status: options.status as 'pending' | 'active' | 'deactivated' }),
+      ...(options.teamId && { teamMemberships: { some: { teamId: options.teamId } } }),
+      ...(options.search && {
+        OR: [
+          { name: { contains: options.search, mode: 'insensitive' as const } },
+          { email: { contains: options.search, mode: 'insensitive' as const } },
+        ],
+      }),
+    };
+
+    const include = { teamMemberships: { include: { team: true } } };
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        include,
+        orderBy: { name: 'asc' },
+        skip: (options.page - 1) * options.limit,
+        take: options.limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return {
+      data: users.map((u) => this.toEntityWithTeams(u)),
+      total,
+    };
+  }
+
+  async countActiveAdmins(orgId: string): Promise<number> {
+    return this.prisma.user.count({
+      where: { orgId, isAdmin: true, status: 'active' },
+    });
+  }
+
+  async updateIsAdmin(userId: string, isAdmin: boolean): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isAdmin },
+    });
+  }
+
+  async deactivateUser(userId: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { status: 'deactivated', refreshToken: null },
+      }),
+      this.prisma.projectMember.deleteMany({ where: { userId } }),
+    ]);
+  }
+
+  async reactivateUser(userId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { status: 'active' },
+    });
+  }
+
+  /**
+   * Validates that all provided teamIds exist, belong to the org, and are not archived.
+   * Returns the count of valid teams. Throws nothing — caller compares counts.
+   */
+  async countValidTeams(orgId: string, teamIds: string[]): Promise<number> {
+    return this.prisma.team.count({
+      where: { id: { in: teamIds }, orgId, isArchived: false },
+    });
+  }
+
+  /**
+   * Returns teams where the given user is the ONLY manager.
+   * Used to check the last-manager invariant before removing a user from teams.
+   */
+  async findTeamsWhereOnlyManager(userId: string): Promise<string[]> {
+    const memberships = await this.prisma.teamMember.findMany({
+      where: { userId, role: 'manager' },
+      select: { teamId: true },
+    });
+
+    const soloManagerTeamIds: string[] = [];
+    for (const m of memberships) {
+      const managerCount = await this.prisma.teamMember.count({
+        where: { teamId: m.teamId, role: 'manager' },
+      });
+      if (managerCount <= 1) {
+        soloManagerTeamIds.push(m.teamId);
+      }
+    }
+
+    return soloManagerTeamIds;
+  }
+
+  async replaceTeamAssignments(
+    userId: string,
+    assignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+  ): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.teamMember.deleteMany({ where: { userId } }),
+      ...assignments.map((a) =>
+        this.prisma.teamMember.create({
+          data: { userId, teamId: a.teamId, role: a.role },
+        }),
+      ),
+    ]);
   }
 
   async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
