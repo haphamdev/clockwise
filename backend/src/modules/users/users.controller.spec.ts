@@ -1,0 +1,128 @@
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+import { UserEntity, UserWithTeams } from './entities/user.entity';
+
+function makeAdmin(overrides?: Partial<UserEntity>): UserEntity {
+  return {
+    id: 'admin-1',
+    orgId: 'org-1',
+    email: 'admin@example.com',
+    name: 'Admin',
+    avatarUrl: null,
+    isAdmin: true,
+    status: 'active',
+    lastLoginAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+function makeUserWithTeams(overrides?: Partial<UserWithTeams>): UserWithTeams {
+  return {
+    id: 'user-1',
+    orgId: 'org-1',
+    email: 'alice@example.com',
+    name: 'Alice',
+    avatarUrl: null,
+    isAdmin: false,
+    status: 'active',
+    lastLoginAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    teamMemberships: [
+      { teamId: 'team-1', teamName: 'Engineering', role: 'member' },
+    ],
+    ...overrides,
+  };
+}
+
+describe('UsersController', () => {
+  let controller: UsersController;
+  let service: jest.Mocked<UsersService>;
+
+  beforeEach(() => {
+    service = {
+      findAll: jest.fn(),
+      getUserDetail: jest.fn(),
+      updateUser: jest.fn(),
+      deactivateUser: jest.fn(),
+      reactivateUser: jest.fn(),
+    } as unknown as jest.Mocked<UsersService>;
+
+    controller = new UsersController(service);
+  });
+
+  describe('list', () => {
+    it('should return paginated users', async () => {
+      service.findAll.mockResolvedValue({ data: [makeUserWithTeams()], total: 1 });
+
+      const result = await controller.list(makeAdmin(), { page: 1, limit: 20 });
+      expect(result.data).toHaveLength(1);
+      expect(result.total).toBe(1);
+      expect(result.data[0].teamMemberships).toHaveLength(1);
+    });
+
+    it('should pass filters to service', async () => {
+      service.findAll.mockResolvedValue({ data: [], total: 0 });
+
+      await controller.list(makeAdmin(), {
+        page: 1,
+        limit: 20,
+        search: 'alice',
+        status: 'active',
+        teamId: 'team-1',
+      });
+      expect(service.findAll).toHaveBeenCalledWith('org-1', {
+        page: 1,
+        limit: 20,
+        search: 'alice',
+        status: 'active',
+        teamId: 'team-1',
+      });
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return user detail', async () => {
+      service.getUserDetail.mockResolvedValue(makeUserWithTeams());
+
+      const result = await controller.findOne('user-1', makeAdmin());
+      expect(result.email).toBe('alice@example.com');
+      expect(service.getUserDetail).toHaveBeenCalledWith('user-1', 'org-1');
+    });
+  });
+
+  describe('update', () => {
+    it('should pass adminId, userId, orgId, and dto', async () => {
+      service.updateUser.mockResolvedValue(makeUserWithTeams({ isAdmin: true }));
+
+      const admin = makeAdmin();
+      const result = await controller.update('user-1', admin, { isAdmin: true });
+      expect(result.isAdmin).toBe(true);
+      expect(service.updateUser).toHaveBeenCalledWith('admin-1', 'user-1', 'org-1', {
+        isAdmin: true,
+      });
+    });
+  });
+
+  describe('deactivate', () => {
+    it('should pass adminId and orgId', async () => {
+      service.deactivateUser.mockResolvedValue(undefined);
+
+      const result = await controller.deactivate('user-1', makeAdmin());
+      expect(result.message).toBe('User deactivated');
+      expect(service.deactivateUser).toHaveBeenCalledWith('admin-1', 'user-1', 'org-1');
+    });
+  });
+
+  describe('reactivate', () => {
+    it('should pass orgId', async () => {
+      service.reactivateUser.mockResolvedValue(undefined);
+
+      const result = await controller.reactivate('user-1', makeAdmin());
+      expect(result.message).toBe('User reactivated');
+      expect(service.reactivateUser).toHaveBeenCalledWith('user-1', 'org-1');
+    });
+  });
+});
