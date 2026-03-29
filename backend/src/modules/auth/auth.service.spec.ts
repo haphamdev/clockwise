@@ -5,11 +5,13 @@ import { createHash } from 'crypto';
 import { AppException } from '../../common/exceptions/app.exception';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { InvitationsService } from '../invitations/invitations.service';
 import { UserEntity, UserWithRefreshToken } from '../users/entities/user.entity';
 
 describe('AuthService', () => {
   let service: AuthService;
   let usersService: jest.Mocked<UsersService>;
+  let invitationsService: jest.Mocked<InvitationsService>;
   let jwtService: jest.Mocked<JwtService>;
 
   const mockUser: UserEntity = {
@@ -41,6 +43,12 @@ describe('AuthService', () => {
           },
         },
         {
+          provide: InvitationsService,
+          useValue: {
+            acceptByEmail: jest.fn(),
+          },
+        },
+        {
           provide: JwtService,
           useValue: {
             sign: jest.fn().mockReturnValue('mock-token'),
@@ -57,6 +65,7 @@ describe('AuthService', () => {
 
     service = module.get(AuthService);
     usersService = module.get(UsersService);
+    invitationsService = module.get(InvitationsService);
     jwtService = module.get(JwtService);
   });
 
@@ -79,7 +88,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('should activate pending users on first login', async () => {
+    it('should activate pending users and accept invitation on first login', async () => {
       const pendingUser = { ...mockUser, status: 'pending' as const };
       const activatedUser = { ...mockUser, status: 'active' as const };
       usersService.findByEmail.mockResolvedValue(pendingUser);
@@ -91,6 +100,10 @@ describe('AuthService', () => {
         name: profile.name,
         avatarUrl: profile.avatarUrl,
       });
+      expect(invitationsService.acceptByEmail).toHaveBeenCalledWith(
+        profile.email,
+        activatedUser.id,
+      );
       expect(result.status).toBe('active');
     });
 

@@ -47,9 +47,25 @@ describe('InvitationsController', () => {
       findAll: jest.fn(),
       revoke: jest.fn(),
       resend: jest.fn(),
+      validateTokenWithOrgName: jest.fn(),
     } as unknown as jest.Mocked<InvitationsService>;
 
     controller = new InvitationsController(service);
+  });
+
+  describe('validateToken', () => {
+    it('should return invitation details and org name (public, no auth)', async () => {
+      service.validateTokenWithOrgName.mockResolvedValue({
+        invitation: makeInvitation(),
+        orgName: 'Acme Corp',
+      });
+
+      const result = await controller.validateToken('abc123');
+      expect(result.email).toBe('new@example.com');
+      expect(result.orgName).toBe('Acme Corp');
+      expect(result.teamAssignments).toHaveLength(1);
+      expect(service.validateTokenWithOrgName).toHaveBeenCalledWith('abc123');
+    });
   });
 
   describe('create', () => {
