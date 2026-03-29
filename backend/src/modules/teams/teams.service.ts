@@ -4,7 +4,6 @@ import { TeamsRepository } from './teams.repository';
 import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
 import {
   TeamNotFoundException,
-  TeamAlreadyExistsException,
   TeamArchivedException,
   TeamLastManagerException,
   TeamMemberAlreadyExistsException,
@@ -56,11 +55,6 @@ export class TeamsService {
   }
 
   async create(orgId: string, data: { name: string; description?: string }): Promise<TeamEntity> {
-    const existing = await this.teamsRepository.findByName(orgId, data.name);
-    if (existing) {
-      throw new TeamAlreadyExistsException();
-    }
-
     return this.teamsRepository.create({ orgId, ...data });
   }
 
@@ -71,14 +65,6 @@ export class TeamsService {
   ): Promise<TeamEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
-
-    if (data.name && data.name !== team.name) {
-      const existing = await this.teamsRepository.findByName(orgId, data.name);
-      if (existing) {
-        throw new TeamAlreadyExistsException();
-      }
-    }
-
     return this.teamsRepository.update(teamId, data);
   }
 

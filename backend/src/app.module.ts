@@ -7,6 +7,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TeamsModule } from './modules/teams/teams.module';
 import { OrgModule } from './modules/org/org.module';
+import { MailModule } from './modules/mail/mail.module';
+import { InvitationsModule } from './modules/invitations/invitations.module';
 
 @Module({
   imports: [
@@ -15,10 +17,12 @@ import { OrgModule } from './modules/org/org.module';
     }),
     LoggerModule,
     PrismaModule,
+    MailModule,
     AuthModule,
     UsersModule,
     TeamsModule,
     OrgModule,
+    InvitationsModule,
     // Feature modules will be added here as they are implemented:
     // ProjectsModule, TasksModule, TimeLogsModule, ReportsModule
   ],

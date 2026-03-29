@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Team, TeamMember } from '@prisma/client';
+import { Prisma, Team, TeamMember } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { TeamAlreadyExistsException } from '../../common/exceptions/team.exceptions';
 import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
 
 type TeamMemberWithUser = TeamMember & {
@@ -88,21 +89,28 @@ export class TeamsRepository {
     return team ? this.toEntity(team) : null;
   }
 
-  async findByName(orgId: string, name: string): Promise<TeamEntity | null> {
-    const team = await this.prisma.team.findUnique({
-      where: { orgId_name: { orgId, name } },
-    });
-    return team ? this.toEntity(team) : null;
-  }
-
   async create(data: { orgId: string; name: string; description?: string }): Promise<TeamEntity> {
-    const team = await this.prisma.team.create({ data });
-    return this.toEntity(team);
+    try {
+      const team = await this.prisma.team.create({ data });
+      return this.toEntity(team);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new TeamAlreadyExistsException();
+      }
+      throw error;
+    }
   }
 
   async update(id: string, data: { name?: string; description?: string }): Promise<TeamEntity> {
-    const team = await this.prisma.team.update({ where: { id }, data });
-    return this.toEntity(team);
+    try {
+      const team = await this.prisma.team.update({ where: { id }, data });
+      return this.toEntity(team);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new TeamAlreadyExistsException();
+      }
+      throw error;
+    }
   }
 
   async archive(id: string): Promise<TeamEntity> {

@@ -1,0 +1,92 @@
+import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
+import { AdminOnly } from '../../common/decorators/auth.decorators';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UserEntity } from '../users/entities/user.entity';
+import { InvitationsService } from './invitations.service';
+import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { ListInvitationsQueryDto } from './dto/list-invitations-query.dto';
+import {
+  InvitationResponseDto,
+  InvitationListResponseDto,
+} from './dto/invitation-response.dto';
+import { InvitationEntity } from './entities/invitation.entity';
+
+@ApiTags('Invitations')
+@Controller('invitations')
+export class InvitationsController {
+  constructor(private readonly invitationsService: InvitationsService) {}
+
+  @Post()
+  @AdminOnly()
+  @ApiOperation({ summary: 'Send an invitation' })
+  @ApiCreatedResponse({ type: InvitationResponseDto })
+  async create(
+    @CurrentUser() user: UserEntity,
+    @Body() dto: CreateInvitationDto,
+  ): Promise<InvitationResponseDto> {
+    const invitation = await this.invitationsService.create(user.orgId, user.id, dto);
+    return this.toResponse(invitation);
+  }
+
+  @Get()
+  @AdminOnly()
+  @ApiOperation({ summary: 'List invitations' })
+  @ApiOkResponse({ type: InvitationListResponseDto })
+  async list(
+    @CurrentUser() user: UserEntity,
+    @Query() query: ListInvitationsQueryDto,
+  ): Promise<InvitationListResponseDto> {
+    const { data, total } = await this.invitationsService.findAll(user.orgId, {
+      page: query.page ?? 1,
+      limit: query.limit ?? 20,
+      status: query.status,
+    });
+
+    return {
+      data: data.map((i) => this.toResponse(i)),
+      total,
+      page: query.page ?? 1,
+      limit: query.limit ?? 20,
+    };
+  }
+
+  @Delete(':id')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Revoke an invitation' })
+  async revoke(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<{ message: string }> {
+    await this.invitationsService.revoke(id, user.orgId);
+    return { message: 'Invitation revoked' };
+  }
+
+  @Post(':id/resend')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Resend an invitation' })
+  @ApiOkResponse({ type: InvitationResponseDto })
+  async resend(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<InvitationResponseDto> {
+    const invitation = await this.invitationsService.resend(id, user.orgId);
+    return this.toResponse(invitation);
+  }
+
+  private toResponse(invitation: InvitationEntity): InvitationResponseDto {
+    return {
+      id: invitation.id,
+      email: invitation.email,
+      invitedByName: invitation.invitedByName,
+      status: invitation.status,
+      expiresAt: invitation.expiresAt,
+      createdAt: invitation.createdAt,
+      teamAssignments: invitation.teamAssignments.map((ta) => ({
+        teamId: ta.teamId,
+        teamName: ta.teamName,
+        role: ta.role,
+      })),
+    };
+  }
+}
