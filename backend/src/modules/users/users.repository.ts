@@ -30,6 +30,13 @@ export class UsersRepository {
     return user ? this.toEntityWithTeams(user) : null;
   }
 
+  async createPendingUser(orgId: string, email: string): Promise<UserEntity> {
+    const user = await this.prisma.user.create({
+      data: { orgId, email, name: email, status: 'pending' },
+    });
+    return this.toEntity(user);
+  }
+
   async updateRefreshToken(userId: string, hashedToken: string | null): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },

@@ -100,16 +100,20 @@ export class InvitationsRepository {
 
   async findPendingByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { orgId, email, status: 'pending' },
+      where: { orgId, email, status: 'pending', expiresAt: { gt: new Date() } },
       include: INVITATION_INCLUDE,
     });
 
     return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
   }
 
+  /**
+   * Finds a pending, non-expired invitation by email without org scoping.
+   * Used during OAuth callback where only the email is known.
+   */
   async findPendingByEmailAnyOrg(email: string): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { email, status: 'pending' },
+      where: { email, status: 'pending', expiresAt: { gt: new Date() } },
       include: INVITATION_INCLUDE,
     });
 

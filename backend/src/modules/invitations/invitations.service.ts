@@ -13,6 +13,7 @@ import {
 import { InvitationsRepository } from './invitations.repository';
 import { UsersService } from '../users/users.service';
 import { TeamsService } from '../teams/teams.service';
+import { OrgService } from '../org/org.service';
 import { MailService } from '../mail/mail.service';
 import { InvitationEntity } from './entities/invitation.entity';
 
@@ -24,6 +25,7 @@ export class InvitationsService {
     private readonly invitationsRepository: InvitationsRepository,
     private readonly usersService: UsersService,
     private readonly teamsService: TeamsService,
+    private readonly orgService: OrgService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
   ) {}
@@ -46,11 +48,16 @@ export class InvitationsService {
       throw new InvitationEmailAlreadyInvitedException();
     }
 
-    await this.validateTeamAssignments(orgId, invitedBy, data.teamAssignments);
+    await this.validateTeamAssignments(orgId, data.teamAssignments);
 
     const token = randomBytes(32).toString('hex');
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
+
+    // Create a pending User record so OAuth can find them by email on first login
+    if (!existingUser) {
+      await this.usersService.createPendingUser(orgId, data.email);
+    }
 
     const invitation = await this.invitationsRepository.create({
       orgId,
@@ -61,7 +68,7 @@ export class InvitationsService {
       teamAssignments: data.teamAssignments,
     });
 
-    await this.sendInvitationEmail(invitation);
+    await this.sendInvitationEmail(orgId, invitation);
 
     return invitation;
   }
@@ -106,7 +113,7 @@ export class InvitationsService {
       expiresAt,
     );
 
-    await this.sendInvitationEmail(updated);
+    await this.sendInvitationEmail(orgId, updated);
 
     return updated;
   }
@@ -131,6 +138,8 @@ export class InvitationsService {
   }
 
   async acceptByEmail(email: string): Promise<void> {
+    // Cross-org lookup: during OAuth callback we only have the email, not the orgId.
+    // Safe in single-tenant mode; in multi-tenant this would need scoping.
     const invitation = await this.invitationsRepository.findPendingByEmailAnyOrg(email);
     if (!invitation) {
       return;
@@ -152,21 +161,21 @@ export class InvitationsService {
 
   private async validateTeamAssignments(
     orgId: string,
-    userId: string,
     assignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
   ): Promise<void> {
     for (const assignment of assignments) {
       try {
-        await this.teamsService.findById(assignment.teamId, userId, true);
+        await this.teamsService.validateTeamExists(assignment.teamId, orgId);
       } catch {
         throw new InvitationInvalidTeamAssignmentException();
       }
     }
   }
 
-  private async sendInvitationEmail(invitation: InvitationEntity): Promise<void> {
+  private async sendInvitationEmail(orgId: string, invitation: InvitationEntity): Promise<void> {
+    const orgSettings = await this.orgService.getSettings(orgId);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
     const inviteUrl = `${frontendUrl}/invite/${invitation.token}`;
-    await this.mailService.sendInvitationEmail(invitation.email, inviteUrl, '');
+    await this.mailService.sendInvitationEmail(invitation.email, inviteUrl, orgSettings.orgName);
   }
 }
