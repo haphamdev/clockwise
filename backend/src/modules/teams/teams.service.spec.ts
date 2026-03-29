@@ -79,7 +79,6 @@ describe('TeamsService', () => {
       findAllForUser: jest.fn(),
       findById: jest.fn(),
       findEntityById: jest.fn(),
-      findByName: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       archive: jest.fn(),
@@ -164,7 +163,6 @@ describe('TeamsService', () => {
 
   describe('create', () => {
     it('should create a team', async () => {
-      repo.findByName.mockResolvedValue(null);
       const team = makeTeam();
       repo.create.mockResolvedValue(team);
 
@@ -173,8 +171,11 @@ describe('TeamsService', () => {
       expect(repo.create).toHaveBeenCalledWith({ orgId: 'org-1', name: 'Engineering' });
     });
 
-    it('should throw ALREADY_EXISTS for duplicate name', async () => {
-      repo.findByName.mockResolvedValue(makeTeam());
+    it('should propagate ALREADY_EXISTS from repository on duplicate name', async () => {
+      const { TeamAlreadyExistsException } = await import(
+        '../../common/exceptions/team.exceptions'
+      );
+      repo.create.mockRejectedValue(new TeamAlreadyExistsException());
 
       await expect(service.create('org-1', { name: 'Engineering' })).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ALREADY_EXISTS }),
@@ -183,22 +184,13 @@ describe('TeamsService', () => {
   });
 
   describe('update', () => {
-    it('should update team name', async () => {
+    it('should update team', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam());
-      repo.findByName.mockResolvedValue(null);
       const updated = makeTeam({ name: 'Platform' });
       repo.update.mockResolvedValue(updated);
 
       const res = await service.update('team-1', 'org-1', { name: 'Platform' });
       expect(res).toEqual(updated);
-    });
-
-    it('should update description only without name check', async () => {
-      repo.findEntityById.mockResolvedValue(makeTeam());
-      repo.update.mockResolvedValue(makeTeam({ description: 'Updated' }));
-
-      await service.update('team-1', 'org-1', { description: 'Updated' });
-      expect(repo.findByName).not.toHaveBeenCalled();
     });
 
     it('should throw ARCHIVED for archived team', async () => {
@@ -209,21 +201,16 @@ describe('TeamsService', () => {
       );
     });
 
-    it('should throw ALREADY_EXISTS when renaming to existing name', async () => {
-      repo.findEntityById.mockResolvedValue(makeTeam({ name: 'Old' }));
-      repo.findByName.mockResolvedValue(makeTeam({ name: 'Taken' }));
+    it('should propagate ALREADY_EXISTS from repository on duplicate name', async () => {
+      const { TeamAlreadyExistsException } = await import(
+        '../../common/exceptions/team.exceptions'
+      );
+      repo.findEntityById.mockResolvedValue(makeTeam());
+      repo.update.mockRejectedValue(new TeamAlreadyExistsException());
 
       await expect(service.update('team-1', 'org-1', { name: 'Taken' })).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ALREADY_EXISTS }),
       );
-    });
-
-    it('should skip name uniqueness check when name unchanged', async () => {
-      repo.findEntityById.mockResolvedValue(makeTeam({ name: 'Same' }));
-      repo.update.mockResolvedValue(makeTeam({ name: 'Same', description: 'Updated' }));
-
-      await service.update('team-1', 'org-1', { name: 'Same', description: 'Updated' });
-      expect(repo.findByName).not.toHaveBeenCalled();
     });
 
     it('should throw NOT_FOUND for team in different org', async () => {
