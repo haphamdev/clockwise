@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TeamsModule } from './modules/teams/teams.module';
+import { OrgModule } from './modules/org/org.module';
 
 @Module({
   imports: [
@@ -17,9 +18,9 @@ import { TeamsModule } from './modules/teams/teams.module';
     AuthModule,
     UsersModule,
     TeamsModule,
+    OrgModule,
     // Feature modules will be added here as they are implemented:
-    // ProjectsModule, TasksModule, TimeLogsModule,
-    // ReportsModule, OrgModule
+    // ProjectsModule, TasksModule, TimeLogsModule, ReportsModule
   ],
   controllers: [AppController],
 })
