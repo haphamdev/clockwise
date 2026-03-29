@@ -10,12 +10,32 @@ import {
   InvitationResponseDto,
   InvitationListResponseDto,
 } from './dto/invitation-response.dto';
+import { ValidateInvitationResponseDto } from './dto/validate-invitation-response.dto';
 import { InvitationEntity } from './entities/invitation.entity';
 
 @ApiTags('Invitations')
 @Controller('invitations')
 export class InvitationsController {
   constructor(private readonly invitationsService: InvitationsService) {}
+
+  @Get('validate/:token')
+  @ApiOperation({ summary: 'Validate an invitation token (public, no auth)' })
+  @ApiOkResponse({ type: ValidateInvitationResponseDto })
+  async validateToken(
+    @Param('token') token: string,
+  ): Promise<ValidateInvitationResponseDto> {
+    const { invitation, orgName } = await this.invitationsService.validateTokenWithOrgName(token);
+    return {
+      email: invitation.email,
+      orgName,
+      expiresAt: invitation.expiresAt,
+      teamAssignments: invitation.teamAssignments.map((ta) => ({
+        teamId: ta.teamId,
+        teamName: ta.teamName,
+        role: ta.role,
+      })),
+    };
+  }
 
   @Post()
   @AdminOnly()
@@ -81,6 +101,7 @@ export class InvitationsController {
       invitedByName: invitation.invitedByName,
       status: invitation.status,
       expiresAt: invitation.expiresAt,
+      isExpired: invitation.status === 'pending' && new Date() > invitation.expiresAt,
       createdAt: invitation.createdAt,
       teamAssignments: invitation.teamAssignments.map((ta) => ({
         teamId: ta.teamId,

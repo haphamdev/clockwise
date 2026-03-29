@@ -137,15 +137,26 @@ export class InvitationsService {
     return invitation;
   }
 
-  async acceptByEmail(email: string): Promise<void> {
-    // Cross-org lookup: during OAuth callback we only have the email, not the orgId.
-    // Safe in single-tenant mode; in multi-tenant this would need scoping.
+  async validateTokenWithOrgName(token: string): Promise<{
+    invitation: InvitationEntity;
+    orgName: string;
+  }> {
+    const invitation = await this.validateToken(token);
+    const orgSettings = await this.orgService.getSettings(invitation.orgId);
+    return { invitation, orgName: orgSettings.orgName };
+  }
+
+  /**
+   * Called during OAuth activation to accept the invitation and create team memberships.
+   * Uses email-based lookup since orgId is not available during the OAuth callback.
+   */
+  async acceptByEmail(email: string, userId: string): Promise<void> {
     const invitation = await this.invitationsRepository.findPendingByEmailAnyOrg(email);
     if (!invitation) {
       return;
     }
 
-    await this.invitationsRepository.updateStatus(invitation.id, 'accepted');
+    await this.invitationsRepository.acceptInvitation(invitation.id, userId);
   }
 
   private async getInvitationOrThrow(

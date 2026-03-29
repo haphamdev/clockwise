@@ -44,6 +44,7 @@ describe('InvitationsService', () => {
       findPendingByEmail: jest.fn(),
       findPendingByEmailAnyOrg: jest.fn(),
       updateStatus: jest.fn(),
+      acceptInvitation: jest.fn(),
       updateTokenAndExpiry: jest.fn(),
     } as unknown as jest.Mocked<InvitationsRepository>;
 
@@ -290,19 +291,30 @@ describe('InvitationsService', () => {
   });
 
   describe('acceptByEmail', () => {
-    it('should mark invitation as accepted', async () => {
+    it('should accept invitation and create team memberships', async () => {
       repo.findPendingByEmailAnyOrg.mockResolvedValue(makeInvitation());
-      repo.updateStatus.mockResolvedValue(undefined);
+      repo.acceptInvitation.mockResolvedValue(undefined);
 
-      await service.acceptByEmail('new@example.com');
-      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'accepted');
+      await service.acceptByEmail('new@example.com', 'user-1');
+      expect(repo.acceptInvitation).toHaveBeenCalledWith('inv-1', 'user-1');
     });
 
     it('should do nothing when no pending invitation', async () => {
       repo.findPendingByEmailAnyOrg.mockResolvedValue(null);
 
-      await service.acceptByEmail('unknown@example.com');
-      expect(repo.updateStatus).not.toHaveBeenCalled();
+      await service.acceptByEmail('unknown@example.com', 'user-1');
+      expect(repo.acceptInvitation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('validateTokenWithOrgName', () => {
+    it('should return invitation and org name', async () => {
+      const invitation = makeInvitation();
+      repo.findByToken.mockResolvedValue(invitation);
+
+      const res = await service.validateTokenWithOrgName('abc123');
+      expect(res.invitation).toEqual(invitation);
+      expect(res.orgName).toBe('Acme Corp');
     });
   });
 });

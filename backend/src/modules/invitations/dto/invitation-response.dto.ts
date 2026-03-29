@@ -27,6 +27,9 @@ export class InvitationResponseDto {
   @ApiProperty()
   expiresAt: Date;
 
+  @ApiProperty({ description: 'True if status is pending but expiresAt is in the past' })
+  isExpired: boolean;
+
   @ApiProperty()
   createdAt: Date;
 

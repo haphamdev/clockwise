@@ -9,6 +9,7 @@ import {
   AccountNotActiveException,
 } from '../../common/exceptions/auth.exceptions';
 import { UsersService } from '../users/users.service';
+import { InvitationsService } from '../invitations/invitations.service';
 import { UserEntity } from '../users/entities/user.entity';
 
 export interface OAuthProfile {
@@ -27,6 +28,7 @@ export interface JwtPayload {
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly invitationsService: InvitationsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -43,10 +45,15 @@ export class AuthService {
     }
 
     if (user.status === 'pending') {
-      return this.usersService.activateUser(user.id, {
+      const activatedUser = await this.usersService.activateUser(user.id, {
         name: profile.name,
         avatarUrl: profile.avatarUrl,
       });
+
+      // Accept invitation and create team memberships
+      await this.invitationsService.acceptByEmail(profile.email, activatedUser.id);
+
+      return activatedUser;
     }
 
     await this.usersService.updateLastLogin(user.id);

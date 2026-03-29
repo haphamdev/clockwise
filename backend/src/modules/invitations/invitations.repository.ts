@@ -127,6 +127,33 @@ export class InvitationsRepository {
     });
   }
 
+  /**
+   * Marks invitation as accepted and creates TeamMember rows from team assignments.
+   * Runs in a transaction to ensure atomicity.
+   */
+  async acceptInvitation(invitationId: string, userId: string): Promise<void> {
+    const invitation = await this.prisma.invitation.findUnique({
+      where: { id: invitationId },
+      include: { teamAssignments: true },
+    });
+
+    if (!invitation) return;
+
+    await this.prisma.$transaction([
+      this.prisma.invitation.update({
+        where: { id: invitationId },
+        data: { status: 'accepted' },
+      }),
+      ...invitation.teamAssignments.map((ta) =>
+        this.prisma.teamMember.upsert({
+          where: { teamId_userId: { teamId: ta.teamId, userId } },
+          create: { teamId: ta.teamId, userId, role: ta.role },
+          update: { role: ta.role },
+        }),
+      ),
+    ]);
+  }
+
   async updateTokenAndExpiry(id: string, token: string, expiresAt: Date): Promise<InvitationEntity> {
     const invitation = await this.prisma.invitation.update({
       where: { id },
