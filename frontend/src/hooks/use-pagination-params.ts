@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react';
 
 interface UsePaginationParamsOptions {
   defaultLimit?: number;
-  paramKeys?: Record<string, string>;
 }
 
 export function usePaginationParams(options: UsePaginationParamsOptions = {}) {

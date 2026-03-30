@@ -10,6 +10,9 @@ import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { TeamsPage } from '@/pages/admin/teams-page';
 import { TeamDetailPage } from '@/pages/admin/team-detail-page';
 import { UsersPage } from '@/pages/admin/users-page';
+import { InvitationsPage } from '@/pages/admin/invitations-page';
+import { OrgSettingsPage } from '@/pages/admin/org-settings-page';
+import { InviteLandingPage } from '@/pages/invite-landing-page';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -31,7 +34,7 @@ export default function App() {
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/invite/:token" element={<PlaceholderPage title="Invite" />} />
+            <Route path="/invite/:token" element={<InviteLandingPage />} />
 
             {/* Authenticated routes with layout */}
             <Route
@@ -75,7 +78,7 @@ export default function App() {
                 path="/admin/invitations"
                 element={
                   <AdminRoute>
-                    <PlaceholderPage title="Invitations" />
+                    <InvitationsPage />
                   </AdminRoute>
                 }
               />
@@ -83,7 +86,7 @@ export default function App() {
                 path="/admin/settings"
                 element={
                   <AdminRoute>
-                    <PlaceholderPage title="Org Settings" />
+                    <OrgSettingsPage />
                   </AdminRoute>
                 }
               />
