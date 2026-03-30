@@ -4,6 +4,8 @@ import { SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+const filterRowClasses = 'flex flex-wrap items-end gap-4';
+
 interface FilterBarProps {
   children: React.ReactNode;
   collapsible?: boolean;
@@ -19,9 +21,7 @@ export function FilterBar({
 
   if (!collapsible) {
     return (
-      <div className={cn('flex flex-wrap items-end gap-4', className)}>
-        {children}
-      </div>
+      <div className={cn(filterRowClasses, className)}>{children}</div>
     );
   }
 
@@ -36,9 +36,7 @@ export function FilterBar({
         <SlidersHorizontal className="h-4 w-4" />
         Filters
       </Button>
-      {open && (
-        <div className="flex flex-wrap items-end gap-4">{children}</div>
-      )}
+      {open && <div className={filterRowClasses}>{children}</div>}
     </div>
   );
 }

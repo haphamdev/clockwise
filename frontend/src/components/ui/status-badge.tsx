@@ -11,6 +11,8 @@ const statusConfig = {
 
 export type Status = keyof typeof statusConfig;
 
+export const STATUS_VALUES = Object.keys(statusConfig) as Status[];
+
 interface StatusBadgeProps {
   status: Status;
   className?: string;
