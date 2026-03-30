@@ -10,7 +10,8 @@ const preview: Preview = {
       },
     },
     darkMode: {
-      classTarget: 'html',
+      current: 'dark',
+      classTarget: 'body',
       darkClass: 'dark',
       lightClass: 'light',
       stylePreview: true,

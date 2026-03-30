@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Plus } from 'lucide-react';
+import { MemoryRouter } from 'react-router-dom';
 
 import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,13 @@ import { Button } from '@/components/ui/button';
 const meta: Meta<typeof PageHeader> = {
   title: 'UI/PageHeader',
   component: PageHeader,
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 };
 
 export default meta;
