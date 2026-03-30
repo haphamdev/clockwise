@@ -2,16 +2,22 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+const defaultCardStyle: React.CSSProperties = {
+  border: "var(--border-card)",
+  boxShadow: "var(--shadow)",
+}
+
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+>(({ className, style, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "rounded-lg bg-card text-card-foreground hover:[background:var(--gradient-hover)] [background:var(--gradient)]",
       className
     )}
+    style={style ? { ...defaultCardStyle, ...style } : defaultCardStyle}
     {...props}
   />
 ))
