@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
   --bg-dark: oklch(0.1 0.035 185);
@@ -94,6 +95,16 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Restore Tailwind's default container max-widths.
+     Custom --spacing-{xs,sm,md,lg,xl} tokens shadow the --container-* defaults
+     because Tailwind v4 resolves max-w-* as: --max-width → --spacing → --container.
+     Defining --max-width-* (highest priority) prevents the conflict. */
+  --max-width-xs: 20rem;
+  --max-width-sm: 24rem;
+  --max-width-md: 28rem;
+  --max-width-lg: 32rem;
+  --max-width-xl: 36rem;
 }
 
 body {
