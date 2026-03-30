@@ -7,6 +7,9 @@ import { AdminRoute } from '@/components/admin-route';
 import { AppLayout } from '@/components/layout/app-layout';
 import { LoginPage } from '@/pages/LoginPage';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
+import { TeamsPage } from '@/pages/admin/teams-page';
+import { TeamDetailPage } from '@/pages/admin/team-detail-page';
+import { UsersPage } from '@/pages/admin/users-page';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -48,7 +51,7 @@ export default function App() {
                 path="/admin/teams"
                 element={
                   <AdminRoute>
-                    <PlaceholderPage title="Teams" />
+                    <TeamsPage />
                   </AdminRoute>
                 }
               />
@@ -56,7 +59,7 @@ export default function App() {
                 path="/admin/teams/:id"
                 element={
                   <AdminRoute>
-                    <PlaceholderPage title="Team Detail" />
+                    <TeamDetailPage />
                   </AdminRoute>
                 }
               />
@@ -64,7 +67,7 @@ export default function App() {
                 path="/admin/users"
                 element={
                   <AdminRoute>
-                    <PlaceholderPage title="Users" />
+                    <UsersPage />
                   </AdminRoute>
                 }
               />
