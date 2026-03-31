@@ -56,7 +56,7 @@ export class InvitationsService {
 
     // Create a pending User record so OAuth can find them by email on first login
     if (!existingUser) {
-      await this.usersService.createPendingUser(orgId, data.email);
+      await this.usersService.createPendingUser(orgId, data.email, invitedBy);
     }
 
     const invitation = await this.invitationsRepository.create({

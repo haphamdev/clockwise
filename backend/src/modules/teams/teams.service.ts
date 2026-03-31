@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { TeamsRepository } from './teams.repository';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
 import {
   TeamNotFoundException,
@@ -18,6 +19,7 @@ export class TeamsService {
   constructor(
     private readonly teamsRepository: TeamsRepository,
     private readonly usersService: UsersService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async findAll(
@@ -55,30 +57,85 @@ export class TeamsService {
     return team;
   }
 
-  async create(orgId: string, data: { name: string; description?: string }): Promise<TeamEntity> {
-    return this.teamsRepository.create({ orgId, ...data });
+  async create(
+    orgId: string,
+    data: { name: string; description?: string },
+    performedBy: string,
+  ): Promise<TeamEntity> {
+    const team = await this.teamsRepository.create({ orgId, ...data });
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'team',
+      entityId: team.id,
+      action: 'created',
+      performedBy,
+      metadata: { after: { name: team.name, description: team.description } },
+    });
+    return team;
   }
 
   async update(
     teamId: string,
     orgId: string,
     data: { name?: string; description?: string },
+    performedBy: string,
   ): Promise<TeamEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
-    return this.teamsRepository.update(teamId, data);
+    const updated = await this.teamsRepository.update(teamId, data);
+
+    const before: Record<string, unknown> = {};
+    const after: Record<string, unknown> = {};
+    if (data.name !== undefined && data.name !== team.name) {
+      before.name = team.name;
+      after.name = data.name;
+    }
+    if (data.description !== undefined && data.description !== team.description) {
+      before.description = team.description;
+      after.description = data.description;
+    }
+    if (Object.keys(after).length > 0) {
+      await this.auditLogService.log({
+        orgId,
+        entityType: 'team',
+        entityId: teamId,
+        action: 'updated',
+        performedBy,
+        metadata: { before, after },
+      });
+    }
+
+    return updated;
   }
 
-  async archive(teamId: string, orgId: string): Promise<TeamEntity> {
+  async archive(teamId: string, orgId: string, performedBy: string): Promise<TeamEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
-    return this.teamsRepository.archive(teamId);
+    const updated = await this.teamsRepository.archive(teamId);
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'team',
+      entityId: teamId,
+      action: 'archived',
+      performedBy,
+      metadata: { before: { isArchived: false }, after: { isArchived: true } },
+    });
+    return updated;
   }
 
-  async unarchive(teamId: string, orgId: string): Promise<TeamEntity> {
+  async unarchive(teamId: string, orgId: string, performedBy: string): Promise<TeamEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureArchived(team);
-    return this.teamsRepository.unarchive(teamId);
+    const updated = await this.teamsRepository.unarchive(teamId);
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'team',
+      entityId: teamId,
+      action: 'unarchived',
+      performedBy,
+      metadata: { before: { isArchived: true }, after: { isArchived: false } },
+    });
+    return updated;
   }
 
   async addMember(
@@ -86,6 +143,7 @@ export class TeamsService {
     orgId: string,
     userId: string,
     role: 'manager' | 'member',
+    performedBy: string,
   ): Promise<TeamMemberEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
@@ -100,7 +158,13 @@ export class TeamsService {
       throw new TeamMemberAlreadyExistsException();
     }
 
-    return this.teamsRepository.addMember(teamId, userId, role);
+    const member = await this.teamsRepository.addMember(teamId, userId, role);
+    const meta = { after: { userId, userName: user.name, role, teamId, teamName: team.name } };
+    await this.auditLogService.logMany([
+      { orgId, entityType: 'team', entityId: teamId, action: 'member_added', performedBy, metadata: meta },
+      { orgId, entityType: 'user', entityId: userId, action: 'member_added', performedBy, metadata: meta },
+    ]);
+    return member;
   }
 
   async updateMemberRole(
@@ -108,6 +172,7 @@ export class TeamsService {
     orgId: string,
     userId: string,
     role: 'manager' | 'member',
+    performedBy: string,
   ): Promise<TeamMemberEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
@@ -121,10 +186,24 @@ export class TeamsService {
       await this.ensureNotLastManager(teamId);
     }
 
-    return this.teamsRepository.updateMemberRole(teamId, userId, role);
+    const updated = await this.teamsRepository.updateMemberRole(teamId, userId, role);
+    const meta = {
+      before: { userId, userName: member.userName, role: member.role, teamId, teamName: team.name },
+      after: { userId, userName: member.userName, role, teamId, teamName: team.name },
+    };
+    await this.auditLogService.logMany([
+      { orgId, entityType: 'team', entityId: teamId, action: 'role_changed', performedBy, metadata: meta },
+      { orgId, entityType: 'user', entityId: userId, action: 'role_changed', performedBy, metadata: meta },
+    ]);
+    return updated;
   }
 
-  async removeMember(teamId: string, orgId: string, userId: string): Promise<void> {
+  async removeMember(
+    teamId: string,
+    orgId: string,
+    userId: string,
+    performedBy: string,
+  ): Promise<void> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
 
@@ -138,6 +217,11 @@ export class TeamsService {
     }
 
     await this.teamsRepository.removeMember(teamId, userId);
+    const meta = { before: { userId, userName: member.userName, role: member.role, teamId, teamName: team.name } };
+    await this.auditLogService.logMany([
+      { orgId, entityType: 'team', entityId: teamId, action: 'member_removed', performedBy, metadata: meta },
+      { orgId, entityType: 'user', entityId: userId, action: 'member_removed', performedBy, metadata: meta },
+    ]);
   }
 
   /**

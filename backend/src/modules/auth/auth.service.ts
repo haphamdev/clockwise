@@ -48,7 +48,7 @@ export class AuthService {
       const activatedUser = await this.usersService.activateUser(user.id, {
         name: profile.name,
         avatarUrl: profile.avatarUrl,
-      });
+      }, 'system');
 
       // Accept invitation and create team memberships
       await this.invitationsService.acceptByEmail(profile.email, activatedUser.id);

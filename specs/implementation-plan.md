@@ -34,21 +34,21 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### Epic 2: Organization & Team Management
+### Epic 2: Organization & Team Management ✅
 
-#### US-5: Invite Users
+#### US-5: Invite Users ✅
 > As an **Admin**, I want to invite users by email with pre-assigned team(s) and role(s), so that they can join the org on first login.
 
-#### US-6: Accept Invitation
+#### US-6: Accept Invitation ✅
 > As an **invited user**, I want to click the invitation link and sign in with Google to activate my account with the pre-assigned teams and roles.
 
-#### US-7: Manage Users
+#### US-7: Manage Users ✅
 > As an **Admin**, I want to list, view, deactivate, and reactivate users, so that I can control who has access to the system.
 
-#### US-8: Manage Teams
+#### US-8: Manage Teams ✅
 > As an **Admin**, I want to create, edit, and archive teams, and add/remove members with Manager or Member roles, so that the org structure is maintained.
 
-#### US-9: Admin Panel — Org Settings
+#### US-9: Admin Panel — Org Settings ✅
 > As an **Admin**, I want to configure org-level settings (expected hours/week, warning thresholds, date format, CSV max rows), so that the app behaves according to our policies.
 
 ---
@@ -440,7 +440,7 @@ Phase 0 — DevOps & Test Infrastructure (US-0a → US-0b) ✅
 Phase 1 — Foundation (US-1 → US-4) ✅
   Seed DB, Google OAuth, JWT sessions, role guards.
 
-Phase 2 — Admin & Teams (US-5 → US-9)
+Phase 2 — Admin & Teams (US-5 → US-9) ✅
   Invitations, user/team management, org settings.
 
 Phase 3 — Projects (US-10 → US-12)

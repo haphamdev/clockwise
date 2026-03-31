@@ -186,6 +186,14 @@ export class UsersRepository {
     ]);
   }
 
+  async findTeamNames(teamIds: string[]): Promise<Map<string, string>> {
+    const teams = await this.prisma.team.findMany({
+      where: { id: { in: teamIds } },
+      select: { id: true, name: true },
+    });
+    return new Map(teams.map((t) => [t.id, t.name]));
+  }
+
   async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },

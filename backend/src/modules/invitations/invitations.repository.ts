@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Invitation, InvitationTeamAssignment } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import {
   InvitationEntity,
   InvitationTeamAssignmentEntity,
@@ -24,7 +25,10 @@ const INVITATION_INCLUDE = {
 
 @Injectable()
 export class InvitationsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLogService: AuditLogService,
+  ) {}
 
   async create(data: {
     orgId: string;
@@ -134,24 +138,47 @@ export class InvitationsRepository {
   async acceptInvitation(invitationId: string, userId: string): Promise<void> {
     const invitation = await this.prisma.invitation.findUnique({
       where: { id: invitationId },
-      include: { teamAssignments: true },
+      include: {
+        teamAssignments: {
+          include: { team: { select: { id: true, name: true } } },
+        },
+      },
     });
 
     if (!invitation) return;
 
-    await this.prisma.$transaction([
-      this.prisma.invitation.update({
+    await this.prisma.$transaction(async (tx) => {
+      await tx.invitation.update({
         where: { id: invitationId },
         data: { status: 'accepted' },
-      }),
-      ...invitation.teamAssignments.map((ta) =>
-        this.prisma.teamMember.upsert({
+      });
+
+      for (const ta of invitation.teamAssignments) {
+        await tx.teamMember.upsert({
           where: { teamId_userId: { teamId: ta.teamId, userId } },
           create: { teamId: ta.teamId, userId, role: ta.role },
           update: { role: ta.role },
-        }),
-      ),
-    ]);
+        });
+      }
+
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { name: true },
+      });
+      const userName = user?.name ?? invitation.email;
+
+      const auditInputs = invitation.teamAssignments.flatMap((ta) => {
+        const meta = {
+          after: { userId, userName, role: ta.role, teamId: ta.team.id, teamName: ta.team.name },
+        };
+        return [
+          { orgId: invitation.orgId, entityType: 'team' as const, entityId: ta.team.id, action: 'member_added', performedBy: 'system', metadata: meta },
+          { orgId: invitation.orgId, entityType: 'user' as const, entityId: userId, action: 'member_added', performedBy: 'system', metadata: meta },
+        ];
+      });
+
+      await this.auditLogService.logInTransaction(tx, auditInputs);
+    });
   }
 
   async updateTokenAndExpiry(id: string, token: string, expiresAt: Date): Promise<InvitationEntity> {

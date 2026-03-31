@@ -9,6 +9,7 @@ import { TeamsModule } from './modules/teams/teams.module';
 import { OrgModule } from './modules/org/org.module';
 import { MailModule } from './modules/mail/mail.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
+import { AuditLogModule } from './modules/audit-log/audit-log.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
     TeamsModule,
     OrgModule,
     InvitationsModule,
+    AuditLogModule,
     // Feature modules will be added here as they are implemented:
     // ProjectsModule, TasksModule, TimeLogsModule, ReportsModule
   ],

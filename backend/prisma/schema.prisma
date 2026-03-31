@@ -44,6 +44,7 @@ model Organization {
   teams       Team[]
   projects    Project[]
   invitations Invitation[]
+  auditLogs   AuditLog[]
 
   @@map("organization")
 }
@@ -202,4 +203,22 @@ model InvitationTeamAssignment {
 
   @@unique([invitationId, teamId])
   @@map("invitation_team_assignment")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  orgId       String   @map("org_id")
+  entityType  String   @map("entity_type") @db.VarChar(50)
+  entityId    String   @map("entity_id")
+  action      String   @db.VarChar(50)
+  performedBy String   @map("performed_by")
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  org Organization @relation(fields: [orgId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([orgId, createdAt])
+  @@index([performedBy])
+  @@map("audit_log")
 }
