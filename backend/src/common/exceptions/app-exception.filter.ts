@@ -19,11 +19,14 @@ export class AppExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof AppException) {
       const status = exception.getStatus();
+      const body = exception.getResponse() as {
+        message: string | string[];
+      };
       response.status(status).json({
         statusCode: status,
         error: HttpStatus[status],
         code: exception.code,
-        message: exception.message,
+        message: body.message,
       });
       return;
     }
