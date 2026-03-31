@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Combobox } from '@/components/ui/combobox';
 import { FilterBar } from '@/components/ui/filter-bar';
 import { useTeams } from '@/lib/teams/use-teams';
 
@@ -40,6 +41,11 @@ export function UsersFilterBar({
     setLocalSearch(search);
   }, [search]);
 
+  const teamOptions = [
+    { value: 'all', label: 'All teams' },
+    ...(teamsData?.data.map((t) => ({ value: t.id, label: t.name })) ?? []),
+  ];
+
   return (
     <FilterBar>
       <div className="space-y-1.5">
@@ -67,19 +73,15 @@ export function UsersFilterBar({
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs">Team</Label>
-        <Select value={teamId || 'all'} onValueChange={(v) => onTeamChange(v === 'all' ? '' : v)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All teams</SelectItem>
-            {teamsData?.data.map((team) => (
-              <SelectItem key={team.id} value={team.id}>
-                {team.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Combobox
+          options={teamOptions}
+          value={teamId || 'all'}
+          onChange={(v) => onTeamChange(v === 'all' ? '' : v)}
+          placeholder="All teams"
+          searchPlaceholder="Search teams..."
+          emptyText="No teams found."
+          className="w-[180px]"
+        />
       </div>
     </FilterBar>
   );
