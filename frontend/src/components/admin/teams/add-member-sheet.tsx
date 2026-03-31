@@ -42,7 +42,7 @@ export function AddMemberSheet({
   const existingIds = new Set(existingMembers.map((m) => m.userId));
   const userOptions =
     usersData?.data
-      .filter((u) => !existingIds.has(u.id))
+      .filter((u) => u.status === 'active' && !existingIds.has(u.id))
       .map((u) => ({ value: u.id, label: `${u.name} (${u.email})` })) ?? [];
 
   const handleSubmit = (e: React.FormEvent) => {

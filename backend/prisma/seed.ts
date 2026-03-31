@@ -3,12 +3,12 @@ import * as crypto from 'crypto';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_ORG_ID = '00000000-0000-0000-0000-000000000001';
+const DEFAULT_ORG_ID = '00000000-0000-4000-a000-000000000001';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function uid(prefix: string, n: number): string {
-  return `${prefix}-0000-0000-0000-${String(n).padStart(12, '0')}`;
+  return `${prefix}-0000-4000-a000-${String(n).padStart(12, '0')}`;
 }
 
 function daysAgo(days: number): Date {
