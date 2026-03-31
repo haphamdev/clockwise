@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppExceptionFilter } from './common/exceptions/app-exception.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ValidationException } from './common/exceptions/validation.exception';
 
 async function bootstrap() {
@@ -16,7 +17,8 @@ async function bootstrap() {
   // Global API prefix
   app.setGlobalPrefix('api/v1');
 
-  // Global exception filter
+  // Global interceptors & filters
+  app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new AppExceptionFilter());
 
   // Validation
