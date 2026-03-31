@@ -29,6 +29,7 @@ const schema = z.object({
   dailyWarningThreshold: z.number().min(1).max(24),
   weeklyWarningThreshold: z.number().min(1).max(168),
   dateFormat: z.enum(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY']),
+  timeFormat: z.enum(['12h', '24h']),
   csvMaxRows: z.number().min(1).max(10000),
 });
 
@@ -138,6 +139,27 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
                     <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
                     <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
                     <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="timeFormat"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Time Format</FormLabel>
+              <FormControl>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="12h">12-hour (2:30 PM)</SelectItem>
+                    <SelectItem value="24h">24-hour (14:30)</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>

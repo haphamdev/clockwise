@@ -12,6 +12,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { useUserDetail } from '@/lib/users/use-user-detail';
+import { useFormatDate } from '@/lib/org/use-format-date';
 
 interface UserDetailSheetProps {
   userId: string | null;
@@ -22,6 +23,7 @@ interface UserDetailSheetProps {
 export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetProps) {
   const navigate = useNavigate();
   const { data: user, isLoading } = useUserDetail(userId);
+  const { formatDate } = useFormatDate();
 
   const handleViewDetails = () => {
     if (!user) return;
@@ -96,12 +98,12 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
                 <div>
                   <dt className="text-muted-foreground">Last Login</dt>
                   <dd className="font-medium">
-                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : 'Never'}
+                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Created</dt>
-                  <dd className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</dd>
+                  <dd className="font-medium">{formatDate(user.createdAt)}</dd>
                 </div>
               </dl>
 

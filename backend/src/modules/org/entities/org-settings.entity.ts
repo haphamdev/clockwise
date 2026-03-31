@@ -4,6 +4,7 @@ export interface OrgSettingsEntity {
   dailyWarningThreshold: number;
   weeklyWarningThreshold: number;
   dateFormat: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
+  timeFormat: '12h' | '24h';
   csvMaxRows: number;
 }
 
@@ -12,5 +13,6 @@ export const DEFAULT_ORG_SETTINGS: Omit<OrgSettingsEntity, 'orgName'> = {
   dailyWarningThreshold: 12,
   weeklyWarningThreshold: 60,
   dateFormat: 'YYYY-MM-DD',
+  timeFormat: '12h',
   csvMaxRows: 500,
 };

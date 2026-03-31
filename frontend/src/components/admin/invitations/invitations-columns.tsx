@@ -14,6 +14,7 @@ import type { Invitation } from '@/lib/invitations/types';
 export function getInvitationsColumns(
   onResend: (invitation: Invitation) => void,
   onRevoke: (invitation: Invitation) => void,
+  formatDate: (input: string | Date) => string,
 ): ColumnDef<Invitation>[] {
   return [
     {
@@ -63,7 +64,7 @@ export function getInvitationsColumns(
     {
       accessorKey: 'createdAt',
       header: 'Date',
-      cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString(),
+      cell: ({ row }) => formatDate(row.original.createdAt),
     },
     {
       id: 'actions',
