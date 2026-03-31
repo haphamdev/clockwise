@@ -51,4 +51,7 @@ export const ErrorCode = {
   ADMIN: {
     ACCESS_REQUIRED: 'ADMIN_ACCESS_REQUIRED',
   },
+  COMMON: {
+    VALIDATION_ERROR: 'VALIDATION_ERROR',
+  },
 } as const;

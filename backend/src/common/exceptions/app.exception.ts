@@ -5,7 +5,7 @@ export class AppException extends HttpException {
 
   constructor(
     code: string,
-    message: string,
+    message: string | string[],
     status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR,
   ) {
     super({ code, message, statusCode: status }, status);
