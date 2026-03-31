@@ -117,3 +117,10 @@ body {
 ::before {
   border-color: var(--border);
 }
+
+/* Radix modal overlays set pointer-events:none on <body>, which blocks
+   hover events on the sonner toaster and prevents the auto-dismiss timer
+   from pausing on hover. */
+[data-sonner-toaster] {
+  pointer-events: auto !important;
+}

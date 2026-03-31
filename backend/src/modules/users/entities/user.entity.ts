@@ -19,6 +19,7 @@ export interface TeamMembershipInfo {
   teamId: string;
   teamName: string;
   role: 'manager' | 'member';
+  isArchived: boolean;
 }
 
 export interface UserWithTeams extends UserEntity {

@@ -98,6 +98,7 @@ export class UsersController {
         teamId: tm.teamId,
         teamName: tm.teamName,
         role: tm.role,
+        isArchived: tm.isArchived,
       })),
     };
   }
