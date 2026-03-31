@@ -70,11 +70,27 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
 
               <dl className="flex flex-col gap-4 text-sm">
                 <div>
-                  <dt className="text-muted-foreground">Teams</dt>
-                  <dd className="font-medium">
-                    {user.teamMemberships.length === 0
-                      ? 'None'
-                      : user.teamMemberships.map((t) => t.teamName).join(', ')}
+                  <dt className="text-muted-foreground">
+                    Teams ({user.teamMemberships.filter((t) => !t.isArchived).length}
+                    {user.teamMemberships.some((t) => t.isArchived) &&
+                      `, ${user.teamMemberships.filter((t) => t.isArchived).length} archived`})
+                  </dt>
+                  <dd>
+                    {user.teamMemberships.length === 0 ? (
+                      <span className="font-medium">None</span>
+                    ) : (
+                      <ul className="mt-1 space-y-1">
+                        {user.teamMemberships.map((t) => (
+                          <li key={t.teamId} className="flex items-center gap-2">
+                            <span className={t.isArchived ? 'text-muted-foreground line-through' : 'font-medium'}>
+                              {t.teamName}
+                            </span>
+                            <Badge variant="outline" className="text-xs">{t.role}</Badge>
+                            {t.isArchived && <Badge variant="outline" className="text-xs">archived</Badge>}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </dd>
                 </div>
                 <div>

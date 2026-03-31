@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import { getUsersColumns } from '@/components/admin/users/users-columns';
@@ -55,6 +57,14 @@ export function UsersPage() {
       <PageHeader
         title="Users"
         description="Manage organization members."
+        actions={
+          <Button variant="outline" asChild>
+            <Link to="/admin/invitations">
+              <Mail className="mr-1.5 h-4 w-4" />
+              Invitations
+            </Link>
+          </Button>
+        }
       />
 
       <UsersFilterBar
