@@ -21,7 +21,7 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = statusConfig[status];
   return (
-    <Badge variant="outline" className={cn('border-0', config.className, className)}>
+    <Badge variant="outline" className={cn(config.className, className)}>
       {config.label}
     </Badge>
   );

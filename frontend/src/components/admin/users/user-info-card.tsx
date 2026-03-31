@@ -32,6 +32,7 @@ export function UserInfoCard({
   isDirty,
 }: UserInfoCardProps) {
   const isDeactivated = user.status === 'deactivated';
+  const archivedCount = user.teamMemberships.filter((t) => t.isArchived).length;
 
   return (
     <Card>
@@ -78,7 +79,14 @@ export function UserInfoCard({
         <dl className="grid grid-cols-3 gap-4 text-sm">
           <div>
             <dt className="text-muted-foreground">Teams</dt>
-            <dd className="font-medium">{user.teamMemberships.length}</dd>
+            <dd className="font-medium">
+              {user.teamMemberships.length}
+              {archivedCount > 0 && (
+                <span className="ml-1 text-muted-foreground font-normal">
+                  ({archivedCount} archived)
+                </span>
+              )}
+            </dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Last Login</dt>
