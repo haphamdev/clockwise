@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryClient } from '@/lib/query-client';
 import { showErrorToast } from '@/lib/api-error-toast';
 import { teamsKeys } from './teams-keys';
+import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
 import { addTeamMember } from './teams-api';
 import type { AddTeamMemberPayload } from './types';
 
@@ -13,6 +14,7 @@ export function useAddTeamMember() {
     onSuccess: (_, { teamId }) => {
       queryClient.invalidateQueries({ queryKey: teamsKeys.detail(teamId) });
       queryClient.invalidateQueries({ queryKey: teamsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
       toast.success('Member added');
     },
     onError: (err) => {
