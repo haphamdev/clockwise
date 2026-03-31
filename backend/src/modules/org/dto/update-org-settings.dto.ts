@@ -34,6 +34,11 @@ export class UpdateOrgSettingsDto {
   @IsIn(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'])
   dateFormat?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
 
+  @ApiProperty({ required: false, enum: ['12h', '24h'] })
+  @IsOptional()
+  @IsIn(['12h', '24h'])
+  timeFormat?: '12h' | '24h';
+
   @ApiProperty({ required: false, example: 500 })
   @IsOptional()
   @IsNumber()

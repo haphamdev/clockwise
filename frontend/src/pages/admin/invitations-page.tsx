@@ -17,6 +17,7 @@ import { useInvitations } from '@/lib/invitations/use-invitations';
 import { useRevokeInvitation } from '@/lib/invitations/use-revoke-invitation';
 import { useResendInvitation } from '@/lib/invitations/use-resend-invitation';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
+import { useFormatDate } from '@/lib/org/use-format-date';
 import type { InvitationStatus } from '@/lib/invitations/types';
 
 export function InvitationsPage() {
@@ -32,6 +33,7 @@ export function InvitationsPage() {
 
   const revokeInvitation = useRevokeInvitation();
   const resendInvitation = useResendInvitation();
+  const { formatDate } = useFormatDate();
 
   const handleStatusChange = useCallback(
     (value: string) => setParam('status', value === 'all' ? '' : value),
@@ -43,8 +45,9 @@ export function InvitationsPage() {
       getInvitationsColumns(
         (inv) => resendInvitation.mutate(inv.id),
         (inv) => revokeInvitation.mutate(inv.id),
+        formatDate,
       ),
-    [resendInvitation, revokeInvitation],
+    [resendInvitation, revokeInvitation, formatDate],
   );
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;

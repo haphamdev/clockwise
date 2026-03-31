@@ -10,6 +10,7 @@ function makeSettings(overrides?: Partial<OrgSettingsEntity>): OrgSettingsEntity
     dailyWarningThreshold: 12,
     weeklyWarningThreshold: 60,
     dateFormat: 'YYYY-MM-DD',
+    timeFormat: '12h',
     csvMaxRows: 500,
     ...overrides,
   };

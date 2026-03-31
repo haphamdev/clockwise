@@ -16,6 +16,9 @@ export class OrgSettingsResponseDto {
   @ApiProperty({ enum: ['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'], example: 'YYYY-MM-DD' })
   dateFormat: string;
 
+  @ApiProperty({ enum: ['12h', '24h'], example: '12h' })
+  timeFormat: string;
+
   @ApiProperty({ example: 500 })
   csvMaxRows: number;
 }

@@ -8,6 +8,7 @@ interface SettingsJson {
   dailyWarningThreshold?: number;
   weeklyWarningThreshold?: number;
   dateFormat?: string;
+  timeFormat?: string;
   csvMaxRows?: number;
 }
 
@@ -36,6 +37,7 @@ export class OrgRepository {
       dailyWarningThreshold?: number;
       weeklyWarningThreshold?: number;
       dateFormat?: string;
+      timeFormat?: string;
       csvMaxRows?: number;
     },
   ): Promise<OrgSettingsEntity> {
@@ -63,6 +65,7 @@ export class OrgRepository {
       dailyWarningThreshold: s.dailyWarningThreshold ?? d.dailyWarningThreshold,
       weeklyWarningThreshold: s.weeklyWarningThreshold ?? d.weeklyWarningThreshold,
       dateFormat: (s.dateFormat as OrgSettingsEntity['dateFormat']) ?? d.dateFormat,
+      timeFormat: (s.timeFormat as OrgSettingsEntity['timeFormat']) ?? d.timeFormat,
       csvMaxRows: s.csvMaxRows ?? d.csvMaxRows,
     };
   }

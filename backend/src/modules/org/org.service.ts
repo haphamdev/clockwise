@@ -23,6 +23,7 @@ export class OrgService {
       dailyWarningThreshold?: number;
       weeklyWarningThreshold?: number;
       dateFormat?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
+      timeFormat?: '12h' | '24h';
       csvMaxRows?: number;
     },
   ): Promise<OrgSettingsEntity> {
