@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { UserInfoCard } from '@/components/admin/users/user-info-card';
 import { UserMembershipsTable } from '@/components/admin/users/user-memberships-table';
 import { AddToTeamSheet } from '@/components/admin/users/add-to-team-sheet';
+import { AuditTimeline } from '@/components/admin/audit-timeline';
 import { queryClient } from '@/lib/query-client';
 import { useUserDetail } from '@/lib/users/use-user-detail';
 import { useUpdateUser } from '@/lib/users/use-update-user';
@@ -116,6 +117,8 @@ export function UserDetailPage() {
         readOnly={isDeactivated}
         removePending={removeMember.isPending}
       />
+
+      <AuditTimeline entityType="user" entityId={user.id} />
 
       <AddToTeamSheet
         userId={user.id}

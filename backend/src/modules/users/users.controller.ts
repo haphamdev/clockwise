@@ -80,7 +80,7 @@ export class UsersController {
     @Param('id') id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
-    await this.usersService.reactivateUser(id, user.orgId);
+    await this.usersService.reactivateUser(id, user.orgId, user.id);
     return { message: 'User reactivated' };
   }
 

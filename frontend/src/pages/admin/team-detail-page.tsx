@@ -8,6 +8,7 @@ import { TeamInfoCard } from '@/components/admin/teams/team-info-card';
 import { TeamMembersTable } from '@/components/admin/teams/team-members-table';
 import { AddMemberSheet } from '@/components/admin/teams/add-member-sheet';
 import { EditTeamSheet } from '@/components/admin/teams/edit-team-sheet';
+import { AuditTimeline } from '@/components/admin/audit-timeline';
 import { useTeamDetail } from '@/lib/teams/use-team-detail';
 import { useArchiveTeam } from '@/lib/teams/use-archive-team';
 import { useUnarchiveTeam } from '@/lib/teams/use-unarchive-team';
@@ -82,6 +83,8 @@ export function TeamDetailPage() {
         readOnly={team.isArchived}
         removePending={removeMember.isPending}
       />
+
+      <AuditTimeline entityType="team" entityId={team.id} />
 
       <EditTeamSheet
         team={team}

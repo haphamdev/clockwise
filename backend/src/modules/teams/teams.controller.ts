@@ -57,7 +57,7 @@ export class TeamsController {
     @CurrentUser() user: UserEntity,
     @Body() dto: CreateTeamDto,
   ): Promise<TeamResponseDto> {
-    const team = await this.teamsService.create(user.orgId, dto);
+    const team = await this.teamsService.create(user.orgId, dto, user.id);
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
@@ -90,7 +90,7 @@ export class TeamsController {
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateTeamDto,
   ): Promise<TeamResponseDto> {
-    const team = await this.teamsService.update(id, user.orgId, dto);
+    const team = await this.teamsService.update(id, user.orgId, dto, user.id);
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
@@ -102,7 +102,7 @@ export class TeamsController {
     @Param('id') id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<TeamResponseDto> {
-    const team = await this.teamsService.archive(id, user.orgId);
+    const team = await this.teamsService.archive(id, user.orgId, user.id);
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
@@ -114,7 +114,7 @@ export class TeamsController {
     @Param('id') id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<TeamResponseDto> {
-    const team = await this.teamsService.unarchive(id, user.orgId);
+    const team = await this.teamsService.unarchive(id, user.orgId, user.id);
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
@@ -127,7 +127,7 @@ export class TeamsController {
     @CurrentUser() user: UserEntity,
     @Body() dto: AddTeamMemberDto,
   ): Promise<TeamMemberResponseDto> {
-    const member = await this.teamsService.addMember(id, user.orgId, dto.userId, dto.role);
+    const member = await this.teamsService.addMember(id, user.orgId, dto.userId, dto.role, user.id);
     return this.toMemberResponse(member);
   }
 
@@ -141,7 +141,7 @@ export class TeamsController {
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateTeamMemberDto,
   ): Promise<TeamMemberResponseDto> {
-    const member = await this.teamsService.updateMemberRole(id, user.orgId, userId, dto.role);
+    const member = await this.teamsService.updateMemberRole(id, user.orgId, userId, dto.role, user.id);
     return this.toMemberResponse(member);
   }
 
@@ -153,7 +153,7 @@ export class TeamsController {
     @Param('userId') userId: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
-    await this.teamsService.removeMember(id, user.orgId, userId);
+    await this.teamsService.removeMember(id, user.orgId, userId, user.id);
     return { message: 'Member removed' };
   }
 
