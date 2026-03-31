@@ -1,9 +1,10 @@
-import { apiClient, ApiError, getAccessToken, setAccessToken } from '@/lib/api-client';
+import { apiClient, ApiError, getAccessToken, setAccessToken, refreshAccessToken } from '@/lib/api-client';
 import type { UserProfile } from './types';
 
 export async function fetchCurrentUser(): Promise<UserProfile | null> {
   if (!getAccessToken()) {
-    return null;
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) return null;
   }
   try {
     return await apiClient<UserProfile>('/auth/me');
