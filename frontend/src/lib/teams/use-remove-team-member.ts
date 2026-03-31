@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/query-client';
 import { showErrorToast } from '@/lib/api-error-toast';
 import { teamsKeys } from './teams-keys';
 import { usersKeys } from '@/lib/users/users-keys';
+import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
 import { removeTeamMember } from './teams-api';
 
 export function useRemoveTeamMember() {
@@ -14,6 +15,7 @@ export function useRemoveTeamMember() {
       queryClient.invalidateQueries({ queryKey: teamsKeys.detail(teamId) });
       queryClient.invalidateQueries({ queryKey: teamsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: usersKeys.all });
+      queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
       toast.success('Member removed');
     },
     onError: (err) => {

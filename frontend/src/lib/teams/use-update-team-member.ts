@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { queryClient } from '@/lib/query-client';
 import { showErrorToast } from '@/lib/api-error-toast';
 import { teamsKeys } from './teams-keys';
+import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
 import { updateTeamMember } from './teams-api';
 import type { UpdateTeamMemberPayload } from './types';
 
@@ -19,6 +20,7 @@ export function useUpdateTeamMember() {
     }) => updateTeamMember(teamId, userId, payload),
     onSuccess: (_, { teamId }) => {
       queryClient.invalidateQueries({ queryKey: teamsKeys.detail(teamId) });
+      queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
       toast.success('Member role updated');
     },
     onError: (err) => {

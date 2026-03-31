@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/query-client';
 import { showErrorToast } from '@/lib/api-error-toast';
 import { usersKeys } from './users-keys';
 import { teamsKeys } from '@/lib/teams/teams-keys';
+import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
 import { updateUser } from './users-api';
 import type { UpdateUserPayload } from './types';
 
@@ -14,6 +15,7 @@ export function useUpdateUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: usersKeys.all });
       queryClient.invalidateQueries({ queryKey: teamsKeys.all });
+      queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
       toast.success('User updated');
     },
     onError: (err) => {
