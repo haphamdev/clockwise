@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Combobox } from '@/components/ui/combobox';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -33,15 +33,17 @@ export function AddMemberSheet({
   open,
   onOpenChange,
 }: AddMemberSheetProps) {
-  const [search, setSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [role, setRole] = useState<TeamRole>('member');
 
-  const { data: usersData } = useUsers({ search, limit: 20 });
+  const { data: usersData } = useUsers({ limit: 100 });
   const addMember = useAddTeamMember();
 
   const existingIds = new Set(existingMembers.map((m) => m.userId));
-  const availableUsers = usersData?.data.filter((u) => !existingIds.has(u.id)) ?? [];
+  const userOptions =
+    usersData?.data
+      .filter((u) => !existingIds.has(u.id))
+      .map((u) => ({ value: u.id, label: `${u.name} (${u.email})` })) ?? [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +54,6 @@ export function AddMemberSheet({
         onSuccess: () => {
           setSelectedUserId('');
           setRole('member');
-          setSearch('');
           onOpenChange(false);
         },
       },
@@ -68,30 +69,16 @@ export function AddMemberSheet({
         </SheetHeader>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
-            <Label>Search Users</Label>
-            <Input
-              placeholder="Search by name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+            <Label>User</Label>
+            <Combobox
+              options={userOptions}
+              value={selectedUserId}
+              onChange={setSelectedUserId}
+              placeholder="Choose a user"
+              searchPlaceholder="Search by name or email..."
+              emptyText="No users found."
             />
           </div>
-          {availableUsers.length > 0 && (
-            <div className="space-y-2">
-              <Label>Select User</Label>
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a user" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableUsers.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name} ({user.email})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
           <div className="space-y-2">
             <Label>Role</Label>
             <Select value={role} onValueChange={(v) => setRole(v as TeamRole)}>

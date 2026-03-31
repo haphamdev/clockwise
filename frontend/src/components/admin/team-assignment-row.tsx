@@ -1,5 +1,6 @@
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Combobox } from '@/components/ui/combobox';
 import {
   Select,
   SelectContent,
@@ -26,20 +27,19 @@ export function TeamAssignmentRow({
   onRoleChange,
   onRemove,
 }: TeamAssignmentRowProps) {
+  const teamOptions = teams.map((t) => ({ value: t.id, label: t.name }));
+
   return (
     <div className="flex items-center gap-2">
-      <Select value={teamId} onValueChange={onTeamChange}>
-        <SelectTrigger className="flex-1">
-          <SelectValue placeholder="Select team" />
-        </SelectTrigger>
-        <SelectContent>
-          {teams.map((t) => (
-            <SelectItem key={t.id} value={t.id}>
-              {t.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Combobox
+        options={teamOptions}
+        value={teamId}
+        onChange={onTeamChange}
+        placeholder="Select team"
+        searchPlaceholder="Search teams..."
+        emptyText="No teams found."
+        className="flex-1"
+      />
       <Select value={role} onValueChange={onRoleChange}>
         <SelectTrigger className="w-[120px]">
           <SelectValue />

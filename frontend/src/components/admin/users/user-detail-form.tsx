@@ -6,6 +6,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Combobox } from '@/components/ui/combobox';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -64,6 +65,8 @@ export function UserDetailForm({ user, onClose }: UserDetailFormProps) {
   });
 
   const { data: teamsData } = useTeams({ limit: 100 });
+  const teamOptions =
+    teamsData?.data.map((t) => ({ value: t.id, label: t.name })) ?? [];
   const updateUser = useUpdateUser();
   const deactivateUser = useDeactivateUser();
   const reactivateUser = useReactivateUser();
@@ -150,18 +153,14 @@ export function UserDetailForm({ user, onClose }: UserDetailFormProps) {
                   render={({ field: f }) => (
                     <FormItem className="flex-1">
                       <FormControl>
-                        <Select value={f.value} onValueChange={f.onChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select team" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {teamsData?.data.map((t) => (
-                              <SelectItem key={t.id} value={t.id}>
-                                {t.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Combobox
+                          options={teamOptions}
+                          value={f.value}
+                          onChange={f.onChange}
+                          placeholder="Select team"
+                          searchPlaceholder="Search teams..."
+                          emptyText="No teams found."
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
