@@ -13,6 +13,10 @@ export function fetchUsers(params: ListUsersParams = {}) {
   return apiClient<PaginatedResponse<User>>(`/users${qs ? `?${qs}` : ''}`);
 }
 
+export function fetchMyProfile() {
+  return apiClient<User>('/users/me');
+}
+
 export function fetchUserDetail(id: string) {
   return apiClient<User>(`/users/${id}`);
 }

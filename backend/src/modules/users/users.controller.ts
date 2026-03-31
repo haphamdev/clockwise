@@ -37,6 +37,15 @@ export class UsersController {
     };
   }
 
+  // Must be declared before @Get(':id') to avoid 'me' matching as a route param
+  @Get('me')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOkResponse({ type: UserResponseDto })
+  async getMyProfile(@CurrentUser() user: UserEntity): Promise<UserResponseDto> {
+    const profile = await this.usersService.getUserDetail(user.id, user.orgId);
+    return this.toResponse(profile);
+  }
+
   @Get(':id')
   @AdminOnly()
   @ApiOperation({ summary: 'Get user detail (admin only)' })
