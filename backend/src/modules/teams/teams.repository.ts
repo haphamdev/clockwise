@@ -121,6 +121,14 @@ export class TeamsRepository {
     return this.toEntity(team);
   }
 
+  async unarchive(id: string): Promise<TeamEntity> {
+    const team = await this.prisma.team.update({
+      where: { id },
+      data: { isArchived: false },
+    });
+    return this.toEntity(team);
+  }
+
   async addMember(
     teamId: string,
     userId: string,

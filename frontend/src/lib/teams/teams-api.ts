@@ -42,6 +42,10 @@ export function archiveTeam(id: string) {
   return apiClient<Team>(`/teams/${id}/archive`, { method: 'PATCH' });
 }
 
+export function unarchiveTeam(id: string) {
+  return apiClient<Team>(`/teams/${id}/unarchive`, { method: 'PATCH' });
+}
+
 export function addTeamMember(teamId: string, payload: AddTeamMemberPayload) {
   return apiClient<TeamMember>(`/teams/${teamId}/members`, {
     method: 'POST',

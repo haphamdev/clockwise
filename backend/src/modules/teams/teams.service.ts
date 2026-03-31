@@ -5,6 +5,7 @@ import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './e
 import {
   TeamNotFoundException,
   TeamArchivedException,
+  TeamNotArchivedException,
   TeamLastManagerException,
   TeamMemberAlreadyExistsException,
   TeamMemberNotFoundException,
@@ -72,6 +73,12 @@ export class TeamsService {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
     return this.teamsRepository.archive(teamId);
+  }
+
+  async unarchive(teamId: string, orgId: string): Promise<TeamEntity> {
+    const team = await this.getTeamOrThrow(teamId, orgId);
+    this.ensureArchived(team);
+    return this.teamsRepository.unarchive(teamId);
   }
 
   async addMember(
@@ -156,6 +163,12 @@ export class TeamsService {
   private ensureNotArchived(team: TeamEntity): void {
     if (team.isArchived) {
       throw new TeamArchivedException();
+    }
+  }
+
+  private ensureArchived(team: TeamEntity): void {
+    if (!team.isArchived) {
+      throw new TeamNotArchivedException();
     }
   }
 

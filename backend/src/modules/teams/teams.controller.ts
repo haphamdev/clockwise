@@ -106,6 +106,18 @@ export class TeamsController {
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
+  @Patch(':id/unarchive')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Unarchive a team' })
+  @ApiOkResponse({ type: TeamResponseDto })
+  async unarchive(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<TeamResponseDto> {
+    const team = await this.teamsService.unarchive(id, user.orgId);
+    return this.toTeamResponse({ ...team, memberCount: 0 });
+  }
+
   @Post(':id/members')
   @AdminOnly()
   @ApiOperation({ summary: 'Add a member to a team' })

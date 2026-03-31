@@ -14,6 +14,7 @@ import type { Team } from '@/lib/teams/types';
 export function getTeamsColumns(
   onEdit: (team: Team) => void,
   onArchive: (team: Team) => void,
+  onUnarchive: (team: Team) => void,
 ): ColumnDef<Team>[] {
   return [
     {
@@ -50,25 +51,34 @@ export function getTeamsColumns(
     },
     {
       id: 'actions',
-      cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(row.original)}>
-              Edit
-            </DropdownMenuItem>
-            {!row.original.isArchived && (
-              <DropdownMenuItem onClick={() => onArchive(row.original)}>
-                Archive
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+      cell: ({ row }) => {
+        const team = row.original;
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {team.isArchived ? (
+                <DropdownMenuItem onClick={() => onUnarchive(team)}>
+                  Unarchive
+                </DropdownMenuItem>
+              ) : (
+                <>
+                  <DropdownMenuItem onClick={() => onEdit(team)}>
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onArchive(team)}>
+                    Archive
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];
 }
