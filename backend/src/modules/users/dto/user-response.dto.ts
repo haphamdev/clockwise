@@ -9,6 +9,9 @@ export class UserTeamMembershipDto {
 
   @ApiProperty({ enum: ['manager', 'member'] })
   role: string;
+
+  @ApiProperty()
+  isArchived: boolean;
 }
 
 export class UserResponseDto {

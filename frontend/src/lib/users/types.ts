@@ -6,6 +6,7 @@ export interface UserTeamMembership {
   teamId: string;
   teamName: string;
   role: 'manager' | 'member';
+  isArchived: boolean;
 }
 
 export interface User {

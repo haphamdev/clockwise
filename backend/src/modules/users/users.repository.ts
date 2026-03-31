@@ -212,7 +212,7 @@ export class UsersRepository {
     user: User & {
       teamMemberships: Array<{
         role: string;
-        team: { id: string; name: string };
+        team: { id: string; name: string; isArchived: boolean };
       }>;
     },
   ): UserWithTeams {
@@ -223,6 +223,7 @@ export class UsersRepository {
           teamId: tm.team.id,
           teamName: tm.team.name,
           role: tm.role as 'manager' | 'member',
+          isArchived: tm.team.isArchived,
         }),
       ),
     };

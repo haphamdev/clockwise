@@ -80,6 +80,7 @@ export function TeamDetailPage() {
         onChangeRole={handleChangeRole}
         onRemove={handleRemove}
         readOnly={team.isArchived}
+        removePending={removeMember.isPending}
       />
 
       <EditTeamSheet

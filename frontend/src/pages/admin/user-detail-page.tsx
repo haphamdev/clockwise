@@ -114,6 +114,7 @@ export function UserDetailPage() {
         onChangeRole={handleChangeRole}
         onRemove={handleRemove}
         readOnly={isDeactivated}
+        removePending={removeMember.isPending}
       />
 
       <AddToTeamSheet
