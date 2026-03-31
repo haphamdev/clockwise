@@ -32,3 +32,4 @@ Keep files small and single-purpose — aim for ~100 lines, hard max 300 lines. 
 ## Conventions
 
 - No barrel imports — do not create `index.ts` re-export files. Always import directly from the source file.
+- Always drill the user for clarification questions before making a plan for non-trivial changes.

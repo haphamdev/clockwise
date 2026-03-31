@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '@/components/ui/page-header';
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import { getUsersColumns } from '@/components/admin/users/users-columns';
@@ -9,6 +10,7 @@ import { usePaginationParams } from '@/hooks/use-pagination-params';
 import type { User, UserStatus } from '@/lib/users/types';
 
 export function UsersPage() {
+  const navigate = useNavigate();
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
   const search = getParam('search');
   const status = getParam('status');
@@ -38,8 +40,12 @@ export function UsersPage() {
   );
 
   const columns = useMemo(
-    () => getUsersColumns((user: User) => setSelectedUserId(user.id)),
-    [],
+    () =>
+      getUsersColumns(
+        (user: User) => setSelectedUserId(user.id),
+        (user: User) => navigate(`/admin/users/${user.id}`),
+      ),
+    [navigate],
   );
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
