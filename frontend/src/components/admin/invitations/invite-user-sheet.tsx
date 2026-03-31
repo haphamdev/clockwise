@@ -46,6 +46,7 @@ interface InviteUserSheetProps {
 export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: 'onChange',
     defaultValues: {
       email: '',
       teamAssignments: [{ teamId: '', role: 'member' }],
@@ -56,6 +57,9 @@ export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
     control: form.control,
     name: 'teamAssignments',
   });
+
+  const teamAssignments = form.watch('teamAssignments');
+  const hasEmptyTeam = teamAssignments.some((a) => !a.teamId);
 
   const { data: teamsData } = useTeams({ limit: 100 });
   const createInvitation = useCreateInvitation();
@@ -99,6 +103,7 @@ export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
                   type="button"
                   variant="outline"
                   size="sm"
+                  disabled={hasEmptyTeam}
                   onClick={() => append({ teamId: '', role: 'member' })}
                 >
                   <Plus className="mr-1 h-3.5 w-3.5" />
@@ -125,7 +130,7 @@ export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
               )}
             </div>
 
-            <Button type="submit" disabled={createInvitation.isPending} className="w-full">
+            <Button type="submit" disabled={!form.formState.isValid || createInvitation.isPending} className="w-full">
               {createInvitation.isPending ? 'Sending...' : 'Send Invitation'}
             </Button>
           </form>

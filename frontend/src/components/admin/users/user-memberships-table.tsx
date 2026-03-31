@@ -71,12 +71,16 @@ export function UserMembershipsTable({
                     >
                       {membership.teamName}
                     </Link>
-                    {membership.isArchived && <StatusBadge status="archived" />}
+                    {membership.isArchived && (
+                      <StatusBadge status="archived" />
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>
                   {readOnly || membership.isArchived ? (
-                    <Badge variant="outline" className="capitalize">{membership.role}</Badge>
+                    <Badge variant="outline" className="capitalize">
+                      {membership.role}
+                    </Badge>
                   ) : (
                     <Select
                       value={membership.role}
@@ -87,10 +91,14 @@ export function UserMembershipsTable({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="manager">
-                          <Badge variant="outline" className="border-0">Manager</Badge>
+                          <Badge variant="outline" className="border-0">
+                            Manager
+                          </Badge>
                         </SelectItem>
                         <SelectItem value="member">
-                          <Badge variant="outline" className="border-0">Member</Badge>
+                          <Badge variant="outline" className="border-0">
+                            Member
+                          </Badge>
                         </SelectItem>
                       </SelectContent>
                     </Select>
