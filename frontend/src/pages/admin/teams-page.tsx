@@ -10,6 +10,7 @@ import { CreateTeamSheet } from '@/components/admin/teams/create-team-sheet';
 import { EditTeamSheet } from '@/components/admin/teams/edit-team-sheet';
 import { useTeams } from '@/lib/teams/use-teams';
 import { useArchiveTeam } from '@/lib/teams/use-archive-team';
+import { useUnarchiveTeam } from '@/lib/teams/use-unarchive-team';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import type { Team } from '@/lib/teams/types';
 
@@ -21,14 +22,16 @@ export function TeamsPage() {
 
   const { data, isLoading } = useTeams({ page, limit, includeArchived: showArchived });
   const archiveTeam = useArchiveTeam();
+  const unarchiveTeam = useUnarchiveTeam();
 
   const columns = useMemo(
     () =>
       getTeamsColumns(
         (team) => setEditTeam(team),
         (team) => archiveTeam.mutate(team.id),
+        (team) => unarchiveTeam.mutate(team.id),
       ),
-    [archiveTeam],
+    [archiveTeam, unarchiveTeam],
   );
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;

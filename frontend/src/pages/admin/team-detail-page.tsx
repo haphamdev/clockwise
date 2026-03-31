@@ -10,6 +10,7 @@ import { AddMemberSheet } from '@/components/admin/teams/add-member-sheet';
 import { EditTeamSheet } from '@/components/admin/teams/edit-team-sheet';
 import { useTeamDetail } from '@/lib/teams/use-team-detail';
 import { useArchiveTeam } from '@/lib/teams/use-archive-team';
+import { useUnarchiveTeam } from '@/lib/teams/use-unarchive-team';
 import { useUpdateTeamMember } from '@/lib/teams/use-update-team-member';
 import { useRemoveTeamMember } from '@/lib/teams/use-remove-team-member';
 import type { TeamRole } from '@/lib/teams/types';
@@ -18,6 +19,7 @@ export function TeamDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: team, isLoading } = useTeamDetail(id!);
   const archiveTeam = useArchiveTeam();
+  const unarchiveTeam = useUnarchiveTeam();
   const updateMember = useUpdateTeamMember();
   const removeMember = useRemoveTeamMember();
 
@@ -60,20 +62,24 @@ export function TeamDetailPage() {
         team={team}
         onEdit={() => setEditOpen(true)}
         onArchive={() => archiveTeam.mutate(team.id)}
+        onUnarchive={() => unarchiveTeam.mutate(team.id)}
       />
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Members</h2>
-        <Button size="sm" onClick={() => setAddMemberOpen(true)}>
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          Add Member
-        </Button>
+        {!team.isArchived && (
+          <Button size="sm" onClick={() => setAddMemberOpen(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add Member
+          </Button>
+        )}
       </div>
 
       <TeamMembersTable
         members={team.members}
         onChangeRole={handleChangeRole}
         onRemove={handleRemove}
+        readOnly={team.isArchived}
       />
 
       <EditTeamSheet

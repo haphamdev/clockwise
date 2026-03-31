@@ -20,6 +20,12 @@ export class TeamArchivedException extends AppException {
   }
 }
 
+export class TeamNotArchivedException extends AppException {
+  constructor() {
+    super(ErrorCode.TEAM.NOT_ARCHIVED, 'Team is not archived', HttpStatus.BAD_REQUEST);
+  }
+}
+
 export class TeamLastManagerException extends AppException {
   constructor() {
     super(

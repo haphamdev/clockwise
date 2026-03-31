@@ -1,4 +1,4 @@
-import { Pencil, Archive } from 'lucide-react';
+import { Pencil, Archive, ArchiveRestore } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -8,9 +8,10 @@ interface TeamInfoCardProps {
   team: TeamDetail;
   onEdit: () => void;
   onArchive: () => void;
+  onUnarchive?: () => void;
 }
 
-export function TeamInfoCard({ team, onEdit, onArchive }: TeamInfoCardProps) {
+export function TeamInfoCard({ team, onEdit, onArchive, onUnarchive }: TeamInfoCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -24,15 +25,24 @@ export function TeamInfoCard({ team, onEdit, onArchive }: TeamInfoCardProps) {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onEdit}>
-            <Pencil className="mr-1.5 h-3.5 w-3.5" />
-            Edit
-          </Button>
-          {!team.isArchived && (
-            <Button variant="outline" size="sm" onClick={onArchive}>
-              <Archive className="mr-1.5 h-3.5 w-3.5" />
-              Archive
-            </Button>
+          {team.isArchived ? (
+            onUnarchive && (
+              <Button variant="outline" size="sm" onClick={onUnarchive}>
+                <ArchiveRestore className="mr-1.5 h-3.5 w-3.5" />
+                Unarchive
+              </Button>
+            )
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={onEdit}>
+                <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" onClick={onArchive}>
+                <Archive className="mr-1.5 h-3.5 w-3.5" />
+                Archive
+              </Button>
+            </>
           )}
         </div>
       </CardHeader>

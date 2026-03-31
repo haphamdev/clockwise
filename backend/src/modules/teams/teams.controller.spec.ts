@@ -74,6 +74,7 @@ describe('TeamsController', () => {
       create: jest.fn(),
       update: jest.fn(),
       archive: jest.fn(),
+      unarchive: jest.fn(),
       addMember: jest.fn(),
       updateMemberRole: jest.fn(),
       removeMember: jest.fn(),
@@ -144,6 +145,18 @@ describe('TeamsController', () => {
       const result = await controller.archive('team-1', user);
       expect(result.isArchived).toBe(true);
       expect(service.archive).toHaveBeenCalledWith('team-1', 'org-1');
+    });
+  });
+
+  describe('unarchive', () => {
+    it('should pass orgId to service', async () => {
+      const team = makeTeam({ isArchived: false });
+      service.unarchive.mockResolvedValue(team);
+
+      const user = makeUser();
+      const result = await controller.unarchive('team-1', user);
+      expect(result.isArchived).toBe(false);
+      expect(service.unarchive).toHaveBeenCalledWith('team-1', 'org-1');
     });
   });
 

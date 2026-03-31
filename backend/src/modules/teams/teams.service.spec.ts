@@ -82,6 +82,7 @@ describe('TeamsService', () => {
       create: jest.fn(),
       update: jest.fn(),
       archive: jest.fn(),
+      unarchive: jest.fn(),
       addMember: jest.fn(),
       findMember: jest.fn(),
       updateMemberRole: jest.fn(),
@@ -237,6 +238,33 @@ describe('TeamsService', () => {
 
       await expect(service.archive('team-1', 'org-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ARCHIVED }),
+      );
+    });
+  });
+
+  describe('unarchive', () => {
+    it('should unarchive an archived team', async () => {
+      repo.findEntityById.mockResolvedValue(makeTeam({ isArchived: true }));
+      const unarchived = makeTeam({ isArchived: false });
+      repo.unarchive.mockResolvedValue(unarchived);
+
+      const res = await service.unarchive('team-1', 'org-1');
+      expect(res.isArchived).toBe(false);
+    });
+
+    it('should throw NOT_ARCHIVED if team is not archived', async () => {
+      repo.findEntityById.mockResolvedValue(makeTeam({ isArchived: false }));
+
+      await expect(service.unarchive('team-1', 'org-1')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.TEAM.NOT_ARCHIVED }),
+      );
+    });
+
+    it('should throw NOT_FOUND for team in different org', async () => {
+      repo.findEntityById.mockResolvedValue(makeTeam({ orgId: 'other-org' }));
+
+      await expect(service.unarchive('team-1', 'org-1')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.TEAM.NOT_FOUND }),
       );
     });
   });
