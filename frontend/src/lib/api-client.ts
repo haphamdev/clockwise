@@ -8,13 +8,34 @@ export function getAccessToken(): string | null {
   return accessToken;
 }
 
+interface ApiErrorBody {
+  statusCode: number;
+  error: string;
+  code: string;
+  message: string | string[];
+}
+
 export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
+  public readonly status: number;
+  public readonly code: string;
+  public readonly serverMessage: string | string[];
+
+  constructor(status: number, body: ApiErrorBody | null) {
+    const serverMessage = body?.message ?? 'An unexpected error occurred';
+    const readable = Array.isArray(serverMessage) ? serverMessage.join('\n') : serverMessage;
+    super(readable);
     this.name = 'ApiError';
+    this.status = status;
+    this.code = body?.code ?? 'UNKNOWN';
+    this.serverMessage = serverMessage;
+  }
+}
+
+async function parseErrorBody(res: Response): Promise<ApiErrorBody | null> {
+  try {
+    return await res.json();
+  } catch {
+    return null;
   }
 }
 
@@ -72,7 +93,7 @@ export async function apiClient<T>(path: string, options: RequestInit = {}): Pro
       });
 
       if (!retryRes.ok) {
-        throw new ApiError(retryRes.status, await retryRes.text());
+        throw new ApiError(retryRes.status, await parseErrorBody(retryRes));
       }
 
       return retryRes.json();
@@ -80,11 +101,11 @@ export async function apiClient<T>(path: string, options: RequestInit = {}): Pro
 
     // Refresh failed — clear token and throw
     setAccessToken(null);
-    throw new ApiError(401, 'Session expired');
+    throw new ApiError(401, { statusCode: 401, error: 'UNAUTHORIZED', code: 'SESSION_EXPIRED', message: 'Session expired' });
   }
 
   if (!res.ok) {
-    throw new ApiError(res.status, await res.text());
+    throw new ApiError(res.status, await parseErrorBody(res));
   }
 
   if (res.status === 204) {

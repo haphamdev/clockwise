@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryClient } from '@/lib/query-client';
-import { ApiError } from '@/lib/api-client';
+import { showErrorToast } from '@/lib/api-error-toast';
 import { teamsKeys } from './teams-keys';
 import { addTeamMember } from './teams-api';
 import type { AddTeamMemberPayload } from './types';
@@ -16,7 +16,7 @@ export function useAddTeamMember() {
       toast.success('Member added');
     },
     onError: (err) => {
-      toast.error(err instanceof ApiError ? err.message : 'Failed to add member');
+      showErrorToast(err, 'Failed to add member');
     },
   });
 }

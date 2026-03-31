@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryClient } from '@/lib/query-client';
-import { ApiError } from '@/lib/api-client';
+import { showErrorToast } from '@/lib/api-error-toast';
 import { usersKeys } from './users-keys';
 import { teamsKeys } from '@/lib/teams/teams-keys';
 import { updateUser } from './users-api';
@@ -17,7 +17,7 @@ export function useUpdateUser() {
       toast.success('User updated');
     },
     onError: (err) => {
-      toast.error(err instanceof ApiError ? err.message : 'Failed to update user');
+      showErrorToast(err, 'Failed to update user');
     },
   });
 }

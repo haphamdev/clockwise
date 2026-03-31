@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { queryClient } from '@/lib/query-client';
-import { ApiError } from '@/lib/api-client';
+import { showErrorToast } from '@/lib/api-error-toast';
 import { invitationsKeys } from './invitations-keys';
 import { revokeInvitation } from './invitations-api';
 
@@ -13,7 +13,7 @@ export function useRevokeInvitation() {
       toast.success('Invitation revoked');
     },
     onError: (err) => {
-      toast.error(err instanceof ApiError ? err.message : 'Failed to revoke invitation');
+      showErrorToast(err, 'Failed to revoke invitation');
     },
   });
 }
