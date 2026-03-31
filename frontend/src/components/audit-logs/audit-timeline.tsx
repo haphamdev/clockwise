@@ -1,17 +1,38 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AUDIT_LOG_PAGE_SIZE } from '@/lib/audit-logs/constants';
 import { useAuditLogs } from '@/lib/audit-logs/use-audit-logs';
+import { useMyAuditLogs } from '@/lib/audit-logs/use-my-audit-logs';
 import { AuditTimelineEntry } from './audit-timeline-entry';
 
-interface AuditTimelineProps {
+interface AdminTimelineProps {
   entityType: string;
   entityId: string;
+  selfService?: false;
 }
 
-export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
+interface SelfServiceTimelineProps {
+  selfService: true;
+  entityType?: never;
+  entityId?: never;
+}
+
+type AuditTimelineProps = AdminTimelineProps | SelfServiceTimelineProps;
+
+export function AuditTimeline(props: AuditTimelineProps) {
   const [page, setPage] = useState(1);
-  const { data, isLoading } = useAuditLogs(entityType, entityId, page);
+
+  const isSelfService = !!props.selfService;
+  const adminQuery = useAuditLogs(
+    isSelfService ? '' : props.entityType!,
+    isSelfService ? '' : props.entityId!,
+    page,
+    !isSelfService,
+  );
+  const selfServiceQuery = useMyAuditLogs(page, isSelfService);
+
+  const { data, isLoading } = props.selfService ? selfServiceQuery : adminQuery;
 
   return (
     <div>
@@ -43,7 +64,7 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
             ))}
           </div>
 
-          {data.total > 20 && (
+          {data.total > AUDIT_LOG_PAGE_SIZE && (
             <div className="mt-4 flex items-center justify-between">
               <Button
                 variant="outline"
@@ -54,13 +75,13 @@ export function AuditTimeline({ entityType, entityId }: AuditTimelineProps) {
                 Previous
               </Button>
               <span className="text-sm text-muted-foreground">
-                Page {page} of {Math.ceil(data.total / 20)}
+                Page {page} of {Math.ceil(data.total / AUDIT_LOG_PAGE_SIZE)}
               </span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setPage((p) => p + 1)}
-                disabled={page >= Math.ceil(data.total / 20)}
+                disabled={page >= Math.ceil(data.total / AUDIT_LOG_PAGE_SIZE)}
               >
                 Next
               </Button>

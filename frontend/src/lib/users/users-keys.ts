@@ -2,6 +2,7 @@ import type { ListUsersParams } from './types';
 
 export const usersKeys = {
   all: ['users'] as const,
+  me: () => [...usersKeys.all, 'me'] as const,
   lists: () => [...usersKeys.all, 'list'] as const,
   list: (params: ListUsersParams) => [...usersKeys.lists(), params] as const,
   details: () => [...usersKeys.all, 'detail'] as const,
