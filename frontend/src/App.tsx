@@ -10,6 +10,7 @@ import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
 import { TeamsPage } from '@/pages/admin/teams-page';
 import { TeamDetailPage } from '@/pages/admin/team-detail-page';
 import { UsersPage } from '@/pages/admin/users-page';
+import { UserDetailPage } from '@/pages/admin/user-detail-page';
 import { InvitationsPage } from '@/pages/admin/invitations-page';
 import { OrgSettingsPage } from '@/pages/admin/org-settings-page';
 import { InviteLandingPage } from '@/pages/invite-landing-page';
@@ -71,6 +72,14 @@ export default function App() {
                 element={
                   <AdminRoute>
                     <UsersPage />
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin/users/:id"
+                element={
+                  <AdminRoute>
+                    <UserDetailPage />
                   </AdminRoute>
                 }
               />

@@ -1,13 +1,20 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { Eye } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { StatusBadge, type Status } from '@/components/ui/status-badge';
 import type { User } from '@/lib/users/types';
 
 export function getUsersColumns(
   onView: (user: User) => void,
+  onNavigate: (user: User) => void,
 ): ColumnDef<User>[] {
   return [
     {
@@ -24,7 +31,13 @@ export function getUsersColumns(
               </AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-medium">{user.name}</p>
+              <button
+                type="button"
+                className="text-sm font-medium hover:underline text-left"
+                onClick={() => onView(user)}
+              >
+                {user.name}
+              </button>
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
           </div>
@@ -60,10 +73,18 @@ export function getUsersColumns(
     {
       id: 'actions',
       cell: ({ row }) => (
-        <Button variant="ghost" size="sm" onClick={() => onView(row.original)}>
-          <Eye className="mr-1.5 h-3.5 w-3.5" />
-          View
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onNavigate(row.original)}>
+              View Details
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ),
     },
   ];
