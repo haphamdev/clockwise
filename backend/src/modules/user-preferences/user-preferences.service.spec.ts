@@ -1,0 +1,88 @@
+import { ErrorCode } from '../../common/exceptions/error-codes';
+import { UserPreferencesService } from './user-preferences.service';
+import { UserPreferencesRepository } from './user-preferences.repository';
+import { UsersService } from '../users/users.service';
+import { UserPreferencesEntity } from './entities/user-preferences.entity';
+
+function makePreferences(
+  overrides?: Partial<UserPreferencesEntity>,
+): UserPreferencesEntity {
+  return {
+    theme: 'system',
+    dateFormat: null,
+    timeFormat: null,
+    timezone: 'UTC',
+    defaultProjectId: null,
+    weekStartDay: 'monday',
+    ...overrides,
+  };
+}
+
+describe('UserPreferencesService', () => {
+  let service: UserPreferencesService;
+  let prefsRepo: jest.Mocked<UserPreferencesRepository>;
+  let usersService: jest.Mocked<UsersService>;
+
+  beforeEach(() => {
+    prefsRepo = {
+      findPreferences: jest.fn(),
+      updatePreferences: jest.fn(),
+      findRawPreferences: jest.fn(),
+    } as unknown as jest.Mocked<UserPreferencesRepository>;
+
+    usersService = {
+      findById: jest.fn(),
+    } as unknown as jest.Mocked<UsersService>;
+
+    service = new UserPreferencesService(prefsRepo, usersService);
+  });
+
+  describe('getPreferences', () => {
+    it('should return preferences from repo', async () => {
+      const prefs = makePreferences({ theme: 'dark' });
+      prefsRepo.findPreferences.mockResolvedValue(prefs);
+
+      const result = await service.getPreferences('user-1');
+      expect(result).toEqual(prefs);
+      expect(prefsRepo.findPreferences).toHaveBeenCalledWith('user-1');
+    });
+
+    it('should throw USER_NOT_FOUND when user missing', async () => {
+      prefsRepo.findPreferences.mockResolvedValue(null);
+
+      await expect(service.getPreferences('bad-id')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.USER.NOT_FOUND }),
+      );
+    });
+  });
+
+  describe('updatePreferences', () => {
+    it('should merge partial update and return result', async () => {
+      const raw = { theme: 'dark' };
+      prefsRepo.findRawPreferences.mockResolvedValue(raw);
+      const updated = makePreferences({ theme: 'light' });
+      prefsRepo.updatePreferences.mockResolvedValue(updated);
+
+      const result = await service.updatePreferences('user-1', {
+        theme: 'light',
+      });
+
+      expect(result).toEqual(updated);
+      expect(prefsRepo.updatePreferences).toHaveBeenCalledWith(
+        'user-1',
+        raw,
+        { theme: 'light' },
+      );
+    });
+
+    it('should throw USER_NOT_FOUND when user missing', async () => {
+      prefsRepo.findRawPreferences.mockResolvedValue(null);
+
+      await expect(
+        service.updatePreferences('bad-id', { theme: 'dark' }),
+      ).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.USER.NOT_FOUND }),
+      );
+    });
+  });
+});

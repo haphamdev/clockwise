@@ -11,6 +11,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { UserPreferencesModule } from './modules/user-preferences/user-preferences.module';
 
 @Module({
   imports: [
@@ -27,8 +28,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
     InvitationsModule,
     AuditLogModule,
     ProjectsModule,
-    // Feature modules will be added here as they are implemented:
-    // TasksModule, TimeLogsModule, ReportsModule
+    UserPreferencesModule,
   ],
   controllers: [AppController],
 })
