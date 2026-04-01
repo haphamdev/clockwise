@@ -9,6 +9,7 @@ import {
   InvitationEmailAlreadyInvitedException,
   InvitationEmailAlreadyRegisteredException,
   InvitationInvalidTeamAssignmentException,
+  InvitationEmailSendFailedException,
 } from '../../common/exceptions/invitation.exceptions';
 import { InvitationsRepository } from './invitations.repository';
 import { UsersService } from '../users/users.service';
@@ -43,7 +44,10 @@ export class InvitationsService {
       throw new InvitationEmailAlreadyRegisteredException();
     }
 
-    const pendingInvitation = await this.invitationsRepository.findPendingByEmail(orgId, data.email);
+    const pendingInvitation = await this.invitationsRepository.findPendingByEmail(
+      orgId,
+      data.email,
+    );
     if (pendingInvitation) {
       throw new InvitationEmailAlreadyInvitedException();
     }
@@ -68,7 +72,12 @@ export class InvitationsService {
       teamAssignments: data.teamAssignments,
     });
 
-    await this.sendInvitationEmail(orgId, invitation);
+    try {
+      await this.sendInvitationEmail(orgId, invitation);
+    } catch {
+      await this.invitationsRepository.updateStatus(invitation.id, 'failed');
+      throw new InvitationEmailSendFailedException();
+    }
 
     return invitation;
   }
@@ -113,7 +122,14 @@ export class InvitationsService {
       expiresAt,
     );
 
-    await this.sendInvitationEmail(orgId, updated);
+    try {
+      await this.sendInvitationEmail(orgId, updated);
+    } catch {
+      await this.invitationsRepository.updateStatus(invitationId, 'failed');
+      throw new InvitationEmailSendFailedException();
+    }
+
+    await this.invitationsRepository.updateStatus(invitationId, 'pending');
 
     return updated;
   }

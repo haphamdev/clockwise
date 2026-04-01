@@ -9,11 +9,13 @@ export function useCreateInvitation() {
   return useMutation({
     mutationFn: createInvitation,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: invitationsKeys.lists() });
       toast.success('Invitation sent');
     },
     onError: (err) => {
       showErrorToast(err, 'Failed to send invitation');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: invitationsKeys.lists() });
     },
   });
 }

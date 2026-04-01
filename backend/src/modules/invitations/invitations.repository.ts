@@ -64,7 +64,7 @@ export class InvitationsRepository {
   ): Promise<{ data: InvitationEntity[]; total: number }> {
     const where = {
       orgId,
-      ...(options.status && { status: options.status as 'pending' | 'accepted' | 'revoked' }),
+      ...(options.status && { status: options.status as 'pending' | 'accepted' | 'revoked' | 'failed' }),
     };
 
     const [invitations, total] = await Promise.all([
@@ -104,7 +104,7 @@ export class InvitationsRepository {
 
   async findPendingByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { orgId, email, status: 'pending', expiresAt: { gt: new Date() } },
+      where: { orgId, email, status: { in: ['pending', 'failed'] }, expiresAt: { gt: new Date() } },
       include: INVITATION_INCLUDE,
     });
 
@@ -117,14 +117,14 @@ export class InvitationsRepository {
    */
   async findPendingByEmailAnyOrg(email: string): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { email, status: 'pending', expiresAt: { gt: new Date() } },
+      where: { email, status: { in: ['pending', 'failed'] }, expiresAt: { gt: new Date() } },
       include: INVITATION_INCLUDE,
     });
 
     return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
   }
 
-  async updateStatus(id: string, status: 'accepted' | 'revoked'): Promise<void> {
+  async updateStatus(id: string, status: 'accepted' | 'revoked' | 'pending' | 'failed'): Promise<void> {
     await this.prisma.invitation.update({
       where: { id },
       data: { status },

@@ -39,7 +39,7 @@ export class MailService implements OnModuleInit {
   async sendInvitationEmail(to: string, inviteUrl: string, orgName: string): Promise<void> {
     const subject = `You've been invited to join ${orgName}`;
     const html = [
-      `<h2>You're invited to ${orgName}</h2>`,
+      `<h2>Clockwise - You're invited to ${orgName}</h2>`,
       `<p>Click the link below to accept your invitation and sign in:</p>`,
       `<p><a href="${inviteUrl}">${inviteUrl}</a></p>`,
       `<p>This invitation expires in 7 days.</p>`,

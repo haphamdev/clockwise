@@ -9,6 +9,7 @@ const statusConfig = {
   deactivated: { label: 'Deactivated', className: 'bg-danger text-primary-foreground' },
   invited: { label: 'Invited', className: 'bg-info text-primary-foreground' },
   revoked: { label: 'Revoked', className: 'bg-danger text-primary-foreground' },
+  failed: { label: 'Failed', className: 'bg-danger text-primary-foreground' },
   expired: { label: 'Expired', className: 'bg-muted text-muted-foreground' },
 } as const;
 
@@ -21,8 +22,10 @@ interface StatusBadgeProps {
   className?: string;
 }
 
+const fallback = { label: 'Unknown', className: 'bg-muted text-muted-foreground' } as const;
+
 export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] ?? fallback;
   return (
     <Badge variant="outline" className={cn(config.className, className)}>
       {config.label}

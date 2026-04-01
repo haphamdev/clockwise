@@ -29,6 +29,7 @@ enum InvitationStatus {
   pending
   accepted
   revoked
+  failed
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
