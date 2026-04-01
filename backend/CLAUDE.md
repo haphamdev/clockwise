@@ -36,6 +36,7 @@ The backend enforces strict separation between three type layers:
 
 ## Development Workflow (TDD)
 
+Apply TDD workflow for all backend tasks.
 Use the `/tdd` skill for test-driven development. It handles the red-green-refactor loop automatically.
 
 ### Test structure

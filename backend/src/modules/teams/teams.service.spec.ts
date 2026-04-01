@@ -2,6 +2,7 @@ import { ErrorCode } from '../../common/exceptions/error-codes';
 import { TeamsService } from './teams.service';
 import { TeamsRepository } from './teams.repository';
 import { UsersService } from '../users/users.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { TeamEntity, TeamListItem, TeamWithMembers } from './entities/team.entity';
 import { UserWithTeams } from '../users/entities/user.entity';
 
@@ -35,6 +36,7 @@ function makeTeamWithMembers(overrides?: Partial<TeamWithMembers>): TeamWithMemb
         userId: 'user-1',
         userName: 'Alice',
         userEmail: 'alice@example.com',
+        userStatus: 'active',
         role: 'manager',
         createdAt: new Date(),
       },
@@ -43,6 +45,7 @@ function makeTeamWithMembers(overrides?: Partial<TeamWithMembers>): TeamWithMemb
         userId: 'user-2',
         userName: 'Bob',
         userEmail: 'bob@example.com',
+        userStatus: 'active',
         role: 'member',
         createdAt: new Date(),
       },
@@ -72,6 +75,7 @@ describe('TeamsService', () => {
   let service: TeamsService;
   let repo: jest.Mocked<TeamsRepository>;
   let usersService: jest.Mocked<UsersService>;
+  let auditLogService: jest.Mocked<AuditLogService>;
 
   beforeEach(() => {
     repo = {
@@ -94,7 +98,12 @@ describe('TeamsService', () => {
       findById: jest.fn(),
     } as unknown as jest.Mocked<UsersService>;
 
-    service = new TeamsService(repo, usersService);
+    auditLogService = {
+      log: jest.fn(),
+      logMany: jest.fn(),
+    } as unknown as jest.Mocked<AuditLogService>;
+
+    service = new TeamsService(repo, usersService, auditLogService);
   });
 
   describe('findAll', () => {
@@ -167,7 +176,7 @@ describe('TeamsService', () => {
       const team = makeTeam();
       repo.create.mockResolvedValue(team);
 
-      const res = await service.create('org-1', { name: 'Engineering' });
+      const res = await service.create('org-1', { name: 'Engineering' }, 'admin-1');
       expect(res).toEqual(team);
       expect(repo.create).toHaveBeenCalledWith({ orgId: 'org-1', name: 'Engineering' });
     });
@@ -178,7 +187,7 @@ describe('TeamsService', () => {
       );
       repo.create.mockRejectedValue(new TeamAlreadyExistsException());
 
-      await expect(service.create('org-1', { name: 'Engineering' })).rejects.toThrow(
+      await expect(service.create('org-1', { name: 'Engineering' }, 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ALREADY_EXISTS }),
       );
     });
@@ -190,14 +199,14 @@ describe('TeamsService', () => {
       const updated = makeTeam({ name: 'Platform' });
       repo.update.mockResolvedValue(updated);
 
-      const res = await service.update('team-1', 'org-1', { name: 'Platform' });
+      const res = await service.update('team-1', 'org-1', { name: 'Platform' }, 'admin-1');
       expect(res).toEqual(updated);
     });
 
     it('should throw ARCHIVED for archived team', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam({ isArchived: true }));
 
-      await expect(service.update('team-1', 'org-1', { name: 'New' })).rejects.toThrow(
+      await expect(service.update('team-1', 'org-1', { name: 'New' }, 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ARCHIVED }),
       );
     });
@@ -209,7 +218,7 @@ describe('TeamsService', () => {
       repo.findEntityById.mockResolvedValue(makeTeam());
       repo.update.mockRejectedValue(new TeamAlreadyExistsException());
 
-      await expect(service.update('team-1', 'org-1', { name: 'Taken' })).rejects.toThrow(
+      await expect(service.update('team-1', 'org-1', { name: 'Taken' }, 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ALREADY_EXISTS }),
       );
     });
@@ -217,7 +226,7 @@ describe('TeamsService', () => {
     it('should throw NOT_FOUND for team in different org', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam({ orgId: 'other-org' }));
 
-      await expect(service.update('team-1', 'org-1', { name: 'New' })).rejects.toThrow(
+      await expect(service.update('team-1', 'org-1', { name: 'New' }, 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.NOT_FOUND }),
       );
     });
@@ -229,14 +238,14 @@ describe('TeamsService', () => {
       const archived = makeTeam({ isArchived: true });
       repo.archive.mockResolvedValue(archived);
 
-      const res = await service.archive('team-1', 'org-1');
+      const res = await service.archive('team-1', 'org-1', 'admin-1');
       expect(res.isArchived).toBe(true);
     });
 
     it('should throw ARCHIVED if already archived', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam({ isArchived: true }));
 
-      await expect(service.archive('team-1', 'org-1')).rejects.toThrow(
+      await expect(service.archive('team-1', 'org-1', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ARCHIVED }),
       );
     });
@@ -248,14 +257,14 @@ describe('TeamsService', () => {
       const unarchived = makeTeam({ isArchived: false });
       repo.unarchive.mockResolvedValue(unarchived);
 
-      const res = await service.unarchive('team-1', 'org-1');
+      const res = await service.unarchive('team-1', 'org-1', 'admin-1');
       expect(res.isArchived).toBe(false);
     });
 
     it('should throw NOT_ARCHIVED if team is not archived', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam({ isArchived: false }));
 
-      await expect(service.unarchive('team-1', 'org-1')).rejects.toThrow(
+      await expect(service.unarchive('team-1', 'org-1', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.NOT_ARCHIVED }),
       );
     });
@@ -263,7 +272,7 @@ describe('TeamsService', () => {
     it('should throw NOT_FOUND for team in different org', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam({ orgId: 'other-org' }));
 
-      await expect(service.unarchive('team-1', 'org-1')).rejects.toThrow(
+      await expect(service.unarchive('team-1', 'org-1', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.NOT_FOUND }),
       );
     });
@@ -279,12 +288,13 @@ describe('TeamsService', () => {
         userId: 'user-3',
         userName: 'Charlie',
         userEmail: 'charlie@example.com',
+        userStatus: 'active',
         role: 'member' as const,
         createdAt: new Date(),
       };
       repo.addMember.mockResolvedValue(member);
 
-      const res = await service.addMember('team-1', 'org-1', 'user-3', 'member');
+      const res = await service.addMember('team-1', 'org-1', 'user-3', 'member', 'admin-1');
       expect(res).toEqual(member);
     });
 
@@ -292,7 +302,7 @@ describe('TeamsService', () => {
       repo.findEntityById.mockResolvedValue(makeTeam());
       usersService.findById.mockResolvedValue(null);
 
-      await expect(service.addMember('team-1', 'org-1', 'bad-user', 'member')).rejects.toThrow(
+      await expect(service.addMember('team-1', 'org-1', 'bad-user', 'member', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.USER_NOT_FOUND }),
       );
     });
@@ -301,7 +311,7 @@ describe('TeamsService', () => {
       repo.findEntityById.mockResolvedValue(makeTeam());
       usersService.findById.mockResolvedValue(makeUserWithTeams({ orgId: 'other-org' }));
 
-      await expect(service.addMember('team-1', 'org-1', 'user-3', 'member')).rejects.toThrow(
+      await expect(service.addMember('team-1', 'org-1', 'user-3', 'member', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.USER_NOT_FOUND }),
       );
     });
@@ -310,7 +320,7 @@ describe('TeamsService', () => {
       repo.findEntityById.mockResolvedValue(makeTeam());
       usersService.findById.mockResolvedValue(makeUserWithTeams({ status: 'deactivated' }));
 
-      await expect(service.addMember('team-1', 'org-1', 'user-3', 'member')).rejects.toThrow(
+      await expect(service.addMember('team-1', 'org-1', 'user-3', 'member', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.USER_NOT_FOUND }),
       );
     });
@@ -323,11 +333,12 @@ describe('TeamsService', () => {
         userId: 'user-1',
         userName: 'Alice',
         userEmail: 'alice@example.com',
+        userStatus: 'active',
         role: 'manager',
         createdAt: new Date(),
       });
 
-      await expect(service.addMember('team-1', 'org-1', 'user-1', 'member')).rejects.toThrow(
+      await expect(service.addMember('team-1', 'org-1', 'user-1', 'member', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.MEMBER_ALREADY_EXISTS }),
       );
     });
@@ -335,7 +346,7 @@ describe('TeamsService', () => {
     it('should throw ARCHIVED for archived team', async () => {
       repo.findEntityById.mockResolvedValue(makeTeam({ isArchived: true }));
 
-      await expect(service.addMember('team-1', 'org-1', 'user-3', 'member')).rejects.toThrow(
+      await expect(service.addMember('team-1', 'org-1', 'user-3', 'member', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.ARCHIVED }),
       );
     });
@@ -349,6 +360,7 @@ describe('TeamsService', () => {
         userId: 'user-2',
         userName: 'Bob',
         userEmail: 'bob@example.com',
+        userStatus: 'active',
         role: 'member',
         createdAt: new Date(),
       });
@@ -357,12 +369,13 @@ describe('TeamsService', () => {
         userId: 'user-2',
         userName: 'Bob',
         userEmail: 'bob@example.com',
+        userStatus: 'active',
         role: 'manager' as const,
         createdAt: new Date(),
       };
       repo.updateMemberRole.mockResolvedValue(updated);
 
-      const res = await service.updateMemberRole('team-1', 'org-1', 'user-2', 'manager');
+      const res = await service.updateMemberRole('team-1', 'org-1', 'user-2', 'manager', 'admin-1');
       expect(res.role).toBe('manager');
     });
 
@@ -371,7 +384,7 @@ describe('TeamsService', () => {
       repo.findMember.mockResolvedValue(null);
 
       await expect(
-        service.updateMemberRole('team-1', 'org-1', 'bad-user', 'member'),
+        service.updateMemberRole('team-1', 'org-1', 'bad-user', 'member', 'admin-1'),
       ).rejects.toThrow(expect.objectContaining({ code: ErrorCode.TEAM.MEMBER_NOT_FOUND }));
     });
 
@@ -382,13 +395,14 @@ describe('TeamsService', () => {
         userId: 'user-1',
         userName: 'Alice',
         userEmail: 'alice@example.com',
+        userStatus: 'active',
         role: 'manager',
         createdAt: new Date(),
       });
       repo.countManagers.mockResolvedValue(1);
 
       await expect(
-        service.updateMemberRole('team-1', 'org-1', 'user-1', 'member'),
+        service.updateMemberRole('team-1', 'org-1', 'user-1', 'member', 'admin-1'),
       ).rejects.toThrow(expect.objectContaining({ code: ErrorCode.TEAM.LAST_MANAGER }));
     });
   });
@@ -401,12 +415,13 @@ describe('TeamsService', () => {
         userId: 'user-2',
         userName: 'Bob',
         userEmail: 'bob@example.com',
+        userStatus: 'active',
         role: 'member',
         createdAt: new Date(),
       });
       repo.removeMember.mockResolvedValue(undefined);
 
-      await service.removeMember('team-1', 'org-1', 'user-2');
+      await service.removeMember('team-1', 'org-1', 'user-2', 'admin-1');
       expect(repo.removeMember).toHaveBeenCalledWith('team-1', 'user-2');
     });
 
@@ -414,7 +429,7 @@ describe('TeamsService', () => {
       repo.findEntityById.mockResolvedValue(makeTeam());
       repo.findMember.mockResolvedValue(null);
 
-      await expect(service.removeMember('team-1', 'org-1', 'bad-user')).rejects.toThrow(
+      await expect(service.removeMember('team-1', 'org-1', 'bad-user', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.MEMBER_NOT_FOUND }),
       );
     });
@@ -426,12 +441,13 @@ describe('TeamsService', () => {
         userId: 'user-1',
         userName: 'Alice',
         userEmail: 'alice@example.com',
+        userStatus: 'active',
         role: 'manager',
         createdAt: new Date(),
       });
       repo.countManagers.mockResolvedValue(1);
 
-      await expect(service.removeMember('team-1', 'org-1', 'user-1')).rejects.toThrow(
+      await expect(service.removeMember('team-1', 'org-1', 'user-1', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.TEAM.LAST_MANAGER }),
       );
     });
