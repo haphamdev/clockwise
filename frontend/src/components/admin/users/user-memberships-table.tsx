@@ -19,7 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Users } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { UserTeamMembership } from '@/lib/users/types';
 import type { TeamRole } from '@/lib/teams/types';
 
@@ -46,7 +47,13 @@ export function UserMembershipsTable({
   }, [removingTeamId, removingTeam]);
 
   if (memberships.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">No team memberships.</p>;
+    return (
+      <EmptyState
+        icon={Users}
+        title="No team memberships"
+        description="This user hasn't been added to any teams yet. Use the button above to assign them to a team."
+      />
+    );
   }
 
   return (

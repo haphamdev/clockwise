@@ -1,6 +1,6 @@
 import { Controller, Get, Patch, Param, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { AdminOnly } from '../../common/decorators/auth.decorators';
+import { AdminOnly, Auth } from '../../common/decorators/auth.decorators';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserEntity, UserWithTeams } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -39,6 +39,7 @@ export class UsersController {
 
   // Must be declared before @Get(':id') to avoid 'me' matching as a route param
   @Get('me')
+  @Auth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiOkResponse({ type: UserResponseDto })
   async getMyProfile(@CurrentUser() user: UserEntity): Promise<UserResponseDto> {

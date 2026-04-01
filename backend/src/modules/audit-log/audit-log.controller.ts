@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { AdminOnly } from '../../common/decorators/auth.decorators';
+import { AdminOnly, Auth } from '../../common/decorators/auth.decorators';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import { AuditLogService } from './audit-log.service';
@@ -14,6 +14,7 @@ export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 
   @Get('me')
+  @Auth()
   @ApiOperation({ summary: 'List audit logs for current user' })
   @ApiOkResponse({ type: AuditLogListResponseDto })
   async myLogs(
