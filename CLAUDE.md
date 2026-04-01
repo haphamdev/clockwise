@@ -33,6 +33,7 @@ Tasks are auto-created when a user logs time with a new identifier. Tasks are sc
 ## Key Conventions
 
 - Keep files small and single-purpose — aim for ~100 lines, hard max 300 lines.
+- **Never delete data records** — mark them as deactivated, archived, revoked, etc. All records must be preserved for audit log integrity.
 - All soft-deletes use `isDeleted` boolean (not actual deletion)
 - Team archival uses `isArchived`, project archival uses `status: archived`
 - Org settings stored as JSONB on the `organization` table
