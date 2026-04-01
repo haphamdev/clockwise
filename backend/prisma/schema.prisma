@@ -59,9 +59,10 @@ model User {
   isAdmin     Boolean    @default(false) @map("is_admin")
   status      UserStatus @default(pending)
   lastLoginAt  DateTime? @map("last_login_at")
-  refreshToken String?   @map("refresh_token")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  refreshToken  String?   @map("refresh_token")
+  preferences   Json      @default("{}")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   org              Organization   @relation(fields: [orgId], references: [id])
   teamMemberships  TeamMember[]
