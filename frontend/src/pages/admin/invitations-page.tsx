@@ -18,7 +18,6 @@ import { useInvitations } from '@/lib/invitations/use-invitations';
 import { useRevokeInvitation } from '@/lib/invitations/use-revoke-invitation';
 import { useResendInvitation } from '@/lib/invitations/use-resend-invitation';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useFormatDate } from '@/lib/org/use-format-date';
 import type { Invitation, InvitationStatus } from '@/lib/invitations/types';
 
 export function InvitationsPage() {
@@ -35,7 +34,6 @@ export function InvitationsPage() {
 
   const revokeInvitation = useRevokeInvitation();
   const resendInvitation = useResendInvitation();
-  const { formatDate } = useFormatDate();
 
   const handleStatusChange = useCallback(
     (value: string) => setParam('status', value === 'all' ? '' : value),
@@ -48,9 +46,8 @@ export function InvitationsPage() {
         (inv) => resendInvitation.mutate(inv.id),
         (inv) => revokeInvitation.mutate(inv.id),
         (inv) => setEditingInvitation(inv),
-        formatDate,
       ),
-    [resendInvitation, revokeInvitation, formatDate],
+    [resendInvitation, revokeInvitation],
   );
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;

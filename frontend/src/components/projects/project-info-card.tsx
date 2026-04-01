@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import type { ProjectDetail } from '@/lib/projects/types';
-import { useFormatDate } from '@/lib/org/use-format-date';
+import { TimeDisplay } from '@/components/ui/time-display';
 
 interface ProjectInfoCardProps {
   project: ProjectDetail;
@@ -22,7 +22,6 @@ export function ProjectInfoCard({
   canEdit,
   canArchive,
 }: ProjectInfoCardProps) {
-  const { formatDate } = useFormatDate();
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -69,7 +68,7 @@ export function ProjectInfoCard({
           </div>
           <div>
             <dt className="text-muted-foreground">Created</dt>
-            <dd className="font-medium">{formatDate(project.createdAt)}</dd>
+            <dd className="font-medium"><TimeDisplay value={project.createdAt} /></dd>
           </div>
         </dl>
       </CardContent>

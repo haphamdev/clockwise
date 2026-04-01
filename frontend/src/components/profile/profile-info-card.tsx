@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge, type Status } from '@/components/ui/status-badge';
-import { useFormatDate } from '@/lib/org/use-format-date';
+import { TimeDisplay } from '@/components/ui/time-display';
 import type { User } from '@/lib/users/types';
 
 interface ProfileInfoCardProps {
@@ -10,7 +10,6 @@ interface ProfileInfoCardProps {
 }
 
 export function ProfileInfoCard({ user }: ProfileInfoCardProps) {
-  const { formatDate } = useFormatDate();
   const archivedCount = user.teamMemberships.filter((t) => t.isArchived).length;
 
   return (
@@ -47,12 +46,12 @@ export function ProfileInfoCard({ user }: ProfileInfoCardProps) {
           <div>
             <dt className="text-muted-foreground">Last Login</dt>
             <dd className="font-medium">
-              {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
+              <TimeDisplay value={user.lastLoginAt} fallback="Never" />
             </dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Member Since</dt>
-            <dd className="font-medium">{formatDate(user.createdAt)}</dd>
+            <dd className="font-medium"><TimeDisplay value={user.createdAt} /></dd>
           </div>
         </dl>
       </CardContent>

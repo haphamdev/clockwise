@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { formatAuditAction } from '@/lib/audit-logs/format-audit-action';
 import { computeMetadataDiff } from '@/lib/audit-logs/compute-metadata-diff';
-import { useFormatDate } from '@/lib/org/use-format-date';
+import { TimeDisplay } from '@/components/ui/time-display';
 import type { AuditLogEntry } from '@/lib/audit-logs/types';
 
 interface AuditTimelineEntryProps {
@@ -11,7 +11,6 @@ interface AuditTimelineEntryProps {
 
 export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
   const [expanded, setExpanded] = useState(false);
-  const { formatDateTime } = useFormatDate();
   const description = formatAuditAction(entry);
   const diff = useMemo(
     () => computeMetadataDiff(entry.metadata.before, entry.metadata.after),
@@ -30,7 +29,7 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
       <div className="min-w-0 flex-1">
         <p className="text-sm">{description}</p>
         <p className="text-xs text-muted-foreground">
-          {entry.performedBy.name} &middot; {formatDateTime(entry.createdAt)}
+          {entry.performedBy.name} &middot; <TimeDisplay value={entry.createdAt} mode="datetime" />
         </p>
 
         {hasDiff && (
