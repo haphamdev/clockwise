@@ -3,7 +3,6 @@ import { Reflector } from '@nestjs/core';
 import { IsAdminGuard } from './is-admin.guard';
 import { RolesGuard } from './roles.guard';
 import { TeamMemberGuard } from './team-member.guard';
-import { IsProjectOwnerGuard } from './is-project-owner.guard';
 import { AppException } from '../exceptions/app.exception';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -169,66 +168,3 @@ describe('TeamMemberGuard', () => {
   });
 });
 
-describe('IsProjectOwnerGuard', () => {
-  let guard: IsProjectOwnerGuard;
-  let prisma: { project: { findUnique: jest.Mock } };
-
-  beforeEach(() => {
-    prisma = { project: { findUnique: jest.fn() } };
-    guard = new IsProjectOwnerGuard(prisma as unknown as PrismaService);
-  });
-
-  it('should allow admin without checking ownership', async () => {
-    const ctx = createMockContext({
-      user: { id: '1', isAdmin: true },
-      params: { projectId: 'proj-1' },
-    });
-
-    expect(await guard.canActivate(ctx)).toBe(true);
-    expect(prisma.project.findUnique).not.toHaveBeenCalled();
-  });
-
-  it('should allow project owner', async () => {
-    prisma.project.findUnique.mockResolvedValue({ ownerId: 'user-1' });
-    const ctx = createMockContext({
-      user: { id: 'user-1', isAdmin: false },
-      params: { projectId: 'proj-1' },
-    });
-
-    expect(await guard.canActivate(ctx)).toBe(true);
-  });
-
-  it('should deny non-owner', async () => {
-    prisma.project.findUnique.mockResolvedValue({ ownerId: 'other-user' });
-    const ctx = createMockContext({
-      user: { id: 'user-1', isAdmin: false },
-      params: { projectId: 'proj-1' },
-    });
-
-    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
-  });
-
-  it('should throw AppException when project does not exist', async () => {
-    prisma.project.findUnique.mockResolvedValue(null);
-    const ctx = createMockContext({
-      user: { id: 'user-1', isAdmin: false },
-      params: { projectId: 'bad-id' },
-    });
-
-    await expect(guard.canActivate(ctx)).rejects.toThrow(AppException);
-  });
-
-  it('should use :id param as fallback for :projectId', async () => {
-    prisma.project.findUnique.mockResolvedValue({ ownerId: 'user-1' });
-    const ctx = createMockContext({
-      user: { id: 'user-1', isAdmin: false },
-      params: { id: 'proj-1' },
-    });
-
-    expect(await guard.canActivate(ctx)).toBe(true);
-    expect(prisma.project.findUnique).toHaveBeenCalledWith({
-      where: { id: 'proj-1' },
-      select: { ownerId: true },
-    });
-  });
-});

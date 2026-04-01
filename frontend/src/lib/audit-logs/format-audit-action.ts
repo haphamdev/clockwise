@@ -8,6 +8,7 @@ export function formatAuditAction(entry: AuditLogEntry): string {
   switch (action) {
     case 'created':
       if (entityType === 'team') return `Created team "${after?.name}"`;
+      if (entityType === 'project') return `Created project "${after?.name}"`;
       if (entityType === 'user') return `Invited ${after?.email}`;
       return 'Created';
 
@@ -19,6 +20,14 @@ export function formatAuditAction(entry: AuditLogEntry): string {
 
     case 'unarchived':
       return 'Unarchived';
+
+    case 'team_assigned':
+      if (entityType === 'project') return `Assigned team "${after?.teamName}"`;
+      return `Assigned to project "${after?.projectName}"`;
+
+    case 'team_removed':
+      if (entityType === 'project') return `Removed team "${before?.teamName}"`;
+      return `Removed from project "${before?.projectName}"`;
 
     case 'activated':
       return `Activated as "${after?.name}"`;

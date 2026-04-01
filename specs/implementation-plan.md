@@ -53,16 +53,20 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### Epic 3: Project Management
+### Epic 3: Project Management ✅
 
-#### US-10: Create & Manage Projects
-> As a **Manager or Admin**, I want to create projects, edit their details, and archive them, so that work can be organized.
+#### US-10: Create & Manage Projects ✅
+> As a **Manager or Admin**, I want to create projects with team assignments, edit their details, and archive/unarchive them, so that work can be organized.
+>
+> **Implementation note**: Projects use team-based governance (no project owner). Admins can manage any project; Managers can manage projects linked to their managed teams. Projects require at least one team. Active project names are unique per org.
 
-#### US-11: Assign Members to Projects
-> As a **Project Owner or Admin**, I want to assign users from any team to a project and remove them, so that the right people can log time.
+#### US-11: Assign Teams to Projects ✅
+> As an **Admin or Manager**, I want to assign and remove teams to/from a project, so that the right people can access the project and log time.
+>
+> **Implementation note**: Replaced individual member assignment with team assignment via `ProjectTeam` join table. A project must always have at least one team.
 
-#### US-12: Transfer Project Ownership
-> As a **Project Owner or Admin**, I want to transfer project ownership to another Admin or Manager, so that project management can be handed off.
+#### ~~US-12: Transfer Project Ownership~~ (Removed)
+> No longer needed — projects have no owner. Governance is role-based through team assignments.
 
 ---
 
@@ -199,7 +203,7 @@ Stories are ordered by dependency — each story builds on the ones before it.
 | 4.1 | Create `@Roles()` decorator | BE | Custom decorator to annotate endpoints with required roles. |
 | 4.2 | Create `RolesGuard` | BE | NestJS guard that checks the user's role against the required roles. For team-scoped endpoints, resolve the user's role in the relevant team. |
 | 4.3 | Create `@IsAdmin()` guard | BE | Shorthand guard for admin-only endpoints (checks `user.isAdmin`). |
-| 4.4 | Create `@IsProjectOwner()` guard | BE | Guard that checks if the current user is the owner of the target project. |
+| 4.4 | Create `@ProjectManager()` guard | BE | Guard that checks if the current user is an admin or manager of a team linked to the target project. ✅ |
 | 4.5 | Create `TeamMemberGuard` | BE | Guard that checks if user has the required role within a specific team. Resolves `teamId` from route param or resource. |
 
 ---
@@ -269,37 +273,36 @@ Stories are ordered by dependency — each story builds on the ones before it.
 
 ---
 
-### US-10: Create & Manage Projects
+### US-10: Create & Manage Projects ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
-| 10.1 | Create `ProjectsModule` | BE | Module, controller, service. |
-| 10.2 | Implement `GET /projects` | BE | Scoped: Admin sees all, Manager sees owned + team-related, Member sees assigned only. Filterable by status. |
-| 10.3 | Implement `POST /projects` | BE | Admin or Manager. Creates project with name, description. Creator is set as owner. |
-| 10.4 | Implement `GET /projects/:id` | BE | Project detail with member list and team affiliation. Accessible by project member or Admin. |
-| 10.5 | Implement `PATCH /projects/:id` | BE | Admin or Owner. Update name, description. |
-| 10.6 | Implement `PATCH /projects/:id/archive` | BE | Admin or Owner. Set status to `archived`. |
-| 10.7 | Create project list UI | FE | Project list page with status filter, create project dialog. |
-| 10.8 | Create project detail UI | FE | Detail page showing project info, member list, edit/archive actions (for Owner/Admin). |
+| 10.1 | Create `ProjectsModule` | BE | Module, controller, service, repository. ✅ |
+| 10.2 | Implement `GET /projects` | BE | Admin sees all; others scoped by team membership. Filterable by status (`includeArchived`). ✅ |
+| 10.3 | Implement `POST /projects` | BE | Admin or Manager. Creates project with name, description, and `teamIds[]` (min 1). Non-admin must manage all requested teams. ✅ |
+| 10.4 | Implement `GET /projects/:id` | BE | Project detail with assigned teams. Admin or member of linked team. ✅ |
+| 10.5 | Implement `PATCH /projects/:id` | BE | Admin or Manager of linked team. Update name, description. ✅ |
+| 10.6 | Implement `PATCH /projects/:id/archive` | BE | Admin only. Set status to `archived`. ✅ |
+| 10.7 | Implement `PATCH /projects/:id/unarchive` | BE | Admin only. Set status back to `active`. ✅ |
+| 10.8 | Create project list UI | FE | List page with `ServerDataTable`, pagination, archived filter (admin only), Create button (admin/manager). ✅ |
+| 10.9 | Create project detail UI | FE | Info card + teams table + audit timeline + edit/assign-team sheets. ✅ |
 
 ---
 
-### US-11: Assign Members to Projects
+### US-11: Assign Teams to Projects ✅
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
-| 11.1 | Implement `POST /projects/:id/members` | BE | Admin or Owner. Add user to project. Validate user exists and is active. |
-| 11.2 | Implement `DELETE /projects/:id/members/:userId` | BE | Admin or Owner. Remove user from project. Existing time logs remain. |
-| 11.3 | Add member assignment UI to project detail | FE | User picker to add members, remove button per member row. |
+| 11.1 | Implement `POST /projects/:id/teams` | BE | Admin or Manager of the team being assigned. Also must manage at least one already-linked team (non-admin). ✅ |
+| 11.2 | Implement `DELETE /projects/:id/teams/:teamId` | BE | Admin or Manager of the team being removed. Prevents removing last team. ✅ |
+| 11.3 | Add team assignment UI to project detail | FE | Combobox team picker (filters out already-assigned/archived teams), remove button with confirmation dialog. ✅ |
+| 11.4 | Audit logging for team assignment | BE | Logs `team_assigned`/`team_removed` actions to both project and team entities. ✅ |
 
 ---
 
-### US-12: Transfer Project Ownership
+### ~~US-12: Transfer Project Ownership~~ (Removed)
 
-| # | Task | Layer | Details |
-|---|------|-------|---------|
-| 12.1 | Implement `PATCH /projects/:id/transfer` | BE | Admin or current Owner. Accept `{ newOwnerId }`. Validate target is Admin or Manager. |
-| 12.2 | Add transfer ownership UI | FE | Button on project detail page, user picker for new owner. |
+_No longer applicable. Projects have no owner — governance is role-based through team assignments._
 
 ---
 
@@ -443,8 +446,8 @@ Phase 1 — Foundation (US-1 → US-4) ✅
 Phase 2 — Admin & Teams (US-5 → US-9) ✅
   Invitations, user/team management, org settings.
 
-Phase 3 — Projects (US-10 → US-12)
-  Project CRUD, member assignment, ownership transfer.
+Phase 3 — Projects (US-10 → US-11) ✅
+  Project CRUD, team assignment, audit logging. (US-12 removed — no project owner.)
 
 Phase 4 — Time Logging (US-13 → US-18)
   Core time logging, tasks, CSV import, warnings.

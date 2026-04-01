@@ -38,8 +38,8 @@ See `specs/auth.md` for invitation flow details.
 ### Deactivate User
 - Soft-deactivation: user can no longer log in.
 - Existing time logs are preserved.
-- User is removed from all active project assignments.
-- Can be reactivated later (restores login but not project assignments).
+- User's team memberships remain intact (projects are accessed through teams, not individual assignment).
+- Can be reactivated later (restores login access).
 
 ### User Status Lifecycle
 ```
@@ -62,8 +62,8 @@ See `specs/projects-and-teams.md` for detailed team operations.
 
 ## Project Oversight
 - Admin can view all projects across all teams.
-- Admin can reassign project ownership.
-- Admin can archive any project.
+- Admin can create, edit, archive, and unarchive any project.
+- Admin can assign or remove any team to/from any project.
 
 ---
 

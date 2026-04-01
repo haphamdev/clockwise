@@ -36,8 +36,7 @@ Organization (single-tenant)
 │   ├── Manager(s) — multiple allowed
 │   └── Members — can belong to multiple teams
 ├── Projects
-│   ├── Owner (designated Admin or Manager)
-│   ├── Assigned Members (from any team, cross-team)
+│   ├── Assigned Teams (via ProjectTeam join table)
 │   └── Tasks (auto-created from time logs, scoped per project)
 └── Time Logs
     ├── User
@@ -49,7 +48,8 @@ Organization (single-tenant)
 
 **Key rules:**
 
-- A user can belong to multiple teams and be assigned to multiple projects.
+- A user can belong to multiple teams. Users access projects through team membership (not individual assignment).
+- Teams are assigned to projects via a many-to-many `ProjectTeam` join table. A project must have at least one team.
 - Tasks are scoped per-project. The same JIRA ID in different projects are treated as separate tasks.
 - Tasks are not pre-created. When a user logs time with a new task identifier (JIRA ID or text), the task is auto-created under that project.
 - A task has an ID and a distinct label, used for display and reporting.
@@ -72,7 +72,7 @@ Create teams, assign manager(s), add/remove members.
 
 ### 3. Project Management
 
-Managers create projects, assign team members. Members see their assigned projects.
+Admins and Managers create projects with team assignments. Members see projects linked to their teams.
 → _Detailed spec: `specs/projects-and-teams.md`_
 
 ### 4. Time Logging
@@ -118,7 +118,6 @@ Org-level settings, user management, team setup.
 
 ## Future Enhancements (Post-MVP)
 
-- **Audit log** — Track login events, role changes, permission modifications for compliance.
 - **Additional SSO providers** — Microsoft OAuth, SAML for custom IdPs.
 - **Timer-based time tracking** — Start/stop timer for real-time tracking.
 - **Timesheet grid view** — Weekly grid (days as columns, tasks as rows).

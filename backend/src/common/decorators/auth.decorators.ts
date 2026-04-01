@@ -2,7 +2,6 @@ import { applyDecorators, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
 import { IsAdminGuard } from '../guards/is-admin.guard';
-import { IsProjectOwnerGuard } from '../guards/is-project-owner.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { TeamMemberGuard } from '../guards/team-member.guard';
 import { Roles } from './roles.decorator';
@@ -41,16 +40,5 @@ export const TeamRole = (...roles: Array<'manager' | 'member'>) =>
 export const TeamMember = () =>
   applyDecorators(
     UseGuards(JwtAuthGuard, TeamMemberGuard),
-    ApiBearerAuth(),
-  );
-
-/**
- * Requires the user to be the owner of the project identified by
- * `:projectId` or `:id`. Admins bypass this check.
- * Includes JWT authentication.
- */
-export const ProjectOwner = () =>
-  applyDecorators(
-    UseGuards(JwtAuthGuard, IsProjectOwnerGuard),
     ApiBearerAuth(),
   );

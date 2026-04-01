@@ -10,6 +10,7 @@ import { OrgModule } from './modules/org/org.module';
 import { MailModule } from './modules/mail/mail.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
+import { ProjectsModule } from './modules/projects/projects.module';
 
 @Module({
   imports: [
@@ -25,8 +26,9 @@ import { AuditLogModule } from './modules/audit-log/audit-log.module';
     OrgModule,
     InvitationsModule,
     AuditLogModule,
+    ProjectsModule,
     // Feature modules will be added here as they are implemented:
-    // ProjectsModule, TasksModule, TimeLogsModule, ReportsModule
+    // TasksModule, TimeLogsModule, ReportsModule
   ],
   controllers: [AppController],
 })
