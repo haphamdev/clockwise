@@ -1,6 +1,6 @@
 export const auditLogsKeys = {
   all: ['audit-logs'] as const,
-  list: (entityType: string, entityId: string, page: number) =>
-    [...auditLogsKeys.all, entityType, entityId, page] as const,
-  me: (page: number) => [...auditLogsKeys.all, 'me', page] as const,
+  list: (entityType: string, entityId: string) =>
+    [...auditLogsKeys.all, entityType, entityId] as const,
+  me: () => [...auditLogsKeys.all, 'me'] as const,
 };

@@ -1,9 +1,7 @@
-import { useState } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AUDIT_LOG_PAGE_SIZE } from '@/lib/audit-logs/constants';
 import { useAuditLogs } from '@/lib/audit-logs/use-audit-logs';
 import { useMyAuditLogs } from '@/lib/audit-logs/use-my-audit-logs';
 import { AuditTimelineEntry } from './audit-timeline-entry';
@@ -23,18 +21,20 @@ interface SelfServiceTimelineProps {
 type AuditTimelineProps = AdminTimelineProps | SelfServiceTimelineProps;
 
 export function AuditTimeline(props: AuditTimelineProps) {
-  const [page, setPage] = useState(1);
-
   const isSelfService = !!props.selfService;
   const adminQuery = useAuditLogs(
     isSelfService ? '' : props.entityType!,
     isSelfService ? '' : props.entityId!,
-    page,
     !isSelfService,
   );
-  const selfServiceQuery = useMyAuditLogs(page, isSelfService);
+  const selfServiceQuery = useMyAuditLogs(isSelfService);
 
-  const { data, isLoading } = props.selfService ? selfServiceQuery : adminQuery;
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = props.selfService
+    ? selfServiceQuery
+    : adminQuery;
+
+  const entries = data?.pages.flatMap((p) => p.data) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
 
   return (
     <div>
@@ -54,7 +54,7 @@ export function AuditTimeline(props: AuditTimelineProps) {
         </div>
       )}
 
-      {data && data.data.length === 0 && (
+      {!isLoading && entries.length === 0 && (
         <EmptyState
           icon={Clock}
           title="No activity yet"
@@ -62,37 +62,31 @@ export function AuditTimeline(props: AuditTimelineProps) {
         />
       )}
 
-      {data && data.data.length > 0 && (
+      {entries.length > 0 && (
         <>
           <div>
-            {data.data.map((entry) => (
+            {entries.map((entry) => (
               <AuditTimelineEntry key={entry.id} entry={entry} />
             ))}
           </div>
 
-          {data.total > AUDIT_LOG_PAGE_SIZE && (
-            <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex flex-col items-start ">
+            <span className="text-sm text-muted-foreground">
+              Showing {entries.length} of {total}
+            </span>
+            {hasNextPage && (
               <Button
-                variant="outline"
+                variant="link"
                 size="sm"
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page <= 1}
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+                className='px-0'
               >
-                Previous
+                {isFetchingNextPage && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                Load more
               </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {Math.ceil(data.total / AUDIT_LOG_PAGE_SIZE)}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page >= Math.ceil(data.total / AUDIT_LOG_PAGE_SIZE)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
         </>
       )}
     </div>
