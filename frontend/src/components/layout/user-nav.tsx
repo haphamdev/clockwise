@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -46,6 +46,12 @@ export function UserNav() {
           <Link to="/profile">
             <User className="mr-2 h-4 w-4" />
             My Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/profile/settings">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

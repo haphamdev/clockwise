@@ -1,8 +1,11 @@
 import { Outlet } from 'react-router-dom';
 import { Toaster } from '@/components/ui/sonner';
 import { Navbar } from '@/components/layout/navbar';
+import { useSyncTheme } from '@/lib/user-preferences/use-sync-theme';
 
 export function AppLayout() {
+  useSyncTheme();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

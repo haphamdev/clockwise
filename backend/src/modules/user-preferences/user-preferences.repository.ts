@@ -4,6 +4,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   UserPreferencesEntity,
   DEFAULT_USER_PREFERENCES,
+  Theme,
+  WeekStartDay,
 } from './entities/user-preferences.entity';
 
 interface PreferencesJson {
@@ -14,6 +16,9 @@ interface PreferencesJson {
   defaultProjectId?: string | null;
   weekStartDay?: string;
 }
+
+const VALID_THEMES: readonly string[] = ['light', 'dark', 'system'];
+const VALID_WEEK_START_DAYS: readonly string[] = ['monday', 'sunday'];
 
 @Injectable()
 export class UserPreferencesRepository {
@@ -28,33 +33,24 @@ export class UserPreferencesRepository {
     return user ? this.toEntity(user.preferences) : null;
   }
 
+  /**
+   * Merges the provided fields into the current preferences.
+   * Caller (service) must verify the user exists before calling this.
+   */
   async updatePreferences(
     userId: string,
-    current: PreferencesJson,
+    current: UserPreferencesEntity,
     data: Partial<UserPreferencesEntity>,
   ): Promise<UserPreferencesEntity> {
-    const merged: PreferencesJson = { ...current, ...data };
+    const merged = { ...current, ...data };
 
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { preferences: merged as Prisma.InputJsonValue },
+      data: { preferences: merged as unknown as Prisma.InputJsonValue },
       select: { preferences: true },
     });
 
     return this.toEntity(user.preferences);
-  }
-
-  /**
-   * Returns the raw preferences JSON for merging.
-   * Caller should use findPreferences() for the resolved entity.
-   */
-  async findRawPreferences(userId: string): Promise<PreferencesJson | null> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { preferences: true },
-    });
-
-    return user ? ((user.preferences ?? {}) as PreferencesJson) : null;
   }
 
   private toEntity(json: unknown): UserPreferencesEntity {
@@ -62,12 +58,24 @@ export class UserPreferencesRepository {
     const d = DEFAULT_USER_PREFERENCES;
 
     return {
-      theme: (p.theme as UserPreferencesEntity['theme']) ?? d.theme,
-      dateFormat: p.dateFormat !== undefined ? (p.dateFormat as UserPreferencesEntity['dateFormat']) : d.dateFormat,
-      timeFormat: p.timeFormat !== undefined ? (p.timeFormat as UserPreferencesEntity['timeFormat']) : d.timeFormat,
-      timezone: p.timezone ?? d.timezone,
-      defaultProjectId: p.defaultProjectId !== undefined ? p.defaultProjectId ?? null : d.defaultProjectId,
-      weekStartDay: (p.weekStartDay as UserPreferencesEntity['weekStartDay']) ?? d.weekStartDay,
+      theme: VALID_THEMES.includes(p.theme as string)
+        ? (p.theme as Theme)
+        : d.theme,
+      dateFormat: p.dateFormat !== undefined
+        ? (p.dateFormat as UserPreferencesEntity['dateFormat'])
+        : d.dateFormat,
+      timeFormat: p.timeFormat !== undefined
+        ? (p.timeFormat as UserPreferencesEntity['timeFormat'])
+        : d.timeFormat,
+      timezone: typeof p.timezone === 'string' && p.timezone.length > 0
+        ? p.timezone
+        : d.timezone,
+      defaultProjectId: p.defaultProjectId !== undefined
+        ? p.defaultProjectId ?? null
+        : d.defaultProjectId,
+      weekStartDay: VALID_WEEK_START_DAYS.includes(p.weekStartDay as string)
+        ? (p.weekStartDay as WeekStartDay)
+        : d.weekStartDay,
     };
   }
 }
