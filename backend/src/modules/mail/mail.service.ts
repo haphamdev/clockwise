@@ -17,7 +17,7 @@ export class MailService implements OnModuleInit {
       return;
     }
 
-    const port = this.configService.get<number>('SMTP_PORT', 465);
+    const port = Number(this.configService.get('SMTP_PORT', 465));
     this.mailFrom = this.configService.get<string>(
       'MAIL_FROM',
       this.configService.get<string>('SMTP_USER', 'noreply@example.com'),
