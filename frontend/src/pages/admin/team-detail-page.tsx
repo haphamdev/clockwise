@@ -9,7 +9,9 @@ import { TeamMembersTable } from '@/components/admin/teams/team-members-table';
 import { AddMemberSheet } from '@/components/admin/teams/add-member-sheet';
 import { EditTeamSheet } from '@/components/admin/teams/edit-team-sheet';
 import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
+import { RelatedProjectsSection } from '@/components/admin/related-projects-section';
 import { useTeamDetail } from '@/lib/teams/use-team-detail';
+import { useProjects } from '@/lib/projects/use-projects';
 import { useArchiveTeam } from '@/lib/teams/use-archive-team';
 import { useUnarchiveTeam } from '@/lib/teams/use-unarchive-team';
 import { useUpdateTeamMember } from '@/lib/teams/use-update-team-member';
@@ -26,6 +28,15 @@ export function TeamDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [projectsPage, setProjectsPage] = useState(1);
+  const [showArchivedProjects, setShowArchivedProjects] = useState(false);
+
+  const { data: projectsData, isLoading: projectsLoading } = useProjects({
+    teamId: id,
+    page: projectsPage,
+    limit: 5,
+    includeArchived: showArchivedProjects,
+  });
 
   if (isLoading) {
     return (
@@ -82,6 +93,20 @@ export function TeamDetailPage() {
         onRemove={handleRemove}
         readOnly={team.isArchived}
         removePending={removeMember.isPending}
+      />
+
+      <RelatedProjectsSection
+        data={projectsData?.data ?? []}
+        total={projectsData?.total ?? 0}
+        page={projectsPage}
+        totalPages={projectsData ? Math.ceil(projectsData.total / projectsData.limit) : 0}
+        isLoading={projectsLoading}
+        onPageChange={setProjectsPage}
+        showArchived={showArchivedProjects}
+        onShowArchivedChange={(v) => {
+          setShowArchivedProjects(v);
+          setProjectsPage(1);
+        }}
       />
 
       <AuditTimeline entityType="team" entityId={team.id} />

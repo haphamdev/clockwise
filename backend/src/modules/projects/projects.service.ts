@@ -41,6 +41,14 @@ export class ProjectsService {
     });
   }
 
+  async findProjectsForUser(
+    orgId: string,
+    userId: string,
+    options: { includeArchived: boolean; page: number; limit: number },
+  ): Promise<{ data: ProjectListItem[]; total: number }> {
+    return this.projectsRepository.findAllForUserId(orgId, userId, options);
+  }
+
   async findById(
     projectId: string,
     orgId: string,

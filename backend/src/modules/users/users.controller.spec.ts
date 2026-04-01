@@ -1,6 +1,9 @@
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { ProjectsService } from '../projects/projects.service';
 import { UserEntity, UserWithTeams } from './entities/user.entity';
+import { ProjectListItem } from '../projects/entities/project.entity';
+import { UserNotFoundException } from '../../common/exceptions/user.exceptions';
 
 function makeAdmin(overrides?: Partial<UserEntity>): UserEntity {
   return {
@@ -37,9 +40,24 @@ function makeUserWithTeams(overrides?: Partial<UserWithTeams>): UserWithTeams {
   };
 }
 
+function makeProjectListItem(overrides?: Partial<ProjectListItem>): ProjectListItem {
+  return {
+    id: 'proj-1',
+    orgId: 'org-1',
+    name: 'Project Alpha',
+    description: null,
+    status: 'active',
+    teamCount: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
 describe('UsersController', () => {
   let controller: UsersController;
   let service: jest.Mocked<UsersService>;
+  let projectsService: jest.Mocked<ProjectsService>;
 
   beforeEach(() => {
     service = {
@@ -50,7 +68,11 @@ describe('UsersController', () => {
       reactivateUser: jest.fn(),
     } as unknown as jest.Mocked<UsersService>;
 
-    controller = new UsersController(service);
+    projectsService = {
+      findProjectsForUser: jest.fn(),
+    } as unknown as jest.Mocked<ProjectsService>;
+
+    controller = new UsersController(service, projectsService);
   });
 
   describe('list', () => {
@@ -123,6 +145,65 @@ describe('UsersController', () => {
       const result = await controller.reactivate('user-1', makeAdmin());
       expect(result.message).toBe('User reactivated');
       expect(service.reactivateUser).toHaveBeenCalledWith('user-1', 'org-1', 'admin-1');
+    });
+  });
+
+  describe('listUserProjects', () => {
+    it('should return paginated projects for a user', async () => {
+      service.getUserDetail.mockResolvedValue(makeUserWithTeams());
+      projectsService.findProjectsForUser.mockResolvedValue({
+        data: [makeProjectListItem(), makeProjectListItem({ id: 'proj-2', name: 'Project Beta' })],
+        total: 2,
+      });
+
+      const result = await controller.listUserProjects('user-1', makeAdmin(), {
+        page: 1,
+        limit: 5,
+      });
+
+      expect(result.data).toHaveLength(2);
+      expect(result.total).toBe(2);
+      expect(result.page).toBe(1);
+      expect(result.limit).toBe(5);
+      expect(service.getUserDetail).toHaveBeenCalledWith('user-1', 'org-1');
+    });
+
+    it('should pass includeArchived param to service', async () => {
+      service.getUserDetail.mockResolvedValue(makeUserWithTeams());
+      projectsService.findProjectsForUser.mockResolvedValue({ data: [], total: 0 });
+
+      await controller.listUserProjects('user-1', makeAdmin(), {
+        page: 1,
+        limit: 10,
+        includeArchived: true,
+      });
+
+      expect(projectsService.findProjectsForUser).toHaveBeenCalledWith('org-1', 'user-1', {
+        includeArchived: true,
+        page: 1,
+        limit: 10,
+      });
+    });
+
+    it('should default includeArchived to false', async () => {
+      service.getUserDetail.mockResolvedValue(makeUserWithTeams());
+      projectsService.findProjectsForUser.mockResolvedValue({ data: [], total: 0 });
+
+      await controller.listUserProjects('user-1', makeAdmin(), {});
+
+      expect(projectsService.findProjectsForUser).toHaveBeenCalledWith('org-1', 'user-1', {
+        includeArchived: false,
+        page: 1,
+        limit: 20,
+      });
+    });
+
+    it('should throw 404 if user not found', async () => {
+      service.getUserDetail.mockRejectedValue(new UserNotFoundException());
+
+      await expect(
+        controller.listUserProjects('nonexistent', makeAdmin(), {}),
+      ).rejects.toThrow(UserNotFoundException);
     });
   });
 });

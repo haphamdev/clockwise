@@ -4,14 +4,21 @@ import { AdminOnly, Auth } from '../../common/decorators/auth.decorators';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserEntity, UserWithTeams } from './entities/user.entity';
 import { UsersService } from './users.service';
+import { ProjectsService } from '../projects/projects.service';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
+import { ListUserProjectsQueryDto } from './dto/list-user-projects-query.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto, UserListResponseDto } from './dto/user-response.dto';
+import { ProjectListResponseDto } from '../projects/dto/project-response.dto';
+import { ProjectListItem } from '../projects/entities/project.entity';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly projectsService: ProjectsService,
+  ) {}
 
   @Get()
   @AdminOnly()
@@ -59,6 +66,37 @@ export class UsersController {
     return this.toResponse(target);
   }
 
+  @Get(':id/projects')
+  @AdminOnly()
+  @ApiOperation({ summary: 'List projects for a user (admin only)' })
+  @ApiOkResponse({ type: ProjectListResponseDto })
+  async listUserProjects(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+    @Query() query: ListUserProjectsQueryDto,
+  ): Promise<ProjectListResponseDto> {
+    await this.usersService.getUserDetail(id, user.orgId);
+
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const { data, total } = await this.projectsService.findProjectsForUser(
+      user.orgId,
+      id,
+      {
+        includeArchived: query.includeArchived ?? false,
+        page,
+        limit,
+      },
+    );
+
+    return {
+      data: data.map((p) => this.toProjectResponse(p)),
+      total,
+      page,
+      limit,
+    };
+  }
+
   @Patch(':id')
   @AdminOnly()
   @ApiOperation({ summary: 'Update user (admin status, team assignments)' })
@@ -92,6 +130,18 @@ export class UsersController {
   ): Promise<{ message: string }> {
     await this.usersService.reactivateUser(id, user.orgId, user.id);
     return { message: 'User reactivated' };
+  }
+
+  private toProjectResponse(project: ProjectListItem): ProjectListResponseDto['data'][number] {
+    return {
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      status: project.status,
+      teamCount: project.teamCount,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+    };
   }
 
   private toResponse(user: UserWithTeams): UserResponseDto {
