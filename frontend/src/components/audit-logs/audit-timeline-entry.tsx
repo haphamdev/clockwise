@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { formatAuditAction } from '@/lib/audit-logs/format-audit-action';
+import { computeMetadataDiff } from '@/lib/audit-logs/compute-metadata-diff';
 import { useFormatDate } from '@/lib/org/use-format-date';
 import type { AuditLogEntry } from '@/lib/audit-logs/types';
 
@@ -12,7 +13,11 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
   const [expanded, setExpanded] = useState(false);
   const { formatDateTime } = useFormatDate();
   const description = formatAuditAction(entry);
-  const hasDiff = entry.metadata.before || entry.metadata.after;
+  const diff = useMemo(
+    () => computeMetadataDiff(entry.metadata.before, entry.metadata.after),
+    [entry.metadata.before, entry.metadata.after],
+  );
+  const hasDiff = entry.metadata.before && entry.metadata.after && diff.length > 0;
 
   return (
     <div className="group/entry relative flex gap-3 pb-6 last:pb-0">
@@ -44,18 +49,22 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
 
         {expanded && hasDiff && (
           <div className="mt-2 rounded-md bg-muted p-3 text-xs font-mono space-y-1">
-            {entry.metadata.before && (
-              <div>
-                <span className="text-red-600">- </span>
-                {JSON.stringify(entry.metadata.before)}
+            {diff.map((d) => (
+              <div key={d.field}>
+                <span className="text-muted-foreground">{d.field}: </span>
+                {d.oldValue && d.newValue ? (
+                  <>
+                    <span className="text-red-600">{d.oldValue}</span>
+                    <span className="text-muted-foreground"> → </span>
+                    <span className="text-green-600">{d.newValue}</span>
+                  </>
+                ) : d.oldValue ? (
+                  <span className="text-red-600 line-through">{d.oldValue}</span>
+                ) : (
+                  <span className="text-green-600">{d.newValue}</span>
+                )}
               </div>
-            )}
-            {entry.metadata.after && (
-              <div>
-                <span className="text-green-600">+ </span>
-                {JSON.stringify(entry.metadata.after)}
-              </div>
-            )}
+            ))}
           </div>
         )}
       </div>
