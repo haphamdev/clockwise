@@ -1,4 +1,6 @@
+import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/empty-state';
 import { StatusBadge } from '@/components/ui/status-badge';
 import {
   Table,
@@ -17,9 +19,11 @@ interface ProfileTeamsTableProps {
 export function ProfileTeamsTable({ memberships }: ProfileTeamsTableProps) {
   if (memberships.length === 0) {
     return (
-      <p className="py-6 text-center text-sm text-muted-foreground">
-        No team memberships.
-      </p>
+      <EmptyState
+        icon={Users}
+        title="No team memberships"
+        description="You haven't been added to any teams yet. Contact your admin to get assigned to a team."
+      />
     );
   }
 

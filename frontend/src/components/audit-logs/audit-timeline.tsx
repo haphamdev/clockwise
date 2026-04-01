@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AUDIT_LOG_PAGE_SIZE } from '@/lib/audit-logs/constants';
 import { useAuditLogs } from '@/lib/audit-logs/use-audit-logs';
@@ -53,7 +55,11 @@ export function AuditTimeline(props: AuditTimelineProps) {
       )}
 
       {data && data.data.length === 0 && (
-        <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
+        <EmptyState
+          icon={Clock}
+          title="No activity yet"
+          description="Actions like role changes, team updates, and status changes will appear here."
+        />
       )}
 
       {data && data.data.length > 0 && (
