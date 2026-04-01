@@ -17,6 +17,7 @@ export interface TeamMember {
   userId: string;
   userName: string;
   userEmail: string;
+  userStatus: 'pending' | 'active' | 'deactivated';
   role: TeamRole;
   createdAt: string;
 }

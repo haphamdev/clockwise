@@ -14,6 +14,7 @@ import type { Invitation } from '@/lib/invitations/types';
 export function getInvitationsColumns(
   onResend: (invitation: Invitation) => void,
   onRevoke: (invitation: Invitation) => void,
+  onEditTeams: (invitation: Invitation) => void,
   formatDate: (input: string | Date) => string,
 ): ColumnDef<Invitation>[] {
   return [
@@ -67,9 +68,17 @@ export function getInvitationsColumns(
         if (inv.status !== 'pending') return null;
         if (inv.isExpired) {
           return (
-            <Button variant="outline" size="sm" onClick={() => onResend(inv)}>
-              Resend
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onEditTeams(inv)}>Edit Teams</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           );
         }
         return (
@@ -80,6 +89,7 @@ export function getInvitationsColumns(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEditTeams(inv)}>Edit Teams</DropdownMenuItem>
               <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
               <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
             </DropdownMenuContent>

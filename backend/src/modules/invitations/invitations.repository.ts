@@ -181,6 +181,41 @@ export class InvitationsRepository {
     });
   }
 
+  async updateTeamAssignments(
+    invitationId: string,
+    teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    resend?: { token: string; expiresAt: Date },
+  ): Promise<InvitationEntity> {
+    const invitation = await this.prisma.$transaction(async (tx) => {
+      await tx.invitationTeamAssignment.deleteMany({ where: { invitationId } });
+
+      await tx.invitationTeamAssignment.createMany({
+        data: teamAssignments.map((ta) => ({
+          invitationId,
+          teamId: ta.teamId,
+          role: ta.role,
+        })),
+      });
+
+      if (resend) {
+        await tx.invitation.update({
+          where: { id: invitationId },
+          data: { token: resend.token, expiresAt: resend.expiresAt },
+        });
+      }
+
+      const result = await tx.invitation.findUnique({
+        where: { id: invitationId },
+        include: INVITATION_INCLUDE,
+      });
+
+      if (!result) throw new Error('Invitation not found after update');
+      return result;
+    });
+
+    return this.toEntity(invitation as InvitationWithRelations);
+  }
+
   async updateTokenAndExpiry(id: string, token: string, expiresAt: Date): Promise<InvitationEntity> {
     const invitation = await this.prisma.invitation.update({
       where: { id },

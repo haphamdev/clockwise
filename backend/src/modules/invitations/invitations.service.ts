@@ -118,6 +118,42 @@ export class InvitationsService {
     return updated;
   }
 
+  async updateTeamAssignments(
+    invitationId: string,
+    orgId: string,
+    teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+  ): Promise<InvitationEntity> {
+    const invitation = await this.getInvitationOrThrow(invitationId, orgId);
+
+    if (invitation.status === 'accepted') {
+      throw new InvitationAlreadyAcceptedException();
+    }
+    if (invitation.status === 'revoked') {
+      throw new InvitationAlreadyRevokedException();
+    }
+
+    await this.validateTeamAssignments(orgId, teamAssignments);
+
+    const isExpired = new Date() > invitation.expiresAt;
+
+    if (isExpired) {
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
+
+      const updated = await this.invitationsRepository.updateTeamAssignments(
+        invitationId,
+        teamAssignments,
+        { token, expiresAt },
+      );
+
+      await this.sendInvitationEmail(orgId, updated);
+      return updated;
+    }
+
+    return this.invitationsRepository.updateTeamAssignments(invitationId, teamAssignments);
+  }
+
   async validateToken(token: string): Promise<InvitationEntity> {
     const invitation = await this.invitationsRepository.findByToken(token);
     if (!invitation) {
@@ -174,6 +210,11 @@ export class InvitationsService {
     orgId: string,
     assignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
   ): Promise<void> {
+    const uniqueTeamIds = new Set(assignments.map((a) => a.teamId));
+    if (uniqueTeamIds.size !== assignments.length) {
+      throw new InvitationInvalidTeamAssignmentException();
+    }
+
     for (const assignment of assignments) {
       try {
         await this.teamsService.validateTeamExists(assignment.teamId, orgId);

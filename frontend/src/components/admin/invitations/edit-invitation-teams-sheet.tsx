@@ -1,10 +1,11 @@
+import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus } from 'lucide-react';
+import { Info, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Sheet,
   SheetContent,
@@ -12,20 +13,13 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 import { TeamAssignmentRow } from '@/components/admin/team-assignment-row';
 import { useTeams } from '@/lib/teams/use-teams';
-import { useCreateInvitation } from '@/lib/invitations/use-create-invitation';
+import { useUpdateInvitationTeamAssignments } from '@/lib/invitations/use-update-invitation-team-assignments';
+import type { Invitation } from '@/lib/invitations/types';
 
 const schema = z.object({
-  email: z.string().email('Valid email is required'),
   teamAssignments: z
     .array(
       z.object({
@@ -38,19 +32,19 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-interface InviteUserSheetProps {
-  open: boolean;
+interface EditInvitationTeamsSheetProps {
+  invitation: Invitation | null;
   onOpenChange: (open: boolean) => void;
 }
 
-export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
+export function EditInvitationTeamsSheet({
+  invitation,
+  onOpenChange,
+}: EditInvitationTeamsSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: 'onChange',
-    defaultValues: {
-      email: '',
-      teamAssignments: [{ teamId: '', role: 'member' }],
-    },
+    defaultValues: { teamAssignments: [{ teamId: '', role: 'member' }] },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -64,39 +58,44 @@ export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
 
   const { data: teamsData } = useTeams({ limit: 100 });
   const allTeamsAssigned = selectedTeamIds.length >= (teamsData?.data?.length ?? 0);
-  const createInvitation = useCreateInvitation();
+  const updateTeamAssignments = useUpdateInvitationTeamAssignments();
+
+  useEffect(() => {
+    if (invitation) {
+      form.reset({
+        teamAssignments: invitation.teamAssignments.map((ta) => ({
+          teamId: ta.teamId,
+          role: ta.role,
+        })),
+      });
+    }
+  }, [invitation, form]);
 
   const onSubmit = (values: FormValues) => {
-    createInvitation.mutate(values, {
-      onSuccess: () => {
-        form.reset();
-        onOpenChange(false);
-      },
-    });
+    if (!invitation) return;
+    updateTeamAssignments.mutate(
+      { id: invitation.id, payload: values },
+      { onSuccess: () => onOpenChange(false) },
+    );
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={invitation !== null} onOpenChange={onOpenChange}>
       <SheetContent className="overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Invite User</SheetTitle>
-          <SheetDescription>Send an invitation to join the organization.</SheetDescription>
+          <SheetTitle>Edit Team Assignments</SheetTitle>
+          <SheetDescription>{invitation?.email}</SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="user@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {invitation?.isExpired && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  This invitation has expired. Saving will resend the invitation with a new link.
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -133,8 +132,16 @@ export function InviteUserSheet({ open, onOpenChange }: InviteUserSheetProps) {
               )}
             </div>
 
-            <Button type="submit" disabled={!form.formState.isValid || createInvitation.isPending} className="w-full">
-              {createInvitation.isPending ? 'Sending...' : 'Send Invitation'}
+            <Button
+              type="submit"
+              disabled={!form.formState.isValid || updateTeamAssignments.isPending}
+              className="w-full"
+            >
+              {updateTeamAssignments.isPending
+                ? 'Saving...'
+                : invitation?.isExpired
+                  ? 'Save & Resend Invitation'
+                  : 'Save Changes'}
             </Button>
           </form>
         </Form>

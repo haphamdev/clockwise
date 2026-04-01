@@ -3,6 +3,7 @@ import type { PaginatedResponse } from '@/lib/types';
 import type {
   Invitation,
   CreateInvitationPayload,
+  UpdateInvitationTeamAssignmentsPayload,
   ListInvitationsParams,
   ValidateInvitationResponse,
 } from './types';
@@ -19,6 +20,16 @@ export function fetchInvitations(params: ListInvitationsParams = {}) {
 export function createInvitation(payload: CreateInvitationPayload) {
   return apiClient<Invitation>('/invitations', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateInvitationTeamAssignments(
+  id: string,
+  payload: UpdateInvitationTeamAssignmentsPayload,
+) {
+  return apiClient<Invitation>(`/invitations/${id}/team-assignments`, {
+    method: 'PATCH',
     body: JSON.stringify(payload),
   });
 }

@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { StatusBadge } from '@/components/ui/status-badge';
 import {
   Select,
   SelectContent,
@@ -70,18 +71,23 @@ export function TeamMembersTable({
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <Link
-                        to={`/admin/users/${member.userId}`}
-                        className="text-sm font-medium hover:underline"
-                      >
-                        {member.userName}
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/admin/users/${member.userId}`}
+                          className="text-sm font-medium hover:underline"
+                        >
+                          {member.userName}
+                        </Link>
+                        {member.userStatus === 'deactivated' && (
+                          <StatusBadge status="deactivated" />
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">{member.userEmail}</p>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  {readOnly ? (
+                  {readOnly || member.userStatus === 'deactivated' ? (
                     <Badge variant="outline" className="capitalize">{member.role}</Badge>
                   ) : (
                     <Select

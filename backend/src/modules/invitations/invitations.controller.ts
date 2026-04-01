@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { AdminOnly } from '../../common/decorators/auth.decorators';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserEntity } from '../users/entities/user.entity';
 import { InvitationsService } from './invitations.service';
 import { CreateInvitationDto } from './dto/create-invitation.dto';
+import { UpdateInvitationTeamAssignmentsDto } from './dto/update-invitation-team-assignments.dto';
 import { ListInvitationsQueryDto } from './dto/list-invitations-query.dto';
 import {
   InvitationResponseDto,
@@ -69,6 +70,23 @@ export class InvitationsController {
       page: query.page ?? 1,
       limit: query.limit ?? 20,
     };
+  }
+
+  @Patch(':id/team-assignments')
+  @AdminOnly()
+  @ApiOperation({ summary: 'Update team assignments for an invitation' })
+  @ApiOkResponse({ type: InvitationResponseDto })
+  async updateTeamAssignments(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+    @Body() dto: UpdateInvitationTeamAssignmentsDto,
+  ): Promise<InvitationResponseDto> {
+    const invitation = await this.invitationsService.updateTeamAssignments(
+      id,
+      user.orgId,
+      dto.teamAssignments,
+    );
+    return this.toResponse(invitation);
   }
 
   @Delete(':id')

@@ -14,6 +14,7 @@ interface TeamAssignmentRowProps {
   teamId: string;
   role: string;
   teams: Team[];
+  excludeTeamIds?: string[];
   onTeamChange: (teamId: string) => void;
   onRoleChange: (role: string) => void;
   onRemove: () => void;
@@ -23,11 +24,14 @@ export function TeamAssignmentRow({
   teamId,
   role,
   teams,
+  excludeTeamIds,
   onTeamChange,
   onRoleChange,
   onRemove,
 }: TeamAssignmentRowProps) {
-  const teamOptions = teams.map((t) => ({ value: t.id, label: t.name }));
+  const teamOptions = teams
+    .filter((t) => t.id === teamId || !excludeTeamIds?.includes(t.id))
+    .map((t) => ({ value: t.id, label: t.name }));
 
   return (
     <div className="flex items-center gap-2">

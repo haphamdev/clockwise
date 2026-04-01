@@ -13,6 +13,9 @@ export class TeamMemberResponseDto {
   @ApiProperty()
   userEmail: string;
 
+  @ApiProperty({ enum: ['pending', 'active', 'deactivated'] })
+  userStatus: string;
+
   @ApiProperty({ enum: ['manager', 'member'] })
   role: string;
 
