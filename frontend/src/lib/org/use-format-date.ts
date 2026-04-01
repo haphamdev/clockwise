@@ -1,12 +1,9 @@
 import { useCallback } from 'react';
-import { useOrgSettings } from './use-org-settings';
+import { useEffectiveFormats } from '@/lib/user-preferences/use-effective-formats';
 import { formatDate as formatDateFn, formatDateTime as formatDateTimeFn } from './format-date';
-import type { DateFormat, TimeFormat } from './types';
 
 export function useFormatDate() {
-  const { data: settings } = useOrgSettings();
-  const dateFormat: DateFormat = settings?.dateFormat ?? 'YYYY-MM-DD';
-  const timeFormat: TimeFormat = settings?.timeFormat ?? '12h';
+  const { dateFormat, timeFormat } = useEffectiveFormats();
 
   const formatDate = useCallback(
     (input: string | Date, options?: { relative?: boolean }) =>
