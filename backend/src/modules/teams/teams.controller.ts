@@ -175,6 +175,7 @@ export class TeamsController {
       userId: m.userId,
       userName: m.userName,
       userEmail: m.userEmail,
+      userStatus: m.userStatus,
       role: m.role,
       createdAt: m.createdAt,
     };

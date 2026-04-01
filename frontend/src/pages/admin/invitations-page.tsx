@@ -13,17 +13,19 @@ import {
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import { getInvitationsColumns } from '@/components/admin/invitations/invitations-columns';
 import { InviteUserSheet } from '@/components/admin/invitations/invite-user-sheet';
+import { EditInvitationTeamsSheet } from '@/components/admin/invitations/edit-invitation-teams-sheet';
 import { useInvitations } from '@/lib/invitations/use-invitations';
 import { useRevokeInvitation } from '@/lib/invitations/use-revoke-invitation';
 import { useResendInvitation } from '@/lib/invitations/use-resend-invitation';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useFormatDate } from '@/lib/org/use-format-date';
-import type { InvitationStatus } from '@/lib/invitations/types';
+import type { Invitation, InvitationStatus } from '@/lib/invitations/types';
 
 export function InvitationsPage() {
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
   const status = getParam('status');
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [editingInvitation, setEditingInvitation] = useState<Invitation | null>(null);
 
   const { data, isLoading } = useInvitations({
     page,
@@ -45,6 +47,7 @@ export function InvitationsPage() {
       getInvitationsColumns(
         (inv) => resendInvitation.mutate(inv.id),
         (inv) => revokeInvitation.mutate(inv.id),
+        (inv) => setEditingInvitation(inv),
         formatDate,
       ),
     [resendInvitation, revokeInvitation, formatDate],
@@ -93,6 +96,10 @@ export function InvitationsPage() {
       />
 
       <InviteUserSheet open={inviteOpen} onOpenChange={setInviteOpen} />
+      <EditInvitationTeamsSheet
+        invitation={editingInvitation}
+        onOpenChange={(open) => { if (!open) setEditingInvitation(null); }}
+      />
     </div>
   );
 }

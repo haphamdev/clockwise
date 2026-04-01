@@ -27,6 +27,13 @@ export interface CreateInvitationPayload {
   }[];
 }
 
+export interface UpdateInvitationTeamAssignmentsPayload {
+  teamAssignments: {
+    teamId: string;
+    role: 'manager' | 'member';
+  }[];
+}
+
 export interface ListInvitationsParams extends PaginationParams {
   status?: InvitationStatus;
 }

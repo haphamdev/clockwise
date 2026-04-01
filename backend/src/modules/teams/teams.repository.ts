@@ -5,7 +5,7 @@ import { TeamAlreadyExistsException } from '../../common/exceptions/team.excepti
 import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
 
 type TeamMemberWithUser = TeamMember & {
-  user: { id: string; name: string; email: string };
+  user: { id: string; name: string; email: string; status: string };
 };
 
 type TeamWithMemberUsers = Team & {
@@ -75,7 +75,7 @@ export class TeamsRepository {
       where: { id },
       include: {
         members: {
-          include: { user: { select: { id: true, name: true, email: true } } },
+          include: { user: { select: { id: true, name: true, email: true, status: true } } },
           orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
         },
       },
@@ -136,7 +136,7 @@ export class TeamsRepository {
   ): Promise<TeamMemberEntity> {
     const tm = await this.prisma.teamMember.create({
       data: { teamId, userId, role },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: { user: { select: { id: true, name: true, email: true, status: true } } },
     });
     return this.toMemberEntity(tm);
   }
@@ -144,7 +144,7 @@ export class TeamsRepository {
   async findMember(teamId: string, userId: string): Promise<TeamMemberEntity | null> {
     const tm = await this.prisma.teamMember.findUnique({
       where: { teamId_userId: { teamId, userId } },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: { user: { select: { id: true, name: true, email: true, status: true } } },
     });
     return tm ? this.toMemberEntity(tm) : null;
   }
@@ -157,7 +157,7 @@ export class TeamsRepository {
     const tm = await this.prisma.teamMember.update({
       where: { teamId_userId: { teamId, userId } },
       data: { role },
-      include: { user: { select: { id: true, name: true, email: true } } },
+      include: { user: { select: { id: true, name: true, email: true, status: true } } },
     });
     return this.toMemberEntity(tm);
   }
@@ -206,6 +206,7 @@ export class TeamsRepository {
       userId: tm.user.id,
       userName: tm.user.name,
       userEmail: tm.user.email,
+      userStatus: tm.user.status,
       role: tm.role as 'manager' | 'member',
       createdAt: tm.createdAt,
     };
