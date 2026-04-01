@@ -31,7 +31,7 @@ function makeUserWithTeams(overrides?: Partial<UserWithTeams>): UserWithTeams {
     createdAt: new Date(),
     updatedAt: new Date(),
     teamMemberships: [
-      { teamId: 'team-1', teamName: 'Engineering', role: 'member' },
+      { teamId: 'team-1', teamName: 'Engineering', role: 'member', isArchived: false },
     ],
     ...overrides,
   };
@@ -122,7 +122,7 @@ describe('UsersController', () => {
 
       const result = await controller.reactivate('user-1', makeAdmin());
       expect(result.message).toBe('User reactivated');
-      expect(service.reactivateUser).toHaveBeenCalledWith('user-1', 'org-1');
+      expect(service.reactivateUser).toHaveBeenCalledWith('user-1', 'org-1', 'admin-1');
     });
   });
 });

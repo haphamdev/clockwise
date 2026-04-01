@@ -171,7 +171,7 @@ describe('AuthController', () => {
       const fullUser: UserWithTeams = {
         ...mockUser,
         teamMemberships: [
-          { teamId: 'team-1', teamName: 'Engineering', role: 'manager' },
+          { teamId: 'team-1', teamName: 'Engineering', role: 'manager', isArchived: false },
         ],
       };
       usersService.findById.mockResolvedValue(fullUser);

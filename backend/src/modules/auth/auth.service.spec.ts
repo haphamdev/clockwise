@@ -99,7 +99,7 @@ describe('AuthService', () => {
       expect(usersService.activateUser).toHaveBeenCalledWith(pendingUser.id, {
         name: profile.name,
         avatarUrl: profile.avatarUrl,
-      });
+      }, 'system');
       expect(invitationsService.acceptByEmail).toHaveBeenCalledWith(
         profile.email,
         activatedUser.id,

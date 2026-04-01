@@ -55,6 +55,7 @@ function makeTeamWithMembers(overrides?: Partial<TeamWithMembers>): TeamWithMemb
         userId: 'user-1',
         userName: 'Alice',
         userEmail: 'alice@example.com',
+        userStatus: 'active',
         role: 'manager',
         createdAt: new Date(),
       },
@@ -110,7 +111,7 @@ describe('TeamsController', () => {
       const result = await controller.create(makeUser(), { name: 'Engineering' });
       expect(result.name).toBe('Engineering');
       expect(result.memberCount).toBe(0);
-      expect(service.create).toHaveBeenCalledWith('org-1', { name: 'Engineering' });
+      expect(service.create).toHaveBeenCalledWith('org-1', { name: 'Engineering' }, 'user-1');
     });
   });
 
@@ -132,7 +133,7 @@ describe('TeamsController', () => {
 
       const user = makeUser();
       await controller.update('team-1', user, { name: 'Platform' });
-      expect(service.update).toHaveBeenCalledWith('team-1', 'org-1', { name: 'Platform' });
+      expect(service.update).toHaveBeenCalledWith('team-1', 'org-1', { name: 'Platform' }, 'user-1');
     });
   });
 
@@ -144,7 +145,7 @@ describe('TeamsController', () => {
       const user = makeUser();
       const result = await controller.archive('team-1', user);
       expect(result.isArchived).toBe(true);
-      expect(service.archive).toHaveBeenCalledWith('team-1', 'org-1');
+      expect(service.archive).toHaveBeenCalledWith('team-1', 'org-1', 'user-1');
     });
   });
 
@@ -156,7 +157,7 @@ describe('TeamsController', () => {
       const user = makeUser();
       const result = await controller.unarchive('team-1', user);
       expect(result.isArchived).toBe(false);
-      expect(service.unarchive).toHaveBeenCalledWith('team-1', 'org-1');
+      expect(service.unarchive).toHaveBeenCalledWith('team-1', 'org-1', 'user-1');
     });
   });
 
@@ -167,6 +168,7 @@ describe('TeamsController', () => {
         userId: 'user-3',
         userName: 'Charlie',
         userEmail: 'charlie@example.com',
+        userStatus: 'active',
         role: 'member' as const,
         createdAt: new Date(),
       };
@@ -178,7 +180,7 @@ describe('TeamsController', () => {
         role: 'member',
       });
       expect(result.userName).toBe('Charlie');
-      expect(service.addMember).toHaveBeenCalledWith('team-1', 'org-1', 'user-3', 'member');
+      expect(service.addMember).toHaveBeenCalledWith('team-1', 'org-1', 'user-3', 'member', 'user-1');
     });
   });
 
@@ -189,6 +191,7 @@ describe('TeamsController', () => {
         userId: 'user-1',
         userName: 'Alice',
         userEmail: 'alice@example.com',
+        userStatus: 'active',
         role: 'manager' as const,
         createdAt: new Date(),
       };
@@ -196,7 +199,7 @@ describe('TeamsController', () => {
 
       const user = makeUser();
       await controller.updateMemberRole('team-1', 'user-1', user, { role: 'manager' });
-      expect(service.updateMemberRole).toHaveBeenCalledWith('team-1', 'org-1', 'user-1', 'manager');
+      expect(service.updateMemberRole).toHaveBeenCalledWith('team-1', 'org-1', 'user-1', 'manager', 'user-1');
     });
   });
 
@@ -207,7 +210,7 @@ describe('TeamsController', () => {
       const user = makeUser();
       const result = await controller.removeMember('team-1', 'user-2', user);
       expect(result.message).toBe('Member removed');
-      expect(service.removeMember).toHaveBeenCalledWith('team-1', 'org-1', 'user-2');
+      expect(service.removeMember).toHaveBeenCalledWith('team-1', 'org-1', 'user-2', 'user-1');
     });
   });
 });

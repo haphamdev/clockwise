@@ -1,6 +1,7 @@
 import { ErrorCode } from '../../common/exceptions/error-codes';
 import { UsersService } from './users.service';
 import { UsersRepository } from './users.repository';
+import { AuditLogService } from '../audit-log/audit-log.service';
 import { UserWithTeams } from './entities/user.entity';
 
 function makeUser(overrides?: Partial<UserWithTeams>): UserWithTeams {
@@ -16,7 +17,7 @@ function makeUser(overrides?: Partial<UserWithTeams>): UserWithTeams {
     createdAt: new Date(),
     updatedAt: new Date(),
     teamMemberships: [
-      { teamId: 'team-1', teamName: 'Engineering', role: 'member' },
+      { teamId: 'team-1', teamName: 'Engineering', role: 'member', isArchived: false },
     ],
     ...overrides,
   };
@@ -25,6 +26,7 @@ function makeUser(overrides?: Partial<UserWithTeams>): UserWithTeams {
 describe('UsersService', () => {
   let service: UsersService;
   let repo: jest.Mocked<UsersRepository>;
+  let auditLogService: jest.Mocked<AuditLogService>;
 
   beforeEach(() => {
     repo = {
@@ -43,9 +45,15 @@ describe('UsersService', () => {
       replaceTeamAssignments: jest.fn(),
       countValidTeams: jest.fn(),
       findTeamsWhereOnlyManager: jest.fn(),
+      findTeamNames: jest.fn(),
     } as unknown as jest.Mocked<UsersRepository>;
 
-    service = new UsersService(repo);
+    auditLogService = {
+      log: jest.fn(),
+      logMany: jest.fn(),
+    } as unknown as jest.Mocked<AuditLogService>;
+
+    service = new UsersService(repo, auditLogService);
   });
 
   describe('findAll', () => {
@@ -115,6 +123,7 @@ describe('UsersService', () => {
       repo.findById.mockResolvedValue(makeUser());
       repo.countValidTeams.mockResolvedValue(1);
       repo.findTeamsWhereOnlyManager.mockResolvedValue([]);
+      repo.findTeamNames.mockResolvedValue(new Map([['team-2', 'Design']]));
       repo.replaceTeamAssignments.mockResolvedValue(undefined);
 
       const assignments = [{ teamId: 'team-2', role: 'manager' as const }];
@@ -154,6 +163,7 @@ describe('UsersService', () => {
       repo.findById.mockResolvedValue(makeUser());
       repo.countValidTeams.mockResolvedValue(2);
       repo.findTeamsWhereOnlyManager.mockResolvedValue(['team-1']);
+      repo.findTeamNames.mockResolvedValue(new Map([['team-2', 'Design']]));
       repo.replaceTeamAssignments.mockResolvedValue(undefined);
 
       await service.updateUser('admin-1', 'user-1', 'org-1', {
@@ -233,14 +243,14 @@ describe('UsersService', () => {
       repo.findById.mockResolvedValue(makeUser({ status: 'deactivated' }));
       repo.reactivateUser.mockResolvedValue(undefined);
 
-      await service.reactivateUser('user-1', 'org-1');
+      await service.reactivateUser('user-1', 'org-1', 'admin-1');
       expect(repo.reactivateUser).toHaveBeenCalledWith('user-1');
     });
 
     it('should throw NOT_DEACTIVATED for active user', async () => {
       repo.findById.mockResolvedValue(makeUser({ status: 'active' }));
 
-      await expect(service.reactivateUser('user-1', 'org-1')).rejects.toThrow(
+      await expect(service.reactivateUser('user-1', 'org-1', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.USER.NOT_DEACTIVATED }),
       );
     });
@@ -248,7 +258,7 @@ describe('UsersService', () => {
     it('should throw NOT_DEACTIVATED for pending user', async () => {
       repo.findById.mockResolvedValue(makeUser({ status: 'pending' }));
 
-      await expect(service.reactivateUser('user-1', 'org-1')).rejects.toThrow(
+      await expect(service.reactivateUser('user-1', 'org-1', 'admin-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.USER.NOT_DEACTIVATED }),
       );
     });

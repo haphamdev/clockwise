@@ -94,7 +94,7 @@ describe('InvitationsService', () => {
 
       const res = await service.create('org-1', 'admin-1', createData);
       expect(res).toEqual(invitation);
-      expect(usersService.createPendingUser).toHaveBeenCalledWith('org-1', 'new@example.com');
+      expect(usersService.createPendingUser).toHaveBeenCalledWith('org-1', 'new@example.com', 'admin-1');
       expect(mailService.sendInvitationEmail).toHaveBeenCalledWith(
         'new@example.com',
         expect.stringContaining('/invite/'),
