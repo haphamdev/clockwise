@@ -29,6 +29,7 @@ interface TeamMembersTableProps {
   onRemove: (userId: string) => void;
   readOnly?: boolean;
   removePending?: boolean;
+  roleChangePendingUserId?: string;
 }
 
 export function TeamMembersTable({
@@ -37,6 +38,7 @@ export function TeamMembersTable({
   onRemove,
   readOnly,
   removePending,
+  roleChangePendingUserId,
 }: TeamMembersTableProps) {
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
   const removingMember = members.find((m) => m.userId === removingUserId);
@@ -93,6 +95,7 @@ export function TeamMembersTable({
                     <Select
                       value={member.role}
                       onValueChange={(value) => onChangeRole(member.userId, value as TeamRole)}
+                      disabled={member.userId === roleChangePendingUserId}
                     >
                       <SelectTrigger className="h-8 w-[120px]">
                         <SelectValue />

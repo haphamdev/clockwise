@@ -126,6 +126,7 @@ export function UserDetailPage() {
         onRemove={handleRemove}
         readOnly={isDeactivated}
         removePending={removeMember.isPending}
+        roleChangePendingTeamId={updateMember.isPending ? updateMember.variables?.teamId : undefined}
       />
 
       <RelatedProjectsSection

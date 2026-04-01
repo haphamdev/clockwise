@@ -17,6 +17,7 @@ export function getInvitationsColumns(
   onRevoke: (invitation: Invitation) => void,
   onEditTeams: (invitation: Invitation) => void,
   resendingId?: string,
+  revokingId?: string,
 ): ColumnDef<Invitation>[] {
   return [
     {
@@ -68,7 +69,7 @@ export function getInvitationsColumns(
       id: 'actions',
       cell: ({ row }) => {
         const inv = row.original;
-        if (resendingId === inv.id) {
+        if (resendingId === inv.id || revokingId === inv.id) {
           return (
             <div className="flex h-8 w-8 items-center justify-center">
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { TeamInfoCard } from '@/components/admin/teams/team-info-card';
 import { TeamMembersTable } from '@/components/admin/teams/team-members-table';
 import { AddMemberSheet } from '@/components/admin/teams/add-member-sheet';
@@ -28,6 +29,7 @@ export function TeamDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'archive' | 'unarchive' | null>(null);
   const [projectsPage, setProjectsPage] = useState(1);
   const [showArchivedProjects, setShowArchivedProjects] = useState(false);
 
@@ -60,6 +62,14 @@ export function TeamDetailPage() {
     removeMember.mutate({ teamId: team.id, userId });
   };
 
+  const handleConfirm = () => {
+    if (confirmAction === 'archive') {
+      archiveTeam.mutate(team.id, { onSuccess: () => setConfirmAction(null) });
+    } else if (confirmAction === 'unarchive') {
+      unarchiveTeam.mutate(team.id, { onSuccess: () => setConfirmAction(null) });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -73,8 +83,8 @@ export function TeamDetailPage() {
       <TeamInfoCard
         team={team}
         onEdit={() => setEditOpen(true)}
-        onArchive={() => archiveTeam.mutate(team.id)}
-        onUnarchive={() => unarchiveTeam.mutate(team.id)}
+        onArchive={() => setConfirmAction('archive')}
+        onUnarchive={() => setConfirmAction('unarchive')}
       />
 
       <div className="flex items-center justify-between">
@@ -93,6 +103,7 @@ export function TeamDetailPage() {
         onRemove={handleRemove}
         readOnly={team.isArchived}
         removePending={removeMember.isPending}
+        roleChangePendingUserId={updateMember.isPending ? updateMember.variables?.userId : undefined}
       />
 
       <RelatedProjectsSection
@@ -121,6 +132,21 @@ export function TeamDetailPage() {
         existingMembers={team.members}
         open={addMemberOpen}
         onOpenChange={setAddMemberOpen}
+      />
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => !open && setConfirmAction(null)}
+        title={confirmAction === 'archive' ? 'Archive Team' : 'Unarchive Team'}
+        description={
+          confirmAction === 'archive'
+            ? `Are you sure you want to archive ${team.name}? Members will lose access to this team.`
+            : `Are you sure you want to unarchive ${team.name}? Members will regain access to this team.`
+        }
+        confirmLabel={confirmAction === 'archive' ? 'Archive' : 'Unarchive'}
+        variant={confirmAction === 'archive' ? 'destructive' : 'default'}
+        onConfirm={handleConfirm}
+        isPending={archiveTeam.isPending || unarchiveTeam.isPending}
       />
     </div>
   );

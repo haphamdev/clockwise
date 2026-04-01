@@ -30,6 +30,7 @@ interface UserMembershipsTableProps {
   onRemove: (teamId: string) => void;
   readOnly?: boolean;
   removePending?: boolean;
+  roleChangePendingTeamId?: string;
 }
 
 export function UserMembershipsTable({
@@ -38,6 +39,7 @@ export function UserMembershipsTable({
   onRemove,
   readOnly,
   removePending,
+  roleChangePendingTeamId,
 }: UserMembershipsTableProps) {
   const [removingTeamId, setRemovingTeamId] = useState<string | null>(null);
   const removingTeam = memberships.find((m) => m.teamId === removingTeamId);
@@ -92,6 +94,7 @@ export function UserMembershipsTable({
                     <Select
                       value={membership.role}
                       onValueChange={(value) => onChangeRole(membership.teamId, value as TeamRole)}
+                      disabled={membership.teamId === roleChangePendingTeamId}
                     >
                       <SelectTrigger className="h-8 w-[120px]">
                         <SelectValue />
