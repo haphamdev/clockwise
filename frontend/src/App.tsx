@@ -15,6 +15,8 @@ import { InvitationsPage } from '@/pages/admin/invitations-page';
 import { OrgSettingsPage } from '@/pages/admin/org-settings-page';
 import { InviteLandingPage } from '@/pages/invite-landing-page';
 import { ProfilePage } from '@/pages/profile-page';
+import { ProjectsPage } from '@/pages/projects-page';
+import { ProjectDetailPage } from '@/pages/project-detail-page';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -48,7 +50,8 @@ export default function App() {
             >
               <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
               <Route path="/time-logs" element={<PlaceholderPage title="My Time Logs" />} />
-              <Route path="/projects" element={<PlaceholderPage title="Projects" />} />
+              <Route path="/projects" element={<ProjectsPage />} />
+              <Route path="/projects/:id" element={<ProjectDetailPage />} />
               <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
               <Route path="/profile" element={<ProfilePage />} />
 

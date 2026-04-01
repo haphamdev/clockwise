@@ -224,48 +224,48 @@ const PROJECTS = [
     index: 1,
     name: 'Mobile App Redesign',
     description: 'Complete redesign of the mobile application for iOS and Android',
-    ownerIndex: 4,
+    creatorIndex: 4,
   },
   {
     index: 2,
     name: 'API Platform v2',
     description: 'Next generation REST API with improved performance and new endpoints',
-    ownerIndex: 4,
+    creatorIndex: 4,
   },
   {
     index: 3,
     name: 'Customer Dashboard',
     description: 'Self-service analytics dashboard for enterprise customers',
-    ownerIndex: 6,
+    creatorIndex: 6,
   },
   {
     index: 4,
     name: 'Marketing Website',
     description: 'New company website with updated branding and content',
-    ownerIndex: 9,
+    creatorIndex: 9,
   },
   {
     index: 5,
     name: 'Automated Test Suite',
     description: 'End-to-end test automation framework and CI integration',
-    ownerIndex: 8,
+    creatorIndex: 8,
   },
   {
     index: 6,
     name: 'Design System',
     description: 'Shared component library and design tokens',
-    ownerIndex: 6,
+    creatorIndex: 6,
   },
 ];
 
-// Project members by user index
-const PROJECT_MEMBERS: Record<number, number[]> = {
-  1: [4, 5, 7, 8, 11, 1], // Mobile App: Sofia, Marcus, James, Yuki, Isabella, David(deactivated)
-  2: [4, 5, 10, 14], // API Platform: Sofia, Marcus, Liam, Carlos
-  3: [6, 9, 11, 13, 2], // Customer Dashboard: Priya, Amara, Isabella, Emma, Natalia(deactivated)
-  4: [9, 11, 13, 14, 3], // Marketing Website: Amara, Isabella, Emma, Carlos, Samuel(deactivated)
-  5: [8, 5, 10, 12], // Test Suite: Yuki, Marcus, Liam, Raj
-  6: [6, 9, 11, 15], // Design System: Priya, Amara, Isabella, Aisha
+// Project-team assignments (teams linked to each project)
+const PROJECT_TEAMS: Record<number, number[]> = {
+  1: [1, 2],    // Mobile App → Engineering, Design
+  2: [1],       // API Platform → Engineering
+  3: [2, 3],    // Customer Dashboard → Design, Product
+  4: [4],       // Marketing Website → Marketing
+  5: [5, 1],    // Test Suite → QA, Engineering
+  6: [2, 3],    // Design System → Design, Product
 };
 
 const TASKS: { projectIndex: number; label: string }[] = [
@@ -476,29 +476,28 @@ async function seedTestData(adminUserId: string) {
         orgId: DEFAULT_ORG_ID,
         name: p.name,
         description: p.description,
-        ownerId: uid('10000000', p.ownerIndex),
       },
     });
   }
 
-  // ── Project members ────────────────────────────────────────────────────────
-  console.log('Seeding project members...');
-  let pmCounter = 0;
-  for (const [projIdx, memberIndices] of Object.entries(PROJECT_MEMBERS)) {
-    for (const userIdx of memberIndices) {
-      pmCounter++;
-      await prisma.projectMember.upsert({
+  // ── Project-team assignments ──────────────────────────────────────────────
+  console.log('Seeding project teams...');
+  let ptCounter = 0;
+  for (const [projIdx, teamIndices] of Object.entries(PROJECT_TEAMS)) {
+    for (const teamIdx of teamIndices) {
+      ptCounter++;
+      await prisma.projectTeam.upsert({
         where: {
-          projectId_userId: {
+          projectId_teamId: {
             projectId: uid('40000000', Number(projIdx)),
-            userId: uid('10000000', userIdx),
+            teamId: uid('20000000', teamIdx),
           },
         },
         update: {},
         create: {
-          id: uid('50000000', pmCounter),
+          id: uid('50000000', ptCounter),
           projectId: uid('40000000', Number(projIdx)),
-          userId: uid('10000000', userIdx),
+          teamId: uid('20000000', teamIdx),
         },
       });
     }
@@ -519,7 +518,7 @@ async function seedTestData(adminUserId: string) {
         projectId: uid('40000000', t.projectIndex),
         label: t.label,
         labelNormalized: t.label.toLowerCase().replace(/\s+/g, '-'),
-        createdBy: uid('10000000', project.ownerIndex),
+        createdBy: uid('10000000', project.creatorIndex),
       },
     });
   }
@@ -529,13 +528,23 @@ async function seedTestData(adminUserId: string) {
   let tlCounter = 0;
   const seededRng = createSeededRng(42);
 
-  for (const [projIdx, memberIndices] of Object.entries(PROJECT_MEMBERS)) {
+  for (const [projIdx, teamIndices] of Object.entries(PROJECT_TEAMS)) {
     const projectTasks = TASKS.map((t, i) => ({ ...t, taskIndex: i + 1 })).filter(
       (t) => t.projectIndex === Number(projIdx),
     );
     if (projectTasks.length === 0) continue;
 
-    for (const userIdx of memberIndices) {
+    // Derive project users from linked teams
+    const userIndices = new Set<number>();
+    for (const tIdx of teamIndices) {
+      const tm = TEAM_MEMBERS[tIdx];
+      if (tm) {
+        userIndices.add(tm.manager);
+        tm.members.forEach((m) => userIndices.add(m));
+      }
+    }
+
+    for (const userIdx of userIndices) {
       const user = USERS.find((u) => u.index === userIdx)!;
       // Skip pending users
       if (user.status === 'pending') continue;

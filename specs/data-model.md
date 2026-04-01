@@ -46,16 +46,15 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 │ name             │
 │ description      │
 │ status (enum)    │  ← active | archived
-│ owner_id (FK→User)│
 └──────────────────┘
         │
         ├────────────────────┐
         ▼                    ▼
 ┌──────────────────┐  ┌──────────────────┐
-│ ProjectMember    │  │      Task        │
+│  ProjectTeam     │  │      Task        │
 │──────────────────│  │──────────────────│
 │ project_id (FK)  │  │ id               │
-│ user_id (FK)     │  │ project_id (FK)  │
+│ team_id (FK)     │  │ project_id (FK)  │
 └──────────────────┘  │ label            │
                       │ created_by (FK)  │
                       └──────────────────┘
@@ -83,6 +82,18 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 │ token            │
 │ expires_at       │
 │ status (enum)    │  ← pending | accepted | revoked
+└──────────────────┘
+
+┌──────────────────┐
+│    AuditLog      │
+│──────────────────│
+│ id               │
+│ org_id (FK)      │
+│ entity_type      │
+│ entity_id        │
+│ action           │
+│ performed_by     │
+│ metadata (JSON)  │
 └──────────────────┘
 ```
 
@@ -145,19 +156,20 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 | name | VARCHAR(255) | NOT NULL | |
 | description | TEXT | | |
 | status | ENUM | NOT NULL, DEFAULT 'active' | active, archived |
-| owner_id | UUID | FK → user, NOT NULL | Designated project owner |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 
-### project_member
+**Partial unique**: (org_id, name) WHERE status = 'active'
+
+### project_team
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | UUID | PK | |
 | project_id | UUID | FK → project | |
-| user_id | UUID | FK → user | |
+| team_id | UUID | FK → team | |
 | created_at | TIMESTAMP | NOT NULL | |
 
-**Unique**: (project_id, user_id)
+**Unique**: (project_id, team_id)
 
 ### task
 | Column | Type | Constraints | Description |
@@ -209,6 +221,20 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 | role | ENUM | NOT NULL | manager, member |
 
 **Unique**: (invitation_id, team_id)
+
+### audit_log
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PK | |
+| org_id | UUID | FK → organization | |
+| entity_type | VARCHAR(50) | NOT NULL | e.g. team, project, user |
+| entity_id | UUID | NOT NULL | ID of the entity that was changed |
+| action | VARCHAR(50) | NOT NULL | e.g. created, updated, archived |
+| performed_by | UUID | NOT NULL | User who performed the action |
+| metadata | JSONB | NOT NULL, DEFAULT '{}' | Before/after snapshots and extra context |
+| created_at | TIMESTAMP | NOT NULL | |
+
+**Index**: (entity_type, entity_id), (org_id, created_at), (performed_by)
 
 ---
 

@@ -1,7 +1,7 @@
 # Projects & Teams
 
 ## Overview
-Teams are the organizational unit for users. Projects are where work happens. A project can span multiple teams, and each project has a designated owner.
+Teams are the organizational unit for users. Projects are where work happens. Teams are assigned to projects via a many-to-many relationship (`ProjectTeam`). Users access projects through their team membership — there is no individual project membership or project owner.
 
 ---
 
@@ -40,40 +40,42 @@ Teams are the organizational unit for users. Projects are where work happens. A 
 ## Projects
 
 ### Structure
-- A project can involve members from **multiple teams**.
-- Each project has a **designated owner** (an Admin or a Manager) who manages the project.
-- Members are assigned to projects individually (not by team).
+- A project can involve members from **multiple teams** via team assignments.
+- There is **no project owner** — governance is role-based:
+  - **Admins** can manage any project.
+  - **Managers** can manage projects linked to their managed teams.
+  - **Members** can view projects linked to their teams.
+- Users access projects through their team membership (via the `ProjectTeam` join table).
 
 ### Project Fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| Name | string | Yes | Project name |
+| Name | string | Yes | Unique per org (among active projects) |
 | Description | string | No | Brief description |
 | Status | enum | Yes | `active` or `archived` |
-| Owner | User | Yes | Designated project owner (Admin or Manager) |
 
 ### Project Management
 
 | Action | Who can do it |
 |--------|---------------|
-| Create project | Admin, Manager |
-| Edit project (name, description, status) | Admin, Project Owner |
-| Archive project | Admin, Project Owner |
-| Assign members to project | Admin, Project Owner |
-| Remove members from project | Admin, Project Owner |
-| Transfer ownership | Admin, current Project Owner |
+| Create project (with at least 1 team) | Admin, Manager (own managed teams only) |
+| Edit project (name, description) | Admin, Manager of a linked team |
+| Archive project | Admin only |
+| Unarchive project | Admin only |
+| Assign team to project | Admin, Manager of the team being assigned (must also manage a linked team) |
+| Remove team from project | Admin, Manager of the team being removed |
 
-### Member Assignment
-- A project owner can assign any user from any team to their project.
-- A user must be assigned to a project before they can log time against it.
-- When a user is removed from a project, their existing time logs remain intact.
+### Team Assignment
+- Teams are assigned to projects, not individual users.
+- A project must have **at least one team** at all times — the last team cannot be removed.
+- When creating a project, at least one team must be selected. Managers can only select teams they manage; Admins can select any team.
+- When a team is removed from a project, existing time logs from that team's members remain intact.
 
 ### Rules
 - Archiving a project prevents new time logging but preserves all existing data.
-- A project must have exactly one owner at any time.
-- Ownership can be transferred to another Admin or Manager.
-- When a project owner leaves the org or is demoted, Admin must reassign ownership.
+- Active project names must be unique within the organization (enforced by partial unique index).
+- A project must always have at least one assigned team.
 
 ---
 
@@ -84,19 +86,17 @@ Teams are the organizational unit for users. Projects are where work happens. A 
 | Scenario | Can view time logs? | Can edit time logs? |
 |----------|-------------------|-------------------|
 | Admin → any user, any project | Yes | Yes |
-| Project Owner → project members | Yes | Yes |
 | Manager → own team members (any project) | Yes | Yes |
 | Member → self | Yes | Yes |
 | Member → other members | No | No |
 
-**Priority**: If a user qualifies through multiple roles (e.g., both Project Owner and team Manager), they get the union of permissions.
+**Priority**: If a user qualifies through multiple roles (e.g., Manager in one team and Member in another), they get the union of permissions.
 
 ### Example
 - User A is Manager of Team Alpha and Member of Team Beta.
-- Project X has members from both Team Alpha and Team Beta.
+- Project X has both Team Alpha and Team Beta assigned.
 - User A can view/edit time logs of Team Alpha members in Project X (as their Manager).
 - User A can only view/edit their own time logs as a Team Beta member.
-- If User A is also the owner of Project X, they can view/edit all project members' logs.
 
 ---
 
@@ -112,21 +112,22 @@ Teams are the organizational unit for users. Projects are where work happens. A 
 - Actions: Add/remove members, change roles.
 
 ### Project List
-- **Admin**: Sees all projects.
-- **Manager**: Sees projects they own + projects their team members are in.
-- **Member**: Sees only their assigned projects.
-- Columns: Name, Status, Owner, Member count.
-- Filter by status (active/archived).
+- **Admin**: Sees all projects. Can filter to include archived.
+- **Manager**: Sees projects linked to their managed teams.
+- **Member**: Sees projects linked to their teams.
+- Columns: Name, Description, Teams count, Status badge, Actions.
+- Actions (role-aware): Edit, Archive/Unarchive.
 
 ### Project Detail
-- Project info (name, description, status, owner).
-- Member list with team affiliation.
-- Actions (for Admin/Owner): Edit, assign/remove members, archive, transfer ownership.
+- Project info card (name, description, status, teams count, created date).
+- Assigned teams table with Name, Members count, Status, Remove button.
+- Audit timeline showing project history.
+- Actions (for Admin/Manager of linked team): Edit, Assign/Remove teams, Archive/Unarchive.
 
 ---
 
 ## Edge Cases
-- **Project with no members**: Valid state (just created). Owner can still configure it.
-- **User in no projects**: Can log in, sees empty project list. Dashboard shows prompt to contact manager.
+- **Project with one team**: The last team cannot be removed — at least one must remain.
+- **User in no teams**: Can log in, sees empty project list. Dashboard shows prompt to contact admin.
 - **All managers leave a team**: Admin is notified to assign a new manager. Team continues to function but management actions are blocked until resolved.
-- **Project owner archived from org**: Ownership must be transferred by Admin before or during the archival.
+- **Duplicate project name**: Active project names must be unique per org. Archived projects do not conflict.

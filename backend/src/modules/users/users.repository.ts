@@ -123,13 +123,10 @@ export class UsersRepository {
   }
 
   async deactivateUser(userId: string): Promise<void> {
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: userId },
-        data: { status: 'deactivated', refreshToken: null },
-      }),
-      this.prisma.projectMember.deleteMany({ where: { userId } }),
-    ]);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { status: 'deactivated', refreshToken: null },
+    });
   }
 
   async reactivateUser(userId: string): Promise<void> {

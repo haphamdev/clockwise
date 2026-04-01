@@ -63,8 +63,8 @@ Roles are assigned **per team**. A user can have different roles in different te
 | Invite / remove users | Yes | No | No |
 | Create / manage teams | Yes | No | No |
 | Assign roles to team members | Yes | No | No |
-| Create projects | Yes | Yes (own team) | No |
-| Assign members to projects | Yes | Yes (own team) | No |
+| Create projects (with team assignment) | Yes | Yes (own managed teams) | No |
+| Assign/remove teams to projects | Yes | Yes (own managed teams) | No |
 | Log time | Yes | Yes | Yes |
 | Edit own time logs | Yes | Yes | Yes |
 | Edit team members' time logs | Yes | Yes (own team) | No |
@@ -76,7 +76,8 @@ Roles are assigned **per team**. A user can have different roles in different te
 - A user who is a **Manager** in Team A and a **Member** in Team B:
   - Can view/edit time logs of Team A members.
   - Can only view/edit their own time logs in Team B.
-- A user's effective permissions for a resource depend on their role in the team that owns the resource.
+  - Can manage projects linked to Team A but only view projects linked to Team B.
+- A user's effective permissions for a resource depend on their role in the team(s) linked to that resource.
 
 ---
 

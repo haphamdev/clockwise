@@ -65,14 +65,20 @@ RESTful API built with NestJS. All endpoints return JSON. Authentication via JWT
 
 | Method | Path | Description | Role |
 |--------|------|-------------|------|
-| GET | `/projects` | List projects (scoped by role) | Any |
-| POST | `/projects` | Create project | Admin, Manager |
-| GET | `/projects/:id` | Get project detail with members | Project member, Admin |
-| PATCH | `/projects/:id` | Update project | Admin, Owner |
-| PATCH | `/projects/:id/archive` | Archive project | Admin, Owner |
-| PATCH | `/projects/:id/transfer` | Transfer ownership | Admin, Owner |
-| POST | `/projects/:id/members` | Add member to project | Admin, Owner |
-| DELETE | `/projects/:id/members/:userId` | Remove member from project | Admin, Owner |
+| GET | `/projects` | List projects (Admin: all, others: scoped by team membership) | Any |
+| POST | `/projects` | Create project (with at least 1 team) | Admin, Manager |
+| GET | `/projects/:id` | Get project detail with assigned teams | Admin, member of linked team |
+| PATCH | `/projects/:id` | Update project (name, description) | Admin, Manager of linked team |
+| PATCH | `/projects/:id/archive` | Archive project | Admin |
+| PATCH | `/projects/:id/unarchive` | Unarchive project | Admin |
+| POST | `/projects/:id/teams` | Assign team to project | Admin, Manager of team being assigned |
+| DELETE | `/projects/:id/teams/:teamId` | Remove team from project | Admin, Manager of team being removed |
+
+### Audit Logs
+
+| Method | Path | Description | Role |
+|--------|------|-------------|------|
+| GET | `/audit-logs` | List audit logs for an entity (query: entityType, entityId) | Admin, Manager of linked team |
 
 ### Tasks
 

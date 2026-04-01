@@ -1,0 +1,109 @@
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/page-header';
+import { ProjectInfoCard } from '@/components/projects/project-info-card';
+import { ProjectTeamsTable } from '@/components/projects/project-teams-table';
+import { EditProjectSheet } from '@/components/projects/edit-project-sheet';
+import { AssignTeamSheet } from '@/components/projects/assign-team-sheet';
+import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
+import { useProjectDetail } from '@/lib/projects/use-project-detail';
+import { useArchiveProject } from '@/lib/projects/use-archive-project';
+import { useUnarchiveProject } from '@/lib/projects/use-unarchive-project';
+import { useRemoveProjectTeam } from '@/lib/projects/use-remove-project-team';
+import { useAuth } from '@/lib/auth/use-auth';
+
+export function ProjectDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { data: project, isLoading } = useProjectDetail(id!);
+  const archiveProject = useArchiveProject();
+  const unarchiveProject = useUnarchiveProject();
+  const removeTeam = useRemoveProjectTeam();
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [assignTeamOpen, setAssignTeamOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-40 w-full" />
+        <Skeleton className="h-60 w-full" />
+      </div>
+    );
+  }
+
+  if (!project) {
+    return <p className="py-12 text-center text-muted-foreground">Project not found.</p>;
+  }
+
+  const isAdmin = user?.isAdmin ?? false;
+  const isManagerOfLinkedTeam = project.teams.some((t) =>
+    user?.teams.some((ut) => ut.teamId === t.teamId && ut.role === 'manager'),
+  );
+  const canEdit = isAdmin || isManagerOfLinkedTeam;
+  const canArchive = isAdmin;
+  const canManageTeams = isAdmin || isManagerOfLinkedTeam;
+  const isActive = project.status === 'active';
+
+  const handleRemoveTeam = (teamId: string) => {
+    removeTeam.mutate({ projectId: project.id, teamId });
+  };
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title={project.name}
+        breadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: project.name },
+        ]}
+      />
+
+      <ProjectInfoCard
+        project={project}
+        onEdit={() => setEditOpen(true)}
+        onArchive={() => archiveProject.mutate(project.id)}
+        onUnarchive={() => unarchiveProject.mutate(project.id)}
+        canEdit={canEdit && isActive}
+        canArchive={canArchive}
+      />
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Teams</h2>
+        {canManageTeams && isActive && (
+          <Button size="sm" onClick={() => setAssignTeamOpen(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Assign Team
+          </Button>
+        )}
+      </div>
+
+      <ProjectTeamsTable
+        teams={project.teams}
+        onRemove={handleRemoveTeam}
+        canRemove={canManageTeams && isActive}
+        removePending={removeTeam.isPending}
+        isLastTeam={project.teams.length <= 1}
+        isAdmin={isAdmin}
+      />
+
+      <AuditTimeline entityType="project" entityId={project.id} />
+
+      <EditProjectSheet
+        project={project}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+      <AssignTeamSheet
+        projectId={project.id}
+        existingTeams={project.teams}
+        open={assignTeamOpen}
+        onOpenChange={setAssignTeamOpen}
+      />
+    </div>
+  );
+}

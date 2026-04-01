@@ -64,8 +64,6 @@ model User {
 
   org              Organization   @relation(fields: [orgId], references: [id])
   teamMemberships  TeamMember[]
-  projectMemberships ProjectMember[]
-  ownedProjects    Project[]      @relation("ProjectOwner")
   timeLogs         TimeLog[]
   createdTasks     Task[]
   sentInvitations  Invitation[]   @relation("InvitedBy")
@@ -85,6 +83,7 @@ model Team {
   org                   Organization               @relation(fields: [orgId], references: [id])
   members               TeamMember[]
   invitationAssignments InvitationTeamAssignment[]
+  projectTeams          ProjectTeam[]
 
   @@unique([orgId, name])
   @@map("team")
@@ -110,30 +109,29 @@ model Project {
   name        String        @db.VarChar(255)
   description String?       @db.Text
   status      ProjectStatus @default(active)
-  ownerId     String        @map("owner_id")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
-  org     Organization    @relation(fields: [orgId], references: [id])
-  owner   User            @relation("ProjectOwner", fields: [ownerId], references: [id])
-  members ProjectMember[]
-  tasks   Task[]
-  timeLogs TimeLog[]
+  org          Organization  @relation(fields: [orgId], references: [id])
+  projectTeams ProjectTeam[]
+  tasks        Task[]
+  timeLogs     TimeLog[]
 
   @@map("project")
 }
 
-model ProjectMember {
+model ProjectTeam {
   id        String   @id @default(uuid())
   projectId String   @map("project_id")
-  userId    String   @map("user_id")
+  teamId    String   @map("team_id")
+  isDeleted Boolean  @default(false) @map("is_deleted")
   createdAt DateTime @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
+  team    Team    @relation(fields: [teamId], references: [id])
 
-  @@unique([projectId, userId])
-  @@map("project_member")
+  @@unique([projectId, teamId])
+  @@map("project_team")
 }
 
 model Task {
