@@ -63,3 +63,13 @@ export class InvitationInvalidTeamAssignmentException extends AppException {
     );
   }
 }
+
+export class InvitationEmailSendFailedException extends AppException {
+  constructor() {
+    super(
+      ErrorCode.INVITATION.EMAIL_SEND_FAILED,
+      'Failed to send invitation email',
+      HttpStatus.BAD_GATEWAY,
+    );
+  }
+}

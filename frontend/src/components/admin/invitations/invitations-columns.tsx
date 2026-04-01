@@ -1,5 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
+import { Loader2, MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -16,6 +16,7 @@ export function getInvitationsColumns(
   onResend: (invitation: Invitation) => void,
   onRevoke: (invitation: Invitation) => void,
   onEditTeams: (invitation: Invitation) => void,
+  resendingId?: string,
 ): ColumnDef<Invitation>[] {
   return [
     {
@@ -48,7 +49,9 @@ export function getInvitationsColumns(
               : 'pending'
             : inv.status === 'accepted'
               ? 'accepted'
-              : 'revoked';
+              : inv.status === 'failed'
+                ? 'failed'
+                : 'revoked';
         return <StatusBadge status={statusLabel} />;
       },
     },
@@ -65,6 +68,28 @@ export function getInvitationsColumns(
       id: 'actions',
       cell: ({ row }) => {
         const inv = row.original;
+        if (resendingId === inv.id) {
+          return (
+            <div className="flex h-8 w-8 items-center justify-center">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          );
+        }
+        if (inv.status === 'failed') {
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        }
         if (inv.status !== 'pending') return null;
         if (inv.isExpired) {
           return (

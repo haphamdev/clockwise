@@ -9,11 +9,13 @@ export function useResendInvitation() {
   return useMutation({
     mutationFn: resendInvitation,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: invitationsKeys.lists() });
       toast.success('Invitation resent');
     },
     onError: (err) => {
       showErrorToast(err, 'Failed to resend invitation');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: invitationsKeys.lists() });
     },
   });
 }

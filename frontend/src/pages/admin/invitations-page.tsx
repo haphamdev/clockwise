@@ -40,14 +40,17 @@ export function InvitationsPage() {
     [setParam],
   );
 
+  const resendingId = resendInvitation.isPending ? resendInvitation.variables : undefined;
+
   const columns = useMemo(
     () =>
       getInvitationsColumns(
         (inv) => resendInvitation.mutate(inv.id),
         (inv) => revokeInvitation.mutate(inv.id),
         (inv) => setEditingInvitation(inv),
+        resendingId,
       ),
-    [resendInvitation, revokeInvitation],
+    [resendInvitation, revokeInvitation, resendingId],
   );
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
