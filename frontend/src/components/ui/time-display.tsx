@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useOrgSettings } from '@/lib/org/use-org-settings';
+import { useEffectiveFormats } from '@/lib/user-preferences/use-effective-formats';
 import { DATE_TOKENS, TIME_TOKENS, toDate } from '@/lib/org/format-date';
 import type { DateFormat, TimeFormat } from '@/lib/org/types';
 
@@ -82,9 +82,7 @@ export function TimeDisplay({
   fallback,
   className,
 }: TimeDisplayProps) {
-  const { data: settings } = useOrgSettings();
-  const dateFormat: DateFormat = settings?.dateFormat ?? 'YYYY-MM-DD';
-  const timeFormat: TimeFormat = settings?.timeFormat ?? '12h';
+  const { dateFormat, timeFormat } = useEffectiveFormats();
 
   const date = useMemo(() => (value ? toDate(value) : null), [value]);
   useRelativeTime(date, true);
