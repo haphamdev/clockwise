@@ -9,7 +9,9 @@ import { UserInfoCard } from '@/components/admin/users/user-info-card';
 import { UserMembershipsTable } from '@/components/admin/users/user-memberships-table';
 import { AddToTeamSheet } from '@/components/admin/users/add-to-team-sheet';
 import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
+import { RelatedProjectsSection } from '@/components/admin/related-projects-section';
 import { queryClient } from '@/lib/query-client';
+import { useUserProjects } from '@/lib/projects/use-user-projects';
 import { useUserDetail } from '@/lib/users/use-user-detail';
 import { useUpdateUser } from '@/lib/users/use-update-user';
 import { useDeactivateUser } from '@/lib/users/use-deactivate-user';
@@ -31,6 +33,14 @@ export function UserDetailPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [addTeamOpen, setAddTeamOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'deactivate' | 'reactivate' | null>(null);
+  const [projectsPage, setProjectsPage] = useState(1);
+  const [showArchivedProjects, setShowArchivedProjects] = useState(false);
+
+  const { data: projectsData, isLoading: projectsLoading } = useUserProjects(id, {
+    page: projectsPage,
+    limit: 5,
+    includeArchived: showArchivedProjects,
+  });
 
   useEffect(() => {
     if (user) setIsAdmin(user.isAdmin);
@@ -116,6 +126,20 @@ export function UserDetailPage() {
         onRemove={handleRemove}
         readOnly={isDeactivated}
         removePending={removeMember.isPending}
+      />
+
+      <RelatedProjectsSection
+        data={projectsData?.data ?? []}
+        total={projectsData?.total ?? 0}
+        page={projectsPage}
+        totalPages={projectsData ? Math.ceil(projectsData.total / projectsData.limit) : 0}
+        isLoading={projectsLoading}
+        onPageChange={setProjectsPage}
+        showArchived={showArchivedProjects}
+        onShowArchivedChange={(v) => {
+          setShowArchivedProjects(v);
+          setProjectsPage(1);
+        }}
       />
 
       <AuditTimeline entityType="user" entityId={user.id} />

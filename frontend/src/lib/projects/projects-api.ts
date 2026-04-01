@@ -20,6 +20,15 @@ export function fetchProjects(params: ListProjectsParams = {}) {
   return apiClient<PaginatedResponse<Project>>(`/projects${qs ? `?${qs}` : ''}`);
 }
 
+export function fetchUserProjects(userId: string, params: ListProjectsParams = {}) {
+  const searchParams = new URLSearchParams();
+  if (params.page) searchParams.set('page', String(params.page));
+  if (params.limit) searchParams.set('limit', String(params.limit));
+  if (params.includeArchived) searchParams.set('includeArchived', 'true');
+  const qs = searchParams.toString();
+  return apiClient<PaginatedResponse<Project>>(`/users/${userId}/projects${qs ? `?${qs}` : ''}`);
+}
+
 export function fetchProjectDetail(id: string) {
   return apiClient<ProjectDetail>(`/projects/${id}`);
 }

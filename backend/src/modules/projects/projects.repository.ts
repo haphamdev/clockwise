@@ -106,6 +106,44 @@ export class ProjectsRepository {
     };
   }
 
+  /** Admin-level query: finds projects linked to a user via team membership.
+   *  Unlike findAllForUser() (non-admin self-service), this respects
+   *  includeArchived and does not filter out archived teams. */
+  async findAllForUserId(
+    orgId: string,
+    userId: string,
+    options: { includeArchived: boolean; page: number; limit: number },
+  ): Promise<{ data: ProjectListItem[]; total: number }> {
+    const where: Prisma.ProjectWhereInput = {
+      orgId,
+      ...(!options.includeArchived && { status: 'active' }),
+      projectTeams: {
+        some: {
+          isDeleted: false,
+          team: { members: { some: { userId } } },
+        },
+      },
+    };
+
+    const [projects, total] = await Promise.all([
+      this.prisma.project.findMany({
+        where,
+        include: {
+          _count: { select: { projectTeams: { where: { isDeleted: false } } } },
+        },
+        orderBy: { name: 'asc' },
+        skip: (options.page - 1) * options.limit,
+        take: options.limit,
+      }),
+      this.prisma.project.count({ where }),
+    ]);
+
+    return {
+      data: projects.map((p) => this.toListItem(p)),
+      total,
+    };
+  }
+
   async findById(id: string): Promise<ProjectWithTeams | null> {
     const project = await this.prisma.project.findUnique({
       where: { id },
