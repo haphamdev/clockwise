@@ -1,6 +1,37 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsIn, IsUUID } from 'class-validator';
-import { ValidateIf } from 'class-validator';
+import {
+  IsOptional,
+  IsIn,
+  IsUUID,
+  ValidateIf,
+  registerDecorator,
+  ValidationOptions,
+} from 'class-validator';
+
+function IsTimezone(validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'isTimezone',
+      target: object.constructor,
+      propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: unknown) {
+          if (typeof value !== 'string') return false;
+          try {
+            Intl.DateTimeFormat(undefined, { timeZone: value });
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        defaultMessage() {
+          return '$property must be a valid IANA timezone';
+        },
+      },
+    });
+  };
+}
 
 export class UpdateUserPreferencesDto {
   @ApiProperty({ required: false, enum: ['light', 'dark', 'system'] })
@@ -32,7 +63,7 @@ export class UpdateUserPreferencesDto {
 
   @ApiProperty({ required: false, example: 'America/New_York' })
   @IsOptional()
-  @IsString()
+  @IsTimezone({ message: 'timezone must be a valid IANA timezone' })
   timezone?: string;
 
   @ApiProperty({ required: false, nullable: true, description: 'null to clear' })

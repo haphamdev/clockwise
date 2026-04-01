@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'next-themes';
 import { queryClient } from '@/lib/query-client';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -15,6 +16,7 @@ import { InvitationsPage } from '@/pages/admin/invitations-page';
 import { OrgSettingsPage } from '@/pages/admin/org-settings-page';
 import { InviteLandingPage } from '@/pages/invite-landing-page';
 import { ProfilePage } from '@/pages/profile-page';
+import { UserPreferencesPage } from '@/pages/user-preferences-page';
 import { ProjectsPage } from '@/pages/projects-page';
 import { ProjectDetailPage } from '@/pages/project-detail-page';
 
@@ -31,85 +33,88 @@ function PlaceholderPage({ title }: { title: string }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/auth/callback" element={<AuthCallbackPage />} />
-            <Route path="/invite/:token" element={<InviteLandingPage />} />
+    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+      <BrowserRouter>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              <Route path="/invite/:token" element={<InviteLandingPage />} />
 
-            {/* Authenticated routes with layout */}
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
-              <Route path="/time-logs" element={<PlaceholderPage title="My Time Logs" />} />
-              <Route path="/projects" element={<ProjectsPage />} />
-              <Route path="/projects/:id" element={<ProjectDetailPage />} />
-              <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              {/* Authenticated routes with layout */}
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
+                <Route path="/time-logs" element={<PlaceholderPage title="My Time Logs" />} />
+                <Route path="/projects" element={<ProjectsPage />} />
+                <Route path="/projects/:id" element={<ProjectDetailPage />} />
+                <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/profile/settings" element={<UserPreferencesPage />} />
 
-              {/* Admin routes */}
-              <Route
-                path="/admin/teams"
-                element={
-                  <AdminRoute>
-                    <TeamsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/teams/:id"
-                element={
-                  <AdminRoute>
-                    <TeamDetailPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/users"
-                element={
-                  <AdminRoute>
-                    <UsersPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/users/:id"
-                element={
-                  <AdminRoute>
-                    <UserDetailPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/invitations"
-                element={
-                  <AdminRoute>
-                    <InvitationsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/settings"
-                element={
-                  <AdminRoute>
-                    <OrgSettingsPage />
-                  </AdminRoute>
-                }
-              />
-            </Route>
+                {/* Admin routes */}
+                <Route
+                  path="/admin/teams"
+                  element={
+                    <AdminRoute>
+                      <TeamsPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/teams/:id"
+                  element={
+                    <AdminRoute>
+                      <TeamDetailPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <AdminRoute>
+                      <UsersPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users/:id"
+                  element={
+                    <AdminRoute>
+                      <UserDetailPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/invitations"
+                  element={
+                    <AdminRoute>
+                      <InvitationsPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <AdminRoute>
+                      <OrgSettingsPage />
+                    </AdminRoute>
+                  }
+                />
+              </Route>
 
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </AuthProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </AuthProvider>
+        </QueryClientProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
