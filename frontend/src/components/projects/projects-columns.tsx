@@ -1,6 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
-import { MoreHorizontal } from 'lucide-react';
+import { Loader2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import {
@@ -17,6 +17,7 @@ interface ProjectColumnActions {
   onUnarchive: (project: Project) => void;
   canEdit: boolean;
   canArchive: boolean;
+  actionPendingId?: string;
 }
 
 export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Project>[] {
@@ -55,6 +56,13 @@ export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Pro
       id: 'actions',
       cell: ({ row }) => {
         const project = row.original;
+        if (actions.actionPendingId === project.id) {
+          return (
+            <div className="flex h-8 w-8 items-center justify-center">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          );
+        }
         const hasActions =
           (project.status === 'archived' && actions.canArchive) ||
           (project.status !== 'archived' && (actions.canEdit || actions.canArchive));

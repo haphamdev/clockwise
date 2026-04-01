@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ProjectInfoCard } from '@/components/projects/project-info-card';
 import { ProjectTeamsTable } from '@/components/projects/project-teams-table';
 import { EditProjectSheet } from '@/components/projects/edit-project-sheet';
@@ -25,6 +26,7 @@ export function ProjectDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [assignTeamOpen, setAssignTeamOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'archive' | 'unarchive' | null>(null);
 
   if (isLoading) {
     return (
@@ -53,6 +55,14 @@ export function ProjectDetailPage() {
     removeTeam.mutate({ projectId: project.id, teamId });
   };
 
+  const handleConfirm = () => {
+    if (confirmAction === 'archive') {
+      archiveProject.mutate(project.id, { onSuccess: () => setConfirmAction(null) });
+    } else if (confirmAction === 'unarchive') {
+      unarchiveProject.mutate(project.id, { onSuccess: () => setConfirmAction(null) });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -66,8 +76,8 @@ export function ProjectDetailPage() {
       <ProjectInfoCard
         project={project}
         onEdit={() => setEditOpen(true)}
-        onArchive={() => archiveProject.mutate(project.id)}
-        onUnarchive={() => unarchiveProject.mutate(project.id)}
+        onArchive={() => setConfirmAction('archive')}
+        onUnarchive={() => setConfirmAction('unarchive')}
         canEdit={canEdit && isActive}
         canArchive={canArchive}
       />
@@ -103,6 +113,21 @@ export function ProjectDetailPage() {
         existingTeams={project.teams}
         open={assignTeamOpen}
         onOpenChange={setAssignTeamOpen}
+      />
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => !open && setConfirmAction(null)}
+        title={confirmAction === 'archive' ? 'Archive Project' : 'Unarchive Project'}
+        description={
+          confirmAction === 'archive'
+            ? `Are you sure you want to archive ${project.name}? Time logging will be disabled for this project.`
+            : `Are you sure you want to unarchive ${project.name}? Time logging will be re-enabled.`
+        }
+        confirmLabel={confirmAction === 'archive' ? 'Archive' : 'Unarchive'}
+        variant={confirmAction === 'archive' ? 'destructive' : 'default'}
+        onConfirm={handleConfirm}
+        isPending={archiveProject.isPending || unarchiveProject.isPending}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
-import { MoreHorizontal } from 'lucide-react';
+import { Loader2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import {
@@ -15,6 +15,7 @@ export function getTeamsColumns(
   onEdit: (team: Team) => void,
   onArchive: (team: Team) => void,
   onUnarchive: (team: Team) => void,
+  actionPendingId?: string,
 ): ColumnDef<Team>[] {
   return [
     {
@@ -53,6 +54,13 @@ export function getTeamsColumns(
       id: 'actions',
       cell: ({ row }) => {
         const team = row.original;
+        if (actionPendingId === team.id) {
+          return (
+            <div className="flex h-8 w-8 items-center justify-center">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          );
+        }
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

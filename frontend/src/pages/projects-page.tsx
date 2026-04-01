@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import { getProjectsColumns } from '@/components/projects/projects-columns';
 import { CreateProjectSheet } from '@/components/projects/create-project-sheet';
@@ -21,6 +22,7 @@ export function ProjectsPage() {
   const [showArchived, setShowArchived] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
+  const [confirmProject, setConfirmProject] = useState<{ project: Project; action: 'archive' | 'unarchive' } | null>(null);
 
   const isAdmin = user?.isAdmin ?? false;
   const isManager = user?.teams.some((t) => t.role === 'manager') ?? false;
@@ -34,17 +36,34 @@ export function ProjectsPage() {
   const archiveProject = useArchiveProject();
   const unarchiveProject = useUnarchiveProject();
 
+  const actionPendingId = archiveProject.isPending
+    ? archiveProject.variables
+    : unarchiveProject.isPending
+      ? unarchiveProject.variables
+      : undefined;
+
   const columns = useMemo(
     () =>
       getProjectsColumns({
         onEdit: (project) => setEditProject(project),
-        onArchive: (project) => archiveProject.mutate(project.id),
-        onUnarchive: (project) => unarchiveProject.mutate(project.id),
+        onArchive: (project) => setConfirmProject({ project, action: 'archive' }),
+        onUnarchive: (project) => setConfirmProject({ project, action: 'unarchive' }),
         canEdit: isAdmin || isManager,
         canArchive: isAdmin,
+        actionPendingId,
       }),
-    [archiveProject, unarchiveProject, isAdmin, isManager],
+    [actionPendingId, isAdmin, isManager],
   );
+
+  const handleConfirm = () => {
+    if (!confirmProject) return;
+    const { project, action } = confirmProject;
+    if (action === 'archive') {
+      archiveProject.mutate(project.id, { onSuccess: () => setConfirmProject(null) });
+    } else {
+      unarchiveProject.mutate(project.id, { onSuccess: () => setConfirmProject(null) });
+    }
+  };
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
@@ -91,6 +110,21 @@ export function ProjectsPage() {
         project={editProject}
         open={!!editProject}
         onOpenChange={(open) => !open && setEditProject(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmProject !== null}
+        onOpenChange={(open) => !open && setConfirmProject(null)}
+        title={confirmProject?.action === 'archive' ? 'Archive Project' : 'Unarchive Project'}
+        description={
+          confirmProject?.action === 'archive'
+            ? `Are you sure you want to archive ${confirmProject.project.name}? Time logging will be disabled for this project.`
+            : `Are you sure you want to unarchive ${confirmProject?.project.name}? Time logging will be re-enabled.`
+        }
+        confirmLabel={confirmProject?.action === 'archive' ? 'Archive' : 'Unarchive'}
+        variant={confirmProject?.action === 'archive' ? 'destructive' : 'default'}
+        onConfirm={handleConfirm}
+        isPending={archiveProject.isPending || unarchiveProject.isPending}
       />
     </div>
   );

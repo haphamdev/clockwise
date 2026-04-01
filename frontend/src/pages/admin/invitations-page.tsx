@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Select,
   SelectContent,
@@ -25,6 +26,7 @@ export function InvitationsPage() {
   const status = getParam('status');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [editingInvitation, setEditingInvitation] = useState<Invitation | null>(null);
+  const [revokingInvitation, setRevokingInvitation] = useState<Invitation | null>(null);
 
   const { data, isLoading } = useInvitations({
     page,
@@ -41,16 +43,18 @@ export function InvitationsPage() {
   );
 
   const resendingId = resendInvitation.isPending ? resendInvitation.variables : undefined;
+  const revokingId = revokeInvitation.isPending ? revokeInvitation.variables : undefined;
 
   const columns = useMemo(
     () =>
       getInvitationsColumns(
         (inv) => resendInvitation.mutate(inv.id),
-        (inv) => revokeInvitation.mutate(inv.id),
+        (inv) => setRevokingInvitation(inv),
         (inv) => setEditingInvitation(inv),
         resendingId,
+        revokingId,
       ),
-    [resendInvitation, revokeInvitation, resendingId],
+    [resendInvitation, resendingId, revokingId],
   );
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
@@ -99,6 +103,23 @@ export function InvitationsPage() {
       <EditInvitationTeamsSheet
         invitation={editingInvitation}
         onOpenChange={(open) => { if (!open) setEditingInvitation(null); }}
+      />
+
+      <ConfirmDialog
+        open={revokingInvitation !== null}
+        onOpenChange={(open) => !open && setRevokingInvitation(null)}
+        title="Revoke Invitation"
+        description={`Are you sure you want to revoke the invitation for ${revokingInvitation?.email}?`}
+        confirmLabel="Revoke"
+        variant="destructive"
+        onConfirm={() => {
+          if (revokingInvitation) {
+            revokeInvitation.mutate(revokingInvitation.id, {
+              onSuccess: () => setRevokingInvitation(null),
+            });
+          }
+        }}
+        isPending={revokeInvitation.isPending}
       />
     </div>
   );

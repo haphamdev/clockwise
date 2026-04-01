@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import { getTeamsColumns } from '@/components/admin/teams/teams-columns';
 import { CreateTeamSheet } from '@/components/admin/teams/create-team-sheet';
@@ -19,20 +20,38 @@ export function TeamsPage() {
   const [showArchived, setShowArchived] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editTeam, setEditTeam] = useState<Team | null>(null);
+  const [confirmTeam, setConfirmTeam] = useState<{ team: Team; action: 'archive' | 'unarchive' } | null>(null);
 
   const { data, isLoading } = useTeams({ page, limit, includeArchived: showArchived });
   const archiveTeam = useArchiveTeam();
   const unarchiveTeam = useUnarchiveTeam();
 
+  const actionPendingId = archiveTeam.isPending
+    ? archiveTeam.variables
+    : unarchiveTeam.isPending
+      ? unarchiveTeam.variables
+      : undefined;
+
   const columns = useMemo(
     () =>
       getTeamsColumns(
         (team) => setEditTeam(team),
-        (team) => archiveTeam.mutate(team.id),
-        (team) => unarchiveTeam.mutate(team.id),
+        (team) => setConfirmTeam({ team, action: 'archive' }),
+        (team) => setConfirmTeam({ team, action: 'unarchive' }),
+        actionPendingId,
       ),
-    [archiveTeam, unarchiveTeam],
+    [actionPendingId],
   );
+
+  const handleConfirm = () => {
+    if (!confirmTeam) return;
+    const { team, action } = confirmTeam;
+    if (action === 'archive') {
+      archiveTeam.mutate(team.id, { onSuccess: () => setConfirmTeam(null) });
+    } else {
+      unarchiveTeam.mutate(team.id, { onSuccess: () => setConfirmTeam(null) });
+    }
+  };
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
@@ -75,6 +94,21 @@ export function TeamsPage() {
         team={editTeam}
         open={!!editTeam}
         onOpenChange={(open) => !open && setEditTeam(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmTeam !== null}
+        onOpenChange={(open) => !open && setConfirmTeam(null)}
+        title={confirmTeam?.action === 'archive' ? 'Archive Team' : 'Unarchive Team'}
+        description={
+          confirmTeam?.action === 'archive'
+            ? `Are you sure you want to archive ${confirmTeam.team.name}? Members will lose access to this team.`
+            : `Are you sure you want to unarchive ${confirmTeam?.team.name}? Members will regain access to this team.`
+        }
+        confirmLabel={confirmTeam?.action === 'archive' ? 'Archive' : 'Unarchive'}
+        variant={confirmTeam?.action === 'archive' ? 'destructive' : 'default'}
+        onConfirm={handleConfirm}
+        isPending={archiveTeam.isPending || unarchiveTeam.isPending}
       />
     </div>
   );
