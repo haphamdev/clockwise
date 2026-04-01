@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -41,7 +42,12 @@ export function ProfileTeamsTable({ memberships }: ProfileTeamsTableProps) {
             <TableRow key={membership.teamId}>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">{membership.teamName}</span>
+                  <Link
+                    to={`/admin/teams/${membership.teamId}`}
+                    className="text-sm font-medium hover:underline"
+                  >
+                    {membership.teamName}
+                  </Link>
                   {membership.isArchived && <StatusBadge status="archived" />}
                 </div>
               </TableCell>
