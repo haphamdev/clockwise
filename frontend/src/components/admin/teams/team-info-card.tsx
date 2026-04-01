@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import type { TeamDetail } from '@/lib/teams/types';
-import { useFormatDate } from '@/lib/org/use-format-date';
+import { TimeDisplay } from '@/components/ui/time-display';
 
 interface TeamInfoCardProps {
   team: TeamDetail;
@@ -13,7 +13,6 @@ interface TeamInfoCardProps {
 }
 
 export function TeamInfoCard({ team, onEdit, onArchive, onUnarchive }: TeamInfoCardProps) {
-  const { formatDate } = useFormatDate();
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -57,7 +56,7 @@ export function TeamInfoCard({ team, onEdit, onArchive, onUnarchive }: TeamInfoC
           <div>
             <dt className="text-muted-foreground">Created</dt>
             <dd className="font-medium">
-              {formatDate(team.createdAt)}
+              <TimeDisplay value={team.createdAt} />
             </dd>
           </div>
         </dl>

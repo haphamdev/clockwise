@@ -9,13 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { TimeDisplay } from '@/components/ui/time-display';
 import type { Invitation } from '@/lib/invitations/types';
 
 export function getInvitationsColumns(
   onResend: (invitation: Invitation) => void,
   onRevoke: (invitation: Invitation) => void,
   onEditTeams: (invitation: Invitation) => void,
-  formatDate: (input: string | Date) => string,
 ): ColumnDef<Invitation>[] {
   return [
     {
@@ -59,7 +59,7 @@ export function getInvitationsColumns(
     {
       accessorKey: 'createdAt',
       header: 'Date',
-      cell: ({ row }) => formatDate(row.original.createdAt),
+      cell: ({ row }) => <TimeDisplay value={row.original.createdAt} />,
     },
     {
       id: 'actions',

@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { StatusBadge, type Status } from '@/components/ui/status-badge';
 import type { User } from '@/lib/users/types';
-import { useFormatDate } from '@/lib/org/use-format-date';
+import { TimeDisplay } from '@/components/ui/time-display';
 
 interface UserInfoCardProps {
   user: User;
@@ -32,7 +32,6 @@ export function UserInfoCard({
   isSaving,
   isDirty,
 }: UserInfoCardProps) {
-  const { formatDate } = useFormatDate();
   const isDeactivated = user.status === 'deactivated';
   const archivedCount = user.teamMemberships.filter((t) => t.isArchived).length;
 
@@ -93,15 +92,13 @@ export function UserInfoCard({
           <div>
             <dt className="text-muted-foreground">Last Login</dt>
             <dd className="font-medium">
-              {user.lastLoginAt
-                ? formatDate(user.lastLoginAt)
-                : 'Never'}
+              <TimeDisplay value={user.lastLoginAt} fallback="Never" />
             </dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Created</dt>
             <dd className="font-medium">
-              {formatDate(user.createdAt)}
+              <TimeDisplay value={user.createdAt} />
             </dd>
           </div>
         </dl>

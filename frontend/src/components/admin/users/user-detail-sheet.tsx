@@ -12,7 +12,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { useUserDetail } from '@/lib/users/use-user-detail';
-import { useFormatDate } from '@/lib/org/use-format-date';
+import { TimeDisplay } from '@/components/ui/time-display';
 
 interface UserDetailSheetProps {
   userId: string | null;
@@ -23,8 +23,6 @@ interface UserDetailSheetProps {
 export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetProps) {
   const navigate = useNavigate();
   const { data: user, isLoading } = useUserDetail(userId);
-  const { formatDate } = useFormatDate();
-
   const handleViewDetails = () => {
     if (!user) return;
     onOpenChange(false);
@@ -98,12 +96,12 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
                 <div>
                   <dt className="text-muted-foreground">Last Login</dt>
                   <dd className="font-medium">
-                    {user.lastLoginAt ? formatDate(user.lastLoginAt) : 'Never'}
+                    <TimeDisplay value={user.lastLoginAt} fallback="Never" />
                   </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Created</dt>
-                  <dd className="font-medium">{formatDate(user.createdAt)}</dd>
+                  <dd className="font-medium"><TimeDisplay value={user.createdAt} /></dd>
                 </div>
               </dl>
 
