@@ -20,9 +20,7 @@ export function getInvitationsColumns(
     {
       accessorKey: 'email',
       header: 'Email',
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.email}</span>
-      ),
+      cell: ({ row }) => <span className="font-medium">{row.original.email}</span>,
     },
     {
       id: 'teams',
@@ -42,19 +40,15 @@ export function getInvitationsColumns(
       header: 'Status',
       cell: ({ row }) => {
         const inv = row.original;
-        const statusLabel = inv.status === 'pending'
-          ? (inv.isExpired ? 'deactivated' : 'pending')
-          : inv.status === 'accepted'
-            ? 'active'
-            : 'deactivated';
-        return (
-          <div className="flex items-center gap-1.5">
-            <StatusBadge status={statusLabel} />
-            {inv.status === 'pending' && inv.isExpired && (
-              <span className="text-xs text-muted-foreground">(expired)</span>
-            )}
-          </div>
-        );
+        const statusLabel =
+          inv.status === 'pending'
+            ? inv.isExpired
+              ? 'expired'
+              : 'pending'
+            : inv.status === 'accepted'
+              ? 'accepted'
+              : 'revoked';
+        return <StatusBadge status={statusLabel} />;
       },
     },
     {
@@ -71,6 +65,13 @@ export function getInvitationsColumns(
       cell: ({ row }) => {
         const inv = row.original;
         if (inv.status !== 'pending') return null;
+        if (inv.isExpired) {
+          return (
+            <Button variant="outline" size="sm" onClick={() => onResend(inv)}>
+              Resend
+            </Button>
+          );
+        }
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -79,12 +80,8 @@ export function getInvitationsColumns(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onResend(inv)}>
-                Resend
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRevoke(inv)}>
-                Revoke
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );

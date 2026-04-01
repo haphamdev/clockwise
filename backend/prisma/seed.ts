@@ -326,6 +326,12 @@ const REVOKED_INVITATIONS = [
   { email: 'taylor.jones@clockwise.test', daysAgo: 25 },
 ];
 
+// Expired invitations — status is still 'pending' but expiresAt is in the past
+const EXPIRED_INVITATIONS = [
+  { email: 'nina.kowalski@clockwise.test', invitedDaysAgo: 20, expiredDaysAgo: 13 },
+  { email: 'lucas.dubois@clockwise.test', invitedDaysAgo: 15, expiredDaysAgo: 8 },
+];
+
 // ── Main seed functions ──────────────────────────────────────────────────────
 
 async function main() {
@@ -668,6 +674,44 @@ async function seedTestData(adminUserId: string) {
         expiresAt: daysAgo(ri.daysAgo - 7),
         status: 'revoked',
         createdAt: daysAgo(ri.daysAgo),
+      },
+    });
+
+    itaCounter++;
+    await prisma.invitationTeamAssignment.upsert({
+      where: {
+        invitationId_teamId: {
+          invitationId: invId,
+          teamId: uid('20000000', (i % TEAMS.length) + 1),
+        },
+      },
+      update: {},
+      create: {
+        id: uid('90000000', itaCounter),
+        invitationId: invId,
+        teamId: uid('20000000', (i % TEAMS.length) + 1),
+        role: 'member',
+      },
+    });
+  }
+
+  // Expired invitations — pending but expiresAt in the past
+  for (let i = 0; i < EXPIRED_INVITATIONS.length; i++) {
+    invCounter++;
+    const ei = EXPIRED_INVITATIONS[i];
+    const invId = uid('80000000', invCounter);
+    await prisma.invitation.upsert({
+      where: { id: invId },
+      update: {},
+      create: {
+        id: invId,
+        orgId: DEFAULT_ORG_ID,
+        email: ei.email,
+        invitedBy: adminUserId,
+        token: `expired-token-${i}-${randomToken().slice(0, 16)}`,
+        expiresAt: daysAgo(ei.expiredDaysAgo),
+        status: 'pending',
+        createdAt: daysAgo(ei.invitedDaysAgo),
       },
     });
 
