@@ -296,10 +296,14 @@ export class ProjectsService {
     orgId: string,
     userId: string,
     isAdmin: boolean,
+    options?: { requireActive?: boolean },
   ): Promise<void> {
     const project = await this.projectsRepository.findEntityById(projectId);
     if (!project || project.orgId !== orgId) {
       throw new ProjectNotFoundException();
+    }
+    if (options?.requireActive) {
+      this.ensureNotArchived(project);
     }
     if (!isAdmin) {
       const isLinked = await this.projectsRepository.isUserLinkedToProject(projectId, userId);

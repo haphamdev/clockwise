@@ -85,6 +85,31 @@ describe('TasksService', () => {
 
       expect(result).toEqual(existing);
     });
+
+    it('should throw TASK_NOT_FOUND when P2002 retry also returns null', async () => {
+      repo.findByLabel.mockResolvedValueOnce(null);
+      repo.create.mockRejectedValue({ code: 'P2002' });
+      repo.findByLabel.mockResolvedValueOnce(null);
+
+      await expect(
+        service.findOrCreate('project-1', 'JIRA-123', 'user-1'),
+      ).rejects.toThrow(expect.objectContaining({ code: ErrorCode.TASK.NOT_FOUND }));
+    });
+
+    it('should throw TASK_INVALID_LABEL for empty label', async () => {
+      await expect(
+        service.findOrCreate('project-1', '', 'user-1'),
+      ).rejects.toThrow(expect.objectContaining({ code: ErrorCode.TASK.INVALID_LABEL }));
+
+      expect(repo.findByLabel).not.toHaveBeenCalled();
+      expect(repo.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw TASK_INVALID_LABEL for whitespace-only label', async () => {
+      await expect(
+        service.findOrCreate('project-1', '   ', 'user-1'),
+      ).rejects.toThrow(expect.objectContaining({ code: ErrorCode.TASK.INVALID_LABEL }));
+    });
   });
 
   describe('search', () => {
