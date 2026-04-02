@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsDateString, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsInt, Min, Max, IsDateString, IsUUID, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 
 export class ListTimeLogsQueryDto {
   @ApiProperty({ required: false, default: 1 })
@@ -42,4 +42,10 @@ export class ListTimeLogsQueryDto {
   @IsOptional()
   @IsUUID()
   teamId?: string;
+
+  @ApiProperty({ required: false, description: 'Include archived time logs', default: false })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeArchived?: boolean;
 }

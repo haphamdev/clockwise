@@ -7,6 +7,8 @@ import type {
   UpdateTimeLogPayload,
   ArchiveTimeLogPayload,
   ListTimeLogsParams,
+  Warning,
+  WarningsPreviewParams,
 } from './types';
 
 export function fetchTimeLogs(params: ListTimeLogsParams = {}) {
@@ -18,6 +20,7 @@ export function fetchTimeLogs(params: ListTimeLogsParams = {}) {
   if (params.projectId) searchParams.set('projectId', params.projectId);
   if (params.userId) searchParams.set('userId', params.userId);
   if (params.teamId) searchParams.set('teamId', params.teamId);
+  if (params.includeArchived) searchParams.set('includeArchived', 'true');
   const qs = searchParams.toString();
   return apiClient<TimeLogListResponse>(`/time-logs${qs ? `?${qs}` : ''}`);
 }
@@ -52,4 +55,12 @@ export function unarchiveTimeLog(id: string, payload: ArchiveTimeLogPayload) {
     method: 'PATCH',
     body: JSON.stringify(payload),
   });
+}
+
+export function fetchWarningsPreview(params: WarningsPreviewParams) {
+  const searchParams = new URLSearchParams();
+  searchParams.set('date', params.date);
+  if (params.projectId) searchParams.set('projectId', params.projectId);
+  if (params.hours !== undefined) searchParams.set('hours', String(params.hours));
+  return apiClient<Warning[]>(`/time-logs/warnings?${searchParams.toString()}`);
 }

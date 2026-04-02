@@ -20,6 +20,7 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { TaskAutocomplete } from './task-autocomplete';
 import { useUpdateTimeLog } from '@/lib/time-logs/use-update-time-log';
 import type { TimeLog } from '@/lib/time-logs/types';
@@ -29,7 +30,10 @@ const today = () => new Date().toISOString().slice(0, 10);
 const schema = z.object({
   taskLabels: z.array(z.string().min(1)).min(1, 'At least one task is required'),
   date: z.string().min(1, 'Date is required'),
-  hours: z.number().min(0.01, 'Minimum 0.01').max(24, 'Maximum 24'),
+  hours: z.string().min(1, 'Hours is required')
+    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, 'Hours must be greater than 0')
+    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) <= 24, 'Maximum 24')
+    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) % 0.25 === 0, 'Must be in 0.25 increments'),
   notes: z.string().optional(),
   reason: z.string().min(1, 'Reason is required').max(500),
 });
@@ -45,10 +49,12 @@ interface EditTimeLogSheetProps {
 export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: 'onSubmit',
+    reValidateMode: 'onBlur',
     defaultValues: {
       taskLabels: [],
       date: '',
-      hours: 0,
+      hours: '',
       notes: '',
       reason: '',
     },
@@ -60,7 +66,7 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
       form.reset({
         taskLabels: timeLog.tasks.map((t) => t.label),
         date: timeLog.date.slice(0, 10),
-        hours: timeLog.hours,
+        hours: String(timeLog.hours),
         notes: timeLog.notes ?? '',
         reason: '',
       });
@@ -71,7 +77,7 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
 
   const onSubmit = (values: FormValues) => {
     updateTimeLog.mutate(
-      { id: timeLog.id, payload: values },
+      { id: timeLog.id, payload: { ...values, hours: parseFloat(values.hours) } },
       {
         onSuccess: () => {
           onOpenChange(false);
@@ -109,8 +115,8 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
               control={form.control}
               name="taskLabels"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Tasks</FormLabel>
+                <div className="space-y-2">
+                  <Label>Tasks</Label>
                   <TaskAutocomplete
                     projectId={timeLog.projectId}
                     value={field.value}
@@ -121,7 +127,7 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
                       {fieldState.error.message}
                     </p>
                   )}
-                </FormItem>
+                </div>
               )}
             />
             <FormField
@@ -132,12 +138,16 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
                   <FormLabel>Hours</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      step="0.25"
-                      min="0.01"
-                      max="24"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(',', '.');
+                        if (v === '' || /^\d*\.?\d*$/.test(v)) {
+                          field.onChange(v);
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

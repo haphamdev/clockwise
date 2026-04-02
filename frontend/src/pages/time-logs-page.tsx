@@ -30,6 +30,7 @@ export function TimeLogsPage() {
   const projectId = getParam('projectId');
   const userId = getParam('userId');
   const teamId = getParam('teamId');
+  const includeArchived = getParam('includeArchived') === 'true';
 
   const { data, isLoading } = useTimeLogs({
     page,
@@ -39,6 +40,7 @@ export function TimeLogsPage() {
     projectId: projectId || undefined,
     userId: userId || undefined,
     teamId: teamId || undefined,
+    includeArchived: includeArchived || undefined,
   });
 
   const [logOpen, setLogOpen] = useState(false);
@@ -82,6 +84,7 @@ export function TimeLogsPage() {
         projectId={projectId}
         userId={userId}
         teamId={teamId}
+        includeArchived={includeArchived}
         showUserFilter={showUserFilter}
         showTeamFilter={showTeamFilter}
         onDateFromChange={(v) => setParam('dateFrom', v)}
@@ -89,6 +92,7 @@ export function TimeLogsPage() {
         onProjectIdChange={(v) => setParam('projectId', v === 'all' ? '' : v)}
         onUserIdChange={(v) => setParam('userId', v === 'all' ? '' : v)}
         onTeamIdChange={(v) => setParam('teamId', v === 'all' ? '' : v)}
+        onIncludeArchivedChange={(v) => setParam('includeArchived', v ? 'true' : '')}
       />
 
       {data && data.total > 0 && (

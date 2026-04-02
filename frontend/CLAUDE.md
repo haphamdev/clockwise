@@ -33,3 +33,10 @@ Keep files small and single-purpose — aim for ~100 lines, hard max 300 lines. 
 
 - No barrel imports — do not create `index.ts` re-export files. Always import directly from the source file.
 - Always drill the user for clarification questions before making a plan for non-trivial changes.
+
+## Gotchas
+
+- **shadcn `FormItem`/`FormLabel` require `FormField`, not `Controller`** — shadcn/ui form components (`FormItem`, `FormLabel`, `FormControl`, `FormMessage`) need `FormFieldContext` provided only by shadcn's `FormField`. When using react-hook-form's `Controller` directly (e.g., for `Combobox` or `TaskAutocomplete`), use plain `<div className="space-y-2">` + `<Label>` instead. See `src/components/time-logs/log-time-sheet.tsx`.
+- **`z.coerce.number()` breaks react-hook-form** — Creates input type `unknown` incompatible with `zodResolver`'s `Resolver` type inference. Use `z.string()` with `.refine()` validators and `parseFloat()` on submit. See `src/components/time-logs/log-time-sheet.tsx` hours field.
+- **`type="number"` has locale issues** — Browser forces comma/dot decimal separator based on OS locale; `lang="en"` doesn't reliably fix it. Use `type="text"` with `inputMode="decimal"`, regex-filter input to digits/dots, auto-convert commas to dots. See `src/components/time-logs/log-time-sheet.tsx` hours field.
+- **react-hook-form `reValidateMode`** — Default `reValidateMode: 'onChange'` causes instant validation errors while typing intermediate values (e.g., typing `0.25` triggers error at `0`). Use `mode: 'onSubmit'` + `reValidateMode: 'onBlur'` for better UX. See `src/components/time-logs/log-time-sheet.tsx`.
