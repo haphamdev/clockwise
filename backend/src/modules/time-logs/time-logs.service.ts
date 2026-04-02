@@ -111,9 +111,9 @@ export class TimeLogsService {
       limit: number;
       dateFrom?: string;
       dateTo?: string;
-      projectId?: string;
-      userId?: string;
-      teamId?: string;
+      projectIds?: string[];
+      userIds?: string[];
+      teamIds?: string[];
       includeArchived?: boolean;
     },
   ): Promise<{ data: TimeLogListItem[]; total: number; totalHours: number }> {
@@ -126,9 +126,9 @@ export class TimeLogsService {
           ? [...new Set([userId, ...managedIds])]
           : [userId];
 
-      if (options.userId) {
-        // Intersect requested userId with permitted scope
-        scopedUserIds = scope.includes(options.userId) ? [options.userId] : [];
+      if (options.userIds?.length) {
+        // Intersect requested userIds with permitted scope
+        scopedUserIds = options.userIds.filter((id) => scope.includes(id));
       } else {
         scopedUserIds = scope;
       }
@@ -143,9 +143,9 @@ export class TimeLogsService {
       limit: options.limit,
       dateFrom,
       dateTo,
-      projectId: options.projectId,
-      userId: isAdmin ? options.userId : undefined,
-      teamId: options.teamId,
+      projectIds: options.projectIds,
+      userIds: isAdmin ? options.userIds : undefined,
+      teamIds: options.teamIds,
       scopedUserIds,
       includeArchived: options.includeArchived,
     });

@@ -106,15 +106,24 @@ export class TimeLogsRepository {
       limit: number;
       dateFrom?: string;
       dateTo?: string;
-      projectId?: string;
-      userId?: string;
-      teamId?: string;
+      projectIds?: string[];
+      userIds?: string[];
+      teamIds?: string[];
       scopedUserIds?: string[];
       includeArchived?: boolean;
     },
   ): Promise<{ data: TimeLogListItem[]; total: number; totalHours: number }> {
     const where: Prisma.TimeLogWhereInput = {
-      user: { orgId },
+      user: {
+        is: {
+          orgId,
+          ...(options.teamIds?.length && {
+            teamMemberships: {
+              some: { teamId: { in: options.teamIds } },
+            },
+          }),
+        },
+      },
       ...(!options.includeArchived && { status: 'active' }),
       ...(options.dateFrom && { date: { gte: new Date(options.dateFrom) } }),
       ...(options.dateTo && {
@@ -123,15 +132,8 @@ export class TimeLogsRepository {
           lte: new Date(options.dateTo),
         },
       }),
-      ...(options.projectId && { projectId: options.projectId }),
-      ...(options.userId && { userId: options.userId }),
-      ...(options.teamId && {
-        project: {
-          projectTeams: {
-            some: { teamId: options.teamId, isDeleted: false },
-          },
-        },
-      }),
+      ...(options.projectIds?.length && { projectId: { in: options.projectIds } }),
+      ...(options.userIds?.length && { userId: { in: options.userIds } }),
       ...(options.scopedUserIds && {
         userId: { in: options.scopedUserIds },
       }),

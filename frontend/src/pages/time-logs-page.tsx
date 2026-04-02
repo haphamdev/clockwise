@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Plus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
@@ -16,6 +16,10 @@ import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
 import type { TimeLog } from '@/lib/time-logs/types';
 
+function parseIds(value: string): string[] {
+  return value ? value.split(',').filter(Boolean) : [];
+}
+
 export function TimeLogsPage() {
   const { user } = useAuth();
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
@@ -27,19 +31,24 @@ export function TimeLogsPage() {
 
   const dateFrom = getParam('dateFrom');
   const dateTo = getParam('dateTo');
-  const projectId = getParam('projectId');
-  const userId = getParam('userId');
-  const teamId = getParam('teamId');
+  const projectIds = useMemo(() => parseIds(getParam('projectIds')), [getParam]);
+  const userIds = useMemo(() => parseIds(getParam('userIds')), [getParam]);
+  const teamIds = useMemo(() => parseIds(getParam('teamIds')), [getParam]);
   const includeArchived = getParam('includeArchived') === 'true';
+
+  const setArrayParam = useCallback(
+    (key: string, ids: string[]) => setParam(key, ids.join(',')),
+    [setParam],
+  );
 
   const { data, isLoading } = useTimeLogs({
     page,
     limit,
     dateFrom: dateFrom || undefined,
     dateTo: dateTo || undefined,
-    projectId: projectId || undefined,
-    userId: userId || undefined,
-    teamId: teamId || undefined,
+    projectIds: projectIds.length ? projectIds : undefined,
+    userIds: userIds.length ? userIds : undefined,
+    teamIds: teamIds.length ? teamIds : undefined,
     includeArchived: includeArchived || undefined,
   });
 
@@ -81,17 +90,17 @@ export function TimeLogsPage() {
       <TimeLogsFilterBar
         dateFrom={dateFrom}
         dateTo={dateTo}
-        projectId={projectId}
-        userId={userId}
-        teamId={teamId}
+        projectIds={projectIds}
+        userIds={userIds}
+        teamIds={teamIds}
         includeArchived={includeArchived}
         showUserFilter={showUserFilter}
         showTeamFilter={showTeamFilter}
         onDateFromChange={(v) => setParam('dateFrom', v)}
         onDateToChange={(v) => setParam('dateTo', v)}
-        onProjectIdChange={(v) => setParam('projectId', v === 'all' ? '' : v)}
-        onUserIdChange={(v) => setParam('userId', v === 'all' ? '' : v)}
-        onTeamIdChange={(v) => setParam('teamId', v === 'all' ? '' : v)}
+        onProjectIdsChange={(v) => setArrayParam('projectIds', v)}
+        onUserIdsChange={(v) => setArrayParam('userIds', v)}
+        onTeamIdsChange={(v) => setArrayParam('teamIds', v)}
         onIncludeArchivedChange={(v) => setParam('includeArchived', v ? 'true' : '')}
       />
 
