@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { ImportJobStatus } from '@prisma/client';
 import {
   ImportProcessor,
   ImportRow,
@@ -20,6 +21,8 @@ import {
   PREVIEW_CACHE_PREFIX,
   PREVIEW_CACHE_TTL_SECONDS,
 } from './import.constants';
+import { ImportJobRepository, UpdateImportJobInput } from './import-job.repository';
+import { ImportJobEntity } from './entities/import-job.entity';
 
 interface CachedPreview {
   type: string;
@@ -45,7 +48,10 @@ export interface ImportExecuteResponse {
 export class ImportService {
   private processors = new Map<string, ImportProcessor>();
 
-  constructor(@InjectQueue(IMPORT_QUEUE) private readonly importQueue: Queue) {}
+  constructor(
+    @InjectQueue(IMPORT_QUEUE) private readonly importQueue: Queue,
+    private readonly importJobRepository: ImportJobRepository,
+  ) {}
 
   registerProcessor(processor: ImportProcessor): void {
     this.processors.set(processor.type, processor);
@@ -103,22 +109,49 @@ export class ImportService {
       throw new ImportNoValidRowsException();
     }
 
+    const importJob = await this.importJobRepository.create({
+      orgId: ctx.orgId,
+      userId: ctx.userId,
+      type,
+      totalRows: cached.executableRows.length,
+    });
+
     const jobData: ImportJobData = {
       type,
       executableRows: cached.executableRows,
       userId: ctx.userId,
       orgId: ctx.orgId,
       isAdmin: cached.isAdmin,
+      importJobId: importJob.id,
     };
-    const job = await this.importQueue.add('import', jobData, {
-      attempts: 1,
-      removeOnComplete: { age: 3600 },
-      removeOnFail: { age: 7200 },
-    });
+
+    let job: { id?: string };
+    try {
+      job = await this.importQueue.add('import', jobData, {
+        attempts: 1,
+        removeOnComplete: { age: 3600 },
+        removeOnFail: { age: 7200 },
+      });
+    } catch (error) {
+      await this.importJobRepository.updateStatus(importJob.id, {
+        status: ImportJobStatus.failed,
+        completedAt: new Date(),
+      });
+      throw error;
+    }
 
     if (!job.id) {
+      await this.importJobRepository.updateStatus(importJob.id, {
+        status: ImportJobStatus.failed,
+        completedAt: new Date(),
+      });
       throw new Error('Failed to create import job');
     }
+
+    await this.importJobRepository.updateStatus(importJob.id, {
+      bullJobId: job.id,
+    });
+
     return { jobId: job.id, totalRows: cached.executableRows.length };
   }
 
@@ -163,6 +196,20 @@ export class ImportService {
       imported: 0,
       errors: [],
     };
+  }
+
+  async listJobs(
+    userId: string,
+    orgId: string,
+    isAdmin: boolean,
+    query: { page: number; limit: number; type?: string },
+  ): Promise<{ data: ImportJobEntity[]; total: number; page: number; limit: number }> {
+    const result = await this.importJobRepository.findByUser(userId, orgId, isAdmin, query);
+    return { ...result, page: query.page, limit: query.limit };
+  }
+
+  async updateJobRecord(id: string, update: UpdateImportJobInput): Promise<void> {
+    await this.importJobRepository.updateStatus(id, update);
   }
 
   private async cachePreviewResult(data: CachedPreview): Promise<string> {

@@ -37,6 +37,13 @@ enum TimeLogStatus {
   archived
 }
 
+enum ImportJobStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model Organization {
@@ -221,6 +228,24 @@ model InvitationTeamAssignment {
 
   @@unique([invitationId, teamId])
   @@map("invitation_team_assignment")
+}
+
+model ImportJob {
+  id          String          @id @default(uuid())
+  orgId       String          @map("org_id")
+  userId      String          @map("user_id")
+  type        String          @db.VarChar(50)
+  status      ImportJobStatus @default(pending)
+  totalRows   Int             @default(0) @map("total_rows")
+  imported    Int             @default(0)
+  errorCount  Int             @default(0) @map("error_count")
+  bullJobId   String?         @map("bull_job_id") @db.VarChar(255)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  completedAt DateTime?       @map("completed_at")
+
+  @@index([userId, createdAt])
+  @@index([orgId, createdAt])
+  @@map("import_job")
 }
 
 model AuditLog {
