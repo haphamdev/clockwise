@@ -2,9 +2,10 @@ import { ImportRow, ImportValidationError } from './import-processor.interface';
 
 export interface ImportJobData {
   type: string;
-  validRows: ImportRow[];
+  executableRows: ImportRow[];
   userId: string;
   orgId: string;
+  isAdmin: boolean;
 }
 
 export type ImportJobStatus = 'pending' | 'processing' | 'completed' | 'failed';

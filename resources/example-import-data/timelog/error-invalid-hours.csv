@@ -1,0 +1,7 @@
+date,project_name,task,hours,notes,user_email
+2026-03-16,Mobile App Redesign,Code review,0,Zero hours not allowed,marcus.johnson@clockwise.test
+2026-03-16,API Platform v2,Sprint planning,-2,Negative hours,james.obrien@clockwise.test
+2026-03-17,Mobile App Redesign,Coding,25,Exceeds 24-hour max,marcus.johnson@clockwise.test
+2026-03-17,Design System,Token updates,abc,Non-numeric value,priya.patel@clockwise.test
+2026-03-18,API Platform v2,Deployment,3.5,Valid row for comparison,sofia.chen@clockwise.test
+2026-03-18,Customer Dashboard,Wireframes,,Empty hours field,priya.patel@clockwise.test

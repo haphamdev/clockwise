@@ -346,6 +346,14 @@ export class ProjectsService {
     return updated;
   }
 
+  async findActiveByNameInOrg(name: string, orgId: string): Promise<ProjectEntity | null> {
+    return this.projectsRepository.findActiveByNameInOrg(name, orgId);
+  }
+
+  async isUserLinkedToProject(projectId: string, userId: string): Promise<boolean> {
+    return this.projectsRepository.isUserLinkedToProject(projectId, userId);
+  }
+
   async getSettingsInternal(projectId: string): Promise<ProjectSettingsEntity> {
     const settings = await this.projectsRepository.findSettings(projectId);
     if (!settings) {

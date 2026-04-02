@@ -1,0 +1,8 @@
+date,project_name,task,hours,notes,user_email
+03/16/2026,Mobile App Redesign,UI work,3,MM/DD/YYYY format,marcus.johnson@clockwise.test
+16-03-2026,API Platform v2,Backend work,4,DD-MM-YYYY format,james.obrien@clockwise.test
+2026/03/17,Design System,Token updates,2,Slash separators,priya.patel@clockwise.test
+March 18 2026,Customer Dashboard,Research,3,Written-out date,raj.kapoor@clockwise.test
+2027-06-15,Mobile App Redesign,Future task,2.5,Future date,marcus.johnson@clockwise.test
+,API Platform v2,Standup,1,Empty date field,sofia.chen@clockwise.test
+2026-03-18,Automated Test Suite,Valid entry,4,Valid row for comparison,yuki.tanaka@clockwise.test

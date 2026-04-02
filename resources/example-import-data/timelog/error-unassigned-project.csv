@@ -1,0 +1,5 @@
+date,project_name,task,hours,notes,user_email
+2026-03-16,Mobile App Redesign,UI wireframes,3.5,Valid row - member of Engineering,marcus.johnson@clockwise.test
+2026-03-16,Marketing Website,Banner design,2,Not on Marketing team,marcus.johnson@clockwise.test
+2026-03-17,Customer Dashboard,Widget layout,4,Not on Design or Product team,liam.schmidt@clockwise.test
+2026-03-17,API Platform v2,Bugfix,1.5,Valid row - member of Engineering,carlos.mendoza@clockwise.test
