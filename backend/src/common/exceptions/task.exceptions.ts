@@ -17,3 +17,13 @@ export class TaskAlreadyExistsException extends AppException {
     );
   }
 }
+
+export class TaskInvalidLabelException extends AppException {
+  constructor() {
+    super(
+      ErrorCode.TASK.INVALID_LABEL,
+      'Task label cannot be empty',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+}

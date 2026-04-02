@@ -39,12 +39,6 @@ export class TasksRepository {
       this.prisma.task.findMany({
         where,
         orderBy: [
-          // Most recently used by current user first
-          {
-            timeLogTasks: {
-              _count: 'desc',
-            },
-          },
           { createdAt: 'desc' },
         ],
         skip: (options.page - 1) * options.limit,

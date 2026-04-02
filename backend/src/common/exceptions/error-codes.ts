@@ -55,6 +55,7 @@ export const ErrorCode = {
   TASK: {
     NOT_FOUND: 'TASK_NOT_FOUND',
     ALREADY_EXISTS: 'TASK_ALREADY_EXISTS',
+    INVALID_LABEL: 'TASK_INVALID_LABEL',
   },
   ORG: {
     NOT_FOUND: 'ORG_NOT_FOUND',
