@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,11 @@ export function TaskAutocomplete({
 }: TaskAutocompleteProps) {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    setInputValue('');
+    setShowSuggestions(false);
+  }, [projectId]);
 
   const { data } = useTaskSearch(projectId, inputValue);
 
@@ -61,7 +66,7 @@ export function TaskAutocomplete({
     <div className="relative">
       <div className="flex flex-wrap gap-1 rounded-md border border-input bg-background p-2 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
         {value.map((label) => (
-          <Badge key={label} variant="secondary" className="text-xs">
+          <Badge key={label} variant="outline" className="text-xs">
             {label}
             <button
               type="button"
@@ -82,8 +87,11 @@ export function TaskAutocomplete({
           onKeyDown={handleKeyDown}
           onFocus={() => setShowSuggestions(true)}
           onBlur={() => {
-            // Delay hiding to allow click on suggestion
-            setTimeout(() => setShowSuggestions(false), 200);
+            // Delay to allow click on suggestion to fire first
+            setTimeout(() => {
+              addLabel(inputValue);
+              setShowSuggestions(false);
+            }, 200);
           }}
           placeholder={value.length === 0 ? 'Type a task label and press Enter...' : 'Add another...'}
           className="h-7 min-w-[150px] flex-1 border-0 p-0 shadow-none focus-visible:ring-0"

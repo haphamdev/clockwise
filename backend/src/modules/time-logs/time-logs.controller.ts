@@ -8,11 +8,13 @@ import { CreateTimeLogDto } from './dto/create-time-log.dto';
 import { UpdateTimeLogDto } from './dto/update-time-log.dto';
 import { ArchiveTimeLogDto, UnarchiveTimeLogDto } from './dto/archive-time-log.dto';
 import { ListTimeLogsQueryDto } from './dto/list-time-logs-query.dto';
+import { WarningsQueryDto } from './dto/warnings-query.dto';
 import {
   TimeLogResponseDto,
   TimeLogCreateResponseDto,
   TimeLogUpdateResponseDto,
   TimeLogListResponseDto,
+  WarningDto,
 } from './dto/time-log-response.dto';
 import { TimeLogListItem } from './entities/time-log.entity';
 
@@ -61,6 +63,7 @@ export class TimeLogsController {
         projectId: query.projectId,
         userId: query.userId,
         teamId: query.teamId,
+        includeArchived: query.includeArchived,
       },
     );
 
@@ -71,6 +74,23 @@ export class TimeLogsController {
       limit,
       totalHours,
     };
+  }
+
+  @Get('warnings')
+  @Auth()
+  @ApiOperation({ summary: 'Preview warnings for a date (before submitting)' })
+  @ApiOkResponse({ type: [WarningDto] })
+  async warnings(
+    @CurrentUser() user: UserEntity,
+    @Query() query: WarningsQueryDto,
+  ): Promise<WarningDto[]> {
+    return this.timeLogsService.computeWarnings(
+      user.id,
+      new Date(query.date),
+      user.orgId,
+      query.projectId,
+      query.hours ?? 0,
+    );
   }
 
   @Get(':id')

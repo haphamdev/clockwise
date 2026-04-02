@@ -74,10 +74,17 @@ export interface ArchiveTimeLogPayload {
   reason: string;
 }
 
+export interface WarningsPreviewParams {
+  date: string;
+  projectId?: string;
+  hours?: number;
+}
+
 export interface ListTimeLogsParams extends PaginationParams {
   dateFrom?: string;
   dateTo?: string;
   projectId?: string;
   userId?: string;
   teamId?: string;
+  includeArchived?: boolean;
 }

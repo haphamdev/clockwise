@@ -1,5 +1,6 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { FilterBar } from '@/components/ui/filter-bar';
 import {
   Select,
@@ -18,6 +19,7 @@ interface TimeLogsFilterBarProps {
   projectId: string;
   userId: string;
   teamId: string;
+  includeArchived: boolean;
   showUserFilter: boolean;
   showTeamFilter: boolean;
   onDateFromChange: (value: string) => void;
@@ -25,6 +27,7 @@ interface TimeLogsFilterBarProps {
   onProjectIdChange: (value: string) => void;
   onUserIdChange: (value: string) => void;
   onTeamIdChange: (value: string) => void;
+  onIncludeArchivedChange: (value: boolean) => void;
 }
 
 export function TimeLogsFilterBar({
@@ -33,6 +36,7 @@ export function TimeLogsFilterBar({
   projectId,
   userId,
   teamId,
+  includeArchived,
   showUserFilter,
   showTeamFilter,
   onDateFromChange,
@@ -40,6 +44,7 @@ export function TimeLogsFilterBar({
   onProjectIdChange,
   onUserIdChange,
   onTeamIdChange,
+  onIncludeArchivedChange,
 }: TimeLogsFilterBarProps) {
   const { data: projectsData } = useProjects({ limit: 100 });
   const { data: teamsData } = useTeams({ limit: 100 });
@@ -119,6 +124,16 @@ export function TimeLogsFilterBar({
           </Select>
         </div>
       )}
+      <div className="flex items-center gap-2 self-end pb-1">
+        <Checkbox
+          id="includeArchived"
+          checked={includeArchived}
+          onCheckedChange={(checked) => onIncludeArchivedChange(checked === true)}
+        />
+        <Label htmlFor="includeArchived" className="text-xs cursor-pointer">
+          Show archived
+        </Label>
+      </div>
     </FilterBar>
   );
 }

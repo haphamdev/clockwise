@@ -563,17 +563,31 @@ async function seedTestData(adminUserId: string) {
         const hours = (1 + Math.floor(seededRng() * 15)) * 0.5; // 0.5 to 8.0 in 0.5 increments
         const note = TIME_LOG_NOTES[Math.floor(seededRng() * TIME_LOG_NOTES.length)];
 
+        const timeLogId = uid('70000000', tlCounter);
         await prisma.timeLog.upsert({
-          where: { id: uid('70000000', tlCounter) },
+          where: { id: timeLogId },
           update: {},
           create: {
-            id: uid('70000000', tlCounter),
+            id: timeLogId,
             userId: uid('10000000', userIdx),
             projectId: uid('40000000', Number(projIdx)),
-            taskId: uid('60000000', task.taskIndex),
             date: daysAgo(logDay),
             hours: hours,
             notes: note,
+          },
+        });
+        await prisma.timeLogTask.upsert({
+          where: {
+            timeLogId_taskId: {
+              timeLogId: timeLogId,
+              taskId: uid('60000000', task.taskIndex),
+            },
+          },
+          update: {},
+          create: {
+            id: uid('A0000000', tlCounter),
+            timeLogId: timeLogId,
+            taskId: uid('60000000', task.taskIndex),
           },
         });
       }

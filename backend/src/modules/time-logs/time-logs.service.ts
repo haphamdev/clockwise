@@ -114,6 +114,7 @@ export class TimeLogsService {
       projectId?: string;
       userId?: string;
       teamId?: string;
+      includeArchived?: boolean;
     },
   ): Promise<{ data: TimeLogListItem[]; total: number; totalHours: number }> {
     let scopedUserIds: string[] | undefined;
@@ -146,6 +147,7 @@ export class TimeLogsService {
       userId: isAdmin ? options.userId : undefined,
       teamId: options.teamId,
       scopedUserIds,
+      includeArchived: options.includeArchived,
     });
   }
 
@@ -211,8 +213,20 @@ export class TimeLogsService {
       before.date = existing.date;
       after.date = dto.date;
     }
+    if (dto.notes !== undefined && dto.notes !== (existing.notes ?? '')) {
+      before.notes = existing.notes ?? '';
+      after.notes = dto.notes;
+    }
+    if (dto.taskLabels !== undefined) {
+      const existingLabels = existing.tasks.map((t) => t.label).sort();
+      const newLabels = [...new Set(dto.taskLabels)].sort();
+      if (JSON.stringify(existingLabels) !== JSON.stringify(newLabels)) {
+        before.tasks = existingLabels;
+        after.tasks = newLabels;
+      }
+    }
 
-    const hasChanges = Object.keys(updateData).length > 0 || dto.taskLabels !== undefined || Object.keys(after).length > 0;
+    const hasChanges = Object.keys(after).length > 0;
 
     if (hasChanges) {
       await this.auditLogService.log({
@@ -306,6 +320,7 @@ export class TimeLogsService {
     date: Date,
     orgId: string,
     projectId?: string,
+    additionalHours: number = 0,
   ): Promise<Warning[]> {
     const orgSettings = await this.orgService.getSettings(orgId);
 
@@ -327,22 +342,30 @@ export class TimeLogsService {
       this.timeLogsRepository.sumHoursForWeek(userId, date),
     ]);
 
+    const effectiveDaily = dailyTotal + additionalHours;
+    const effectiveWeekly = weeklyTotal + additionalHours;
     const warnings: Warning[] = [];
 
-    if (dailyTotal > effectiveDailyLimit) {
+    if (effectiveDaily > effectiveDailyLimit) {
+      const msg = additionalHours > 0
+        ? `Already logged ${dailyTotal}h today + ${additionalHours}h = ${effectiveDaily}h (threshold: ${effectiveDailyLimit}h)`
+        : `Daily hours (${effectiveDaily}h) exceed ${effectiveDailyLimit}h threshold`;
       warnings.push({
         type: 'daily_limit',
-        message: `Daily hours (${dailyTotal}h) exceed ${effectiveDailyLimit}h threshold`,
-        currentHours: dailyTotal,
+        message: msg,
+        currentHours: effectiveDaily,
         threshold: effectiveDailyLimit,
       });
     }
 
-    if (weeklyTotal > effectiveWeeklyLimit) {
+    if (effectiveWeekly > effectiveWeeklyLimit) {
+      const msg = additionalHours > 0
+        ? `Already logged ${weeklyTotal}h this week + ${additionalHours}h = ${effectiveWeekly}h (threshold: ${effectiveWeeklyLimit}h)`
+        : `Weekly hours (${effectiveWeekly}h) exceed ${effectiveWeeklyLimit}h threshold`;
       warnings.push({
         type: 'weekly_limit',
-        message: `Weekly hours (${weeklyTotal}h) exceed ${effectiveWeeklyLimit}h threshold`,
-        currentHours: weeklyTotal,
+        message: msg,
+        currentHours: effectiveWeekly,
         threshold: effectiveWeeklyLimit,
       });
     }

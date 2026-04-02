@@ -21,9 +21,11 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { TaskAutocomplete } from './task-autocomplete';
 import { WarningAlert } from './warning-alert';
 import { useCreateTimeLog } from '@/lib/time-logs/use-create-time-log';
+import { useWarningsPreview } from '@/lib/time-logs/use-warnings-preview';
 import { useProjects } from '@/lib/projects/use-projects';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { Warning } from '@/lib/time-logs/types';
@@ -35,7 +37,10 @@ const schema = z.object({
   projectId: z.string().min(1, 'Project is required'),
   taskLabels: z.array(z.string().min(1)).min(1, 'At least one task is required'),
   date: z.string().min(1, 'Date is required'),
-  hours: z.number().min(0.01, 'Minimum 0.01').max(24, 'Maximum 24'),
+  hours: z.string().min(1, 'Hours is required')
+    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, 'Hours must be greater than 0')
+    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) <= 24, 'Maximum 24')
+    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) % 0.25 === 0, 'Must be in 0.25 increments'),
   notes: z.string().optional(),
 });
 
@@ -50,11 +55,13 @@ interface LogTimeSheetProps {
 export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
+    mode: 'onSubmit',
+    reValidateMode: 'onBlur',
     defaultValues: {
       projectId: defaultProjectId ?? '',
       taskLabels: [],
       date: today(),
-      hours: 0,
+      hours: '',
       notes: '',
     },
   });
@@ -72,7 +79,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
         projectId: defaultProjectId ?? '',
         taskLabels: [],
         date: today(),
-        hours: 0,
+        hours: '',
         notes: '',
       });
       setWarnings([]);
@@ -80,6 +87,16 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
   }, [open, defaultProjectId, form]);
 
   const projectId = form.watch('projectId');
+  const taskLabels = form.watch('taskLabels');
+  const date = form.watch('date');
+  const hoursStr = form.watch('hours');
+  const hoursNum = hoursStr ? parseFloat(hoursStr) || 0 : 0;
+
+  const { data: previewWarnings } = useWarningsPreview({
+    date,
+    projectId: projectId || undefined,
+    hours: hoursNum,
+  });
 
   // Clear task labels when project changes
   useEffect(() => {
@@ -87,7 +104,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
   }, [projectId, form]);
 
   const onSubmit = (values: FormValues) => {
-    createTimeLog.mutate(values, {
+    createTimeLog.mutate({ ...values, hours: parseFloat(values.hours) }, {
       onSuccess: (data) => {
         setWarnings(data.warnings);
         if (data.warnings.length === 0) {
@@ -98,7 +115,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
             projectId: values.projectId,
             taskLabels: [],
             date: values.date,
-            hours: 0,
+            hours: '',
             notes: '',
           });
         }
@@ -151,8 +168,8 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
               control={form.control}
               name="projectId"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Project</FormLabel>
+                <div className="space-y-2">
+                  <Label>Project</Label>
                   <Combobox
                     options={projectOptions}
                     value={field.value}
@@ -166,15 +183,15 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                       {fieldState.error.message}
                     </p>
                   )}
-                </FormItem>
+                </div>
               )}
             />
             <Controller
               control={form.control}
               name="taskLabels"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Tasks</FormLabel>
+                <div className="space-y-2">
+                  <Label>Tasks</Label>
                   <TaskAutocomplete
                     projectId={projectId}
                     value={field.value}
@@ -186,7 +203,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                       {fieldState.error.message}
                     </p>
                   )}
-                </FormItem>
+                </div>
               )}
             />
             <FormField
@@ -197,12 +214,16 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                   <FormLabel>Hours</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
-                      step="0.25"
-                      min="0.01"
-                      max="24"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="0"
                       {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(',', '.');
+                        if (v === '' || /^\d*\.?\d*$/.test(v)) {
+                          field.onChange(v);
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -226,7 +247,10 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={createTimeLog.isPending} className="w-full">
+            {previewWarnings && previewWarnings.length > 0 && (
+              <WarningAlert warnings={previewWarnings} />
+            )}
+            <Button type="submit" disabled={createTimeLog.isPending || !projectId || taskLabels.length === 0} className="w-full">
               {createTimeLog.isPending ? 'Logging...' : 'Log Time'}
             </Button>
           </form>

@@ -110,11 +110,12 @@ export class TimeLogsRepository {
       userId?: string;
       teamId?: string;
       scopedUserIds?: string[];
+      includeArchived?: boolean;
     },
   ): Promise<{ data: TimeLogListItem[]; total: number; totalHours: number }> {
     const where: Prisma.TimeLogWhereInput = {
       user: { orgId },
-      status: 'active',
+      ...(!options.includeArchived && { status: 'active' }),
       ...(options.dateFrom && { date: { gte: new Date(options.dateFrom) } }),
       ...(options.dateTo && {
         date: {

@@ -51,3 +51,8 @@ Use the `/tdd` skill for test-driven development. It handles the red-green-refac
 - Column mapping: Prisma fields are camelCase, DB columns are snake_case (via `@map`)
 - API errors use `AppException` with machine-readable codes: `{ statusCode, error, code, message }`. Error codes are defined in `src/common/exceptions/error-codes.ts`, namespaced by module (e.g. `AUTH_NO_INVITATION`, `TEAM_INSUFFICIENT_ROLE`). Always throw `new AppException(ErrorCode.X.Y, 'message', HttpStatus.Z)` instead of raw NestJS exceptions.
 - No barrel imports — do not create `index.ts` re-export files. Always import directly from the source file (e.g. `from './exceptions/app.exception'` not `from './exceptions'`).
+
+## Gotchas
+
+- **Seed file must match schema** — When Prisma schema changes (adding/removing columns, creating join tables), `prisma/seed.ts` must be updated too or Docker startup fails during seeding. E.g., removing `taskId` FK from `TimeLog` and adding `TimeLogTask` join table required updating the seed to create join records separately.
+- **Audit log controller response mapping** — The `data.map()` in `src/modules/audit-log/audit-log.controller.ts` manually maps entity fields to the response DTO. When adding new fields to `AuditLogEntity` and `AuditLogResponseDto` (e.g., `reason`), the mapping must also be updated or TypeScript errors appear.

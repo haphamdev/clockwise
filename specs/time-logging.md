@@ -14,7 +14,7 @@ Time logging is the core user action. Users manually enter hours for a date, pro
 | Date | date | Yes | The date the work was performed |
 | Project | reference | Yes | Select from user's assigned projects |
 | Tasks | string[] | Yes | One or more JIRA IDs or free-text labels. Auto-creates tasks if new within the project |
-| Hours | decimal | Yes | Decimal hours (e.g. 1.5). Minimum: 0.01. Maximum: 24. Total for the entry, not split per task |
+| Hours | decimal | Yes | Decimal hours in 0.25 increments (e.g. 0.25, 1.5, 8). Must be positive, maximum 24. Total for the entry, not split per task |
 | Notes | string | No | Optional description of work done |
 
 ### Data Model
@@ -28,18 +28,20 @@ Time logging is the core user action. Users manually enter hours for a date, pro
 2. Side sheet opens with form:
    - Date picker (defaults to today)
    - Project combobox (pre-selected if opened from project detail page, or from user's default project preference)
-   - Task autocomplete — multi-select, suggests existing tasks, allows free-text for new tasks. Disabled until project is selected.
-   - Hours input (step 0.25)
+   - Task autocomplete — multi-select, suggests existing tasks, allows free-text for new tasks. Disabled until project is selected. Typing text and blurring the input auto-adds the text as a tag. Changing the project clears selected tasks (tasks are scoped per project).
+   - Hours input (0.25 increments, text input with `inputMode="decimal"` to avoid browser locale issues with decimal separators)
    - Notes textarea
 3. User clicks "Log Time" to save.
-4. On success: toast notification + optional warning alerts + "Log Another" button (resets form, keeps date).
+4. On success: toast notification + optional warning alerts + "Log Another" button (resets form, keeps date and project).
 
 ### Validation Rules
 - Date: any past or current date (no future dates).
 - Project: must be an active project the user is assigned to (via team membership).
 - Tasks: at least one task label, each non-empty string, max 100 characters.
-- Hours: positive decimal (0.01–24) per entry.
-- **Soft warnings**: Checked after save. If user's daily total exceeds threshold (org or project-specific) or weekly total exceeds threshold, return warnings in the response. UI shows dismissible yellow alert.
+- Hours: positive decimal in 0.25 increments (0.25–24) per entry.
+- **Soft warnings**: Shown in two places:
+  1. **Before submit (preview)**: As the user fills in date, project, and hours, a `GET /time-logs/warnings` endpoint is queried to show current daily/weekly totals vs thresholds. Message format: "Already logged Xh today + Yh = Zh (threshold: Wh)".
+  2. **After submit (response)**: Warnings are returned in the create/update response. UI shows dismissible yellow alert.
 
 ### Warning Thresholds
 
@@ -153,7 +155,7 @@ Single page at `/time-logs` for all roles. Managers/admins see additional filter
 
 ```
 PageHeader: "Time Logs" + [Log Time] + [Import CSV]
-FilterBar: [Date range] [Project] [User (mgr/admin)] [Team (mgr/admin)]
+FilterBar: [Date range] [Project] [User (mgr/admin)] [Team (mgr/admin)] [Show archived ☐]
 Summary: "Total: XX.XX hours"
 Table: Date | Project | Tasks | Hours | Notes | User* | Actions
 ```
@@ -168,9 +170,10 @@ Table: Date | Project | Tasks | Hours | Notes | User* | Actions
 - Project dropdown
 - User dropdown (manager/admin only)
 - Team dropdown (manager/admin only)
+- "Show archived" checkbox — includes archived time logs in the list (default: unchecked, only active logs shown)
 
 ### Scoping
-- Member: sees only their own active logs
+- Member: sees only their own logs (active by default, archived when "Show archived" is checked)
 - Manager: sees logs of members in their managed teams
 - Admin: sees all logs
 
