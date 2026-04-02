@@ -32,6 +32,11 @@ enum InvitationStatus {
   failed
 }
 
+enum TimeLogStatus {
+  active
+  archived
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model Organization {
@@ -111,6 +116,7 @@ model Project {
   name        String        @db.VarChar(255)
   description String?       @db.Text
   status      ProjectStatus @default(active)
+  settings    Json          @default("{}")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
@@ -141,38 +147,50 @@ model Task {
   projectId       String   @map("project_id")
   label           String   @db.VarChar(100)
   labelNormalized String   @map("label_normalized") @db.VarChar(100)
+  description     String?  @db.Text
   createdBy       String   @map("created_by")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  project  Project   @relation(fields: [projectId], references: [id])
-  creator  User      @relation(fields: [createdBy], references: [id])
-  timeLogs TimeLog[]
+  project      Project       @relation(fields: [projectId], references: [id])
+  creator      User          @relation(fields: [createdBy], references: [id])
+  timeLogTasks TimeLogTask[]
 
   @@unique([projectId, labelNormalized])
   @@map("task")
 }
 
 model TimeLog {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  projectId String   @map("project_id")
-  taskId    String   @map("task_id")
-  date      DateTime @db.Date
-  hours     Decimal  @db.Decimal(5, 2)
-  notes     String?  @db.Text
-  isDeleted Boolean  @default(false) @map("is_deleted")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  projectId String        @map("project_id")
+  date      DateTime      @db.Date
+  hours     Decimal       @db.Decimal(5, 2)
+  notes     String?       @db.Text
+  status    TimeLogStatus @default(active)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
 
-  user    User    @relation(fields: [userId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+  project      Project       @relation(fields: [projectId], references: [id])
+  timeLogTasks TimeLogTask[]
+
+  @@index([userId, date, status])
+  @@index([projectId, date, status])
+  @@map("time_log")
+}
+
+model TimeLogTask {
+  id        String   @id @default(uuid())
+  timeLogId String   @map("time_log_id")
+  taskId    String   @map("task_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  timeLog TimeLog @relation(fields: [timeLogId], references: [id])
   task    Task    @relation(fields: [taskId], references: [id])
 
-  @@index([userId, date, isDeleted])
-  @@index([projectId, date, isDeleted])
-  @@index([taskId])
-  @@map("time_log")
+  @@unique([timeLogId, taskId])
+  @@map("time_log_task")
 }
 
 model Invitation {
@@ -213,6 +231,7 @@ model AuditLog {
   action      String   @db.VarChar(50)
   performedBy String   @map("performed_by")
   metadata    Json     @default("{}")
+  reason      String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
 
   org Organization @relation(fields: [orgId], references: [id])

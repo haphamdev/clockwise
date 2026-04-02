@@ -310,11 +310,14 @@ _No longer applicable. Projects have no owner — governance is role-based throu
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
-| 13.1 | Create `TimeLogsModule` | BE | Module, controller, service. |
-| 13.2 | Implement `POST /time-logs` | BE | Create time log. Accept `{ projectId, taskLabel, date, hours, notes }`. Validate project assignment, date not future, hours range. Auto-create task if new (calls TasksService). |
-| 13.3 | Implement `GET /time-logs` | BE | Paginated, filtered list. Scoped by role: member sees own, manager sees team, admin sees all. Filters: userId, projectId, taskId, dateFrom, dateTo, teamId. |
-| 13.4 | Create time log entry form | FE | Form: date picker (default today), project dropdown, task input (with autocomplete — US-15), hours input, notes textarea. Submit button. |
-| 13.5 | Create time log list view | FE | Table with date, project, task, hours, notes, edit/delete actions. Date range filter, project filter. Summary row with total hours. |
+| 13.1 | Schema migrations | BE | Add TimeLogStatus enum, TimeLogTask join table. Modify TimeLog (status instead of isDeleted, remove taskId). Add Task.description, AuditLog.reason, Project.settings. |
+| 13.2 | Create `TasksModule` | BE | Module, controller, service, repository. `findOrCreate()`, `search()` with autocomplete. TDD. |
+| 13.3 | Create `TimeLogsModule` | BE | Module, controller, service, repository. TDD. |
+| 13.4 | Implement `POST /time-logs` | BE | Create time log. Accept `{ projectId, taskLabels[], date, hours, notes }`. Multi-task via TimeLogTask join. Validate project access, date not future, hours range. Auto-create tasks via TasksService.findOrCreate. Compute and return warnings. |
+| 13.5 | Implement `GET /time-logs` | BE | Paginated, filtered list. Scoped by role: member sees own, manager sees team, admin sees all. Filters: userId, projectId, dateFrom, dateTo, teamId. Default window: last 4 weeks. Includes totalHours. |
+| 13.6 | Implement `GET /time-logs/:id` | BE | Get time log detail with tasks and audit trail. |
+| 13.7 | Create time log entry form | FE | Side sheet: date picker (default today), project combobox (pre-selectable), task autocomplete (multi-select, free-text entry), hours input, notes textarea. "Log Another" button. |
+| 13.8 | Create time log list view | FE | ServerDataTable with date, project, tasks (badges), hours, notes, user (mgr/admin), actions. Filter bar, summary row. |
 
 ---
 
@@ -337,13 +340,15 @@ _No longer applicable. Projects have no owner — governance is role-based throu
 
 ---
 
-### US-16: Edit & Delete Time Logs
+### US-16: Edit & Archive Time Logs
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
-| 16.1 | Implement `PATCH /time-logs/:id` | BE | Update time log fields. Validate ownership or manager/owner/admin permission. If task label changed, call `findOrCreate`. If project changed, validate assignment. |
-| 16.2 | Implement `DELETE /time-logs/:id` | BE | Soft-delete (set `isDeleted = true`). Same permission check. |
-| 16.3 | Add edit/delete to time log list | FE | Edit button opens inline edit or modal with pre-filled form. Delete button with confirmation dialog. |
+| 16.1 | Implement `PATCH /time-logs/:id` | BE | Update time log fields. Reason required (stored in audit_log.reason). Validate ownership or manager/admin permission. If task labels changed, call `findOrCreate`. If project changed, validate assignment. Recompute warnings. |
+| 16.2 | Implement `PATCH /time-logs/:id/archive` | BE | Set status to `archived`. Reason required. Same permission check. |
+| 16.3 | Implement `PATCH /time-logs/:id/unarchive` | BE | Set status back to `active`. Reason required. Same permission check. |
+| 16.4 | Add project settings | BE | JSONB settings on Project: dailyHourLimit, weeklyHourLimit. GET/PATCH /projects/:id/settings. Wire into warning computation. |
+| 16.5 | Edit/archive UI | FE | Edit side sheet (pre-filled, reason field). Archive/unarchive with reason dialog. Detail side sheet with full audit trail. |
 
 ---
 
@@ -351,8 +356,10 @@ _No longer applicable. Projects have no owner — governance is role-based throu
 
 | # | Task | Layer | Details |
 |---|------|-------|---------|
-| 17.1 | Implement `POST /time-logs/import` | BE | Accept `multipart/form-data` CSV file. Parse rows, validate each (project match, date format, hours range, max rows). Return `{ totalRows, imported, errors: [{ row, field, message }] }`. Auto-create tasks. For managers: accept optional `user_email` column. |
-| 17.2 | Create CSV import UI | FE | "Import CSV" button on time log page. File upload, preview valid/invalid rows, confirm import, show results. Download CSV template link. |
+| 17.1 | Import framework infrastructure | BE+DevOps | Add Redis to Docker. Install @nestjs/bullmq. Create generic ImportProcessor interface, ImportJob types, ImportResult types. BullMQ worker. |
+| 17.2 | Generic import endpoints | BE | `POST /import/preview` (sync parse + validate), `POST /import/execute` (queue job), `GET /import/jobs/:id` (poll status), `GET /import/template/:type` (download template). |
+| 17.3 | TimeLogImportProcessor | BE | Implements ImportProcessor. CSV parsing, row validation (date, project, hours, task), duplicate detection, user_email handling for managers. TDD. |
+| 17.4 | Create CSV import UI | FE | Multi-step dialog: upload + template download → preview table (valid green/invalid red) → confirm → progress polling → completion summary. |
 
 ---
 
