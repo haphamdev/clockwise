@@ -11,9 +11,17 @@ Tasks are lightweight entities that represent work items. They are **not pre-cre
 |-------|------|-------------|
 | ID | auto-generated | Internal unique identifier |
 | Label | string | The user-provided identifier (JIRA ID like `JIRA-123`, or free text like `Code review`) |
+| Label Normalized | string | Lowercase version of label for case-insensitive uniqueness |
+| Description | string (optional) | Optional description of the task. Shown alongside task label in autocomplete and time log details |
 | Project | reference | The project this task belongs to |
 | Created by | reference | The user who first logged time against this task |
 | Created at | timestamp | When the task was auto-created |
+
+### Description
+- Tasks have an optional `description` text field.
+- Description is **not required** when auto-creating a task via time logging — the label is sufficient.
+- Managers and admins can add/edit task descriptions later through the Task Management features (Epic 5).
+- When a task has a description, it is displayed alongside the label in the autocomplete dropdown and in the time log detail sheet.
 
 ---
 

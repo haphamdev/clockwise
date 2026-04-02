@@ -36,6 +36,7 @@ Clockwise is containerized with Docker. The stack consists of a React SPA (serve
 | `frontend` | Build from `./frontend` | 80 (nginx) | React SPA + nginx reverse proxy |
 | `backend` | Build from `./backend` | 3000 (internal) | NestJS API server |
 | `db` | `postgres:16` | 5432 (internal) | PostgreSQL database |
+| `redis` | `redis:7-alpine` | 6379 (internal) | Redis for BullMQ job queue |
 
 ### Frontend Container
 - **Build**: Multi-stage Dockerfile
@@ -70,6 +71,8 @@ Clockwise is containerized with Docker. The stack consists of a React SPA (serve
 | `GOOGLE_CALLBACK_URL` | OAuth callback URL | `http://localhost/api/v1/auth/google/callback` |
 | `FRONTEND_URL` | Frontend URL for redirects | `http://localhost` |
 | `NODE_ENV` | Environment | `development` / `production` |
+| `REDIS_HOST` | Redis hostname | `redis` |
+| `REDIS_PORT` | Redis port | `6379` |
 
 ### Frontend (build-time)
 

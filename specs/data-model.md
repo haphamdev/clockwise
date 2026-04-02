@@ -46,6 +46,7 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 │ name             │
 │ description      │
 │ status (enum)    │  ← active | archived
+│ settings (JSON)  │
 └──────────────────┘
         │
         ├────────────────────┐
@@ -56,22 +57,23 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 │ project_id (FK)  │  │ id               │
 │ team_id (FK)     │  │ project_id (FK)  │
 └──────────────────┘  │ label            │
+                      │ description      │
                       │ created_by (FK)  │
                       └──────────────────┘
                                │
-                               ▼
-                      ┌──────────────────┐
-                      │    TimeLog       │
-                      │──────────────────│
-                      │ id               │
-                      │ user_id (FK)     │
-                      │ project_id (FK)  │
-                      │ task_id (FK)     │
-                      │ date             │
-                      │ hours (decimal)  │
-                      │ notes            │
-                      │ is_deleted       │
-                      └──────────────────┘
+                     ┌─────────┴──────────┐
+                     ▼                    ▼
+            ┌──────────────────┐ ┌──────────────────┐
+            │  TimeLogTask     │ │    TimeLog       │
+            │──────────────────│ │──────────────────│
+            │ time_log_id (FK) │ │ id               │
+            │ task_id (FK)     │ │ user_id (FK)     │
+            └──────────────────┘ │ project_id (FK)  │
+                                 │ date             │
+                                 │ hours (decimal)  │
+                                 │ notes            │
+                                 │ status (enum)    │
+                                 └──────────────────┘
 
 ┌──────────────────┐
 │   Invitation     │
@@ -156,6 +158,7 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 | name | VARCHAR(255) | NOT NULL | |
 | description | TEXT | | |
 | status | ENUM | NOT NULL, DEFAULT 'active' | active, archived |
+| settings | JSONB | NOT NULL, DEFAULT '{}' | Project settings (dailyHourLimit, weeklyHourLimit) |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 
@@ -178,6 +181,7 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 | project_id | UUID | FK → project | |
 | label | VARCHAR(100) | NOT NULL | JIRA ID or free text |
 | label_normalized | VARCHAR(100) | NOT NULL | Lowercase for uniqueness check |
+| description | TEXT | | Optional task description |
 | created_by | UUID | FK → user | User who first logged time |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
@@ -190,15 +194,24 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 | id | UUID | PK | |
 | user_id | UUID | FK → user, NOT NULL | |
 | project_id | UUID | FK → project, NOT NULL | |
-| task_id | UUID | FK → task, NOT NULL | |
 | date | DATE | NOT NULL | |
 | hours | DECIMAL(5,2) | NOT NULL, CHECK > 0 | |
 | notes | TEXT | | |
-| is_deleted | BOOLEAN | NOT NULL, DEFAULT false | Soft delete |
+| status | ENUM | NOT NULL, DEFAULT 'active' | active, archived |
 | created_at | TIMESTAMP | NOT NULL | |
 | updated_at | TIMESTAMP | NOT NULL | |
 
-**Index**: (user_id, date), (project_id, date), (task_id)
+**Index**: (user_id, date, status), (project_id, date, status)
+
+### time_log_task
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PK | |
+| time_log_id | UUID | FK → time_log, NOT NULL | |
+| task_id | UUID | FK → task, NOT NULL | |
+| created_at | TIMESTAMP | NOT NULL | |
+
+**Unique**: (time_log_id, task_id)
 
 ### invitation
 | Column | Type | Constraints | Description |
@@ -227,11 +240,12 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 |--------|------|-------------|-------------|
 | id | UUID | PK | |
 | org_id | UUID | FK → organization | |
-| entity_type | VARCHAR(50) | NOT NULL | e.g. team, project, user |
+| entity_type | VARCHAR(50) | NOT NULL | e.g. team, project, user, time_log |
 | entity_id | UUID | NOT NULL | ID of the entity that was changed |
-| action | VARCHAR(50) | NOT NULL | e.g. created, updated, archived |
+| action | VARCHAR(50) | NOT NULL | e.g. created, updated, archived, unarchived |
 | performed_by | UUID | NOT NULL | User who performed the action |
 | metadata | JSONB | NOT NULL, DEFAULT '{}' | Before/after snapshots and extra context |
+| reason | TEXT | | Optional reason for the change (required for time log mutations) |
 | created_at | TIMESTAMP | NOT NULL | |
 
 **Index**: (entity_type, entity_id), (org_id, created_at), (performed_by)
@@ -239,10 +253,12 @@ PostgreSQL database schema for Clockwise. All entities use UUID primary keys and
 ---
 
 ## Key Indexes
-- `time_log(user_id, date)` — user's time log queries
-- `time_log(project_id, date)` — project report queries
-- `time_log(task_id)` — task-level aggregations
-- `time_log(is_deleted)` — filter deleted entries (partial index WHERE is_deleted = false)
+- `time_log(user_id, date, status)` — user's time log queries with status filtering
+- `time_log(project_id, date, status)` — project report queries with status filtering
+- `time_log_task(time_log_id, task_id)` — unique constraint on join table
 - `task(project_id, label_normalized)` — task lookup/uniqueness
 - `user(email)` — login lookups
 - `invitation(token)` — invitation acceptance
+- `audit_log(entity_type, entity_id)` — entity history queries
+- `audit_log(org_id, created_at)` — chronological queries
+- `audit_log(performed_by)` — user activity queries

@@ -96,16 +96,32 @@ _Note: Tasks are auto-created via time log creation. No explicit POST endpoint._
 |--------|------|-------------|------|
 | GET | `/time-logs` | List time logs (filtered, paginated) | Any (scoped) |
 | POST | `/time-logs` | Create time log | Any |
-| PATCH | `/time-logs/:id` | Update time log | Owner, Manager, Admin |
-| DELETE | `/time-logs/:id` | Soft-delete time log | Owner, Manager, Admin |
-| POST | `/time-logs/import` | CSV bulk import | Any |
+| GET | `/time-logs/:id` | Get time log detail | Owner, Manager, Admin |
+| PATCH | `/time-logs/:id` | Update time log (reason required) | Owner, Manager, Admin |
+| PATCH | `/time-logs/:id/archive` | Archive time log (reason required) | Owner, Manager, Admin |
+| PATCH | `/time-logs/:id/unarchive` | Unarchive time log (reason required) | Owner, Manager, Admin |
 
 **Query params for GET `/time-logs`:**
 - `user_id` — filter by user (Manager/Admin only)
 - `project_id` — filter by project
-- `task_id` — filter by task
-- `date_from`, `date_to` — date range
+- `date_from`, `date_to` — date range (default: last 4 weeks)
 - `team_id` — filter by team (Manager/Admin only)
+
+### Project Settings
+
+| Method | Path | Description | Role |
+|--------|------|-------------|------|
+| GET | `/projects/:id/settings` | Get project settings | Admin, Manager of linked team |
+| PATCH | `/projects/:id/settings` | Update project settings | Admin, Manager of linked team |
+
+### Import
+
+| Method | Path | Description | Role |
+|--------|------|-------------|------|
+| POST | `/import/preview` | Upload CSV, parse + validate, return preview (sync) | Any |
+| POST | `/import/execute` | Confirm import, queue job (async) | Any |
+| GET | `/import/jobs/:id` | Poll import job status | Job owner |
+| GET | `/import/template/:type` | Download CSV template | Any |
 
 ### Reports
 
@@ -143,8 +159,8 @@ _Note: Tasks are auto-created via time log creation. No explicit POST endpoint._
 ```
 POST /api/v1/time-logs
 {
-  "project_id": "uuid",
-  "task_label": "JIRA-123",
+  "projectId": "uuid",
+  "taskLabels": ["JIRA-123", "JIRA-456"],
   "date": "2026-03-25",
   "hours": 2.5,
   "notes": "Implemented login flow"
@@ -153,34 +169,65 @@ POST /api/v1/time-logs
 Response 201:
 {
   "id": "uuid",
-  "user_id": "uuid",
-  "project_id": "uuid",
-  "task": {
-    "id": "uuid",
-    "label": "JIRA-123"
-  },
+  "userId": "uuid",
+  "projectId": "uuid",
+  "project": { "id": "uuid", "name": "Project Alpha" },
+  "tasks": [
+    { "id": "uuid", "label": "JIRA-123", "description": null },
+    { "id": "uuid", "label": "JIRA-456", "description": null }
+  ],
   "date": "2026-03-25",
   "hours": 2.5,
   "notes": "Implemented login flow",
-  "created_at": "2026-03-25T10:30:00Z"
+  "status": "active",
+  "createdAt": "2026-03-25T10:30:00Z",
+  "warnings": [
+    { "type": "daily_limit", "message": "Daily total is 13.5h (threshold: 12h)", "currentHours": 13.5, "threshold": 12 }
+  ]
 }
 ```
 
-### CSV Import
+### Update Time Log
 ```
-POST /api/v1/time-logs/import
+PATCH /api/v1/time-logs/:id
+{
+  "hours": 3.0,
+  "reason": "Corrected hours — was 2.5, should be 3.0"
+}
+```
+
+### Archive Time Log
+```
+PATCH /api/v1/time-logs/:id/archive
+{
+  "reason": "Duplicate entry"
+}
+```
+
+### CSV Import Preview
+```
+POST /api/v1/import/preview
 Content-Type: multipart/form-data
-Body: file=<csv-file>
+Body: file=<csv-file>, type=time-log
 
 Response 200:
 {
-  "total_rows": 10,
-  "imported": 8,
+  "totalRows": 10,
+  "validRows": [...],
   "errors": [
-    { "row": 3, "field": "project", "message": "Project 'Unknown' not found" },
+    { "row": 3, "field": "project_name", "message": "Project 'Unknown' not found" },
     { "row": 7, "field": "hours", "message": "Invalid value: 'abc'" }
   ]
 }
+```
+
+### CSV Import Execute
+```
+POST /api/v1/import/execute
+{ "type": "time-log", "validRows": [...] }
+
+Response 202:
+{ "jobId": "uuid", "status": "pending" }
 ```
 
 ### Report Summary
