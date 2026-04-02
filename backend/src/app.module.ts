@@ -12,6 +12,7 @@ import { InvitationsModule } from './modules/invitations/invitations.module';
 import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { UserPreferencesModule } from './modules/user-preferences/user-preferences.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { UserPreferencesModule } from './modules/user-preferences/user-preferenc
     AuditLogModule,
     ProjectsModule,
     UserPreferencesModule,
+    TasksModule,
   ],
   controllers: [AppController],
 })

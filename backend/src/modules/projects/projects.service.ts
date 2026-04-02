@@ -291,6 +291,24 @@ export class ProjectsService {
     ]);
   }
 
+  async validateProjectAccess(
+    projectId: string,
+    orgId: string,
+    userId: string,
+    isAdmin: boolean,
+  ): Promise<void> {
+    const project = await this.projectsRepository.findEntityById(projectId);
+    if (!project || project.orgId !== orgId) {
+      throw new ProjectNotFoundException();
+    }
+    if (!isAdmin) {
+      const isLinked = await this.projectsRepository.isUserLinkedToProject(projectId, userId);
+      if (!isLinked) {
+        throw new ProjectNotFoundException();
+      }
+    }
+  }
+
   private async getProjectOrThrow(projectId: string, orgId: string): Promise<ProjectEntity> {
     const project = await this.projectsRepository.findEntityById(projectId);
     if (!project || project.orgId !== orgId) {
