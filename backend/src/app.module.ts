@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { LoggerModule } from './logger/logger.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -14,11 +15,23 @@ import { ProjectsModule } from './modules/projects/projects.module';
 import { UserPreferencesModule } from './modules/user-preferences/user-preferences.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { TimeLogsModule } from './modules/time-logs/time-logs.module';
+import { ImportModule } from './modules/import/import.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get('REDIS_HOST', 'localhost'),
+          port: config.get<number>('REDIS_PORT', 6379),
+          password: config.get('REDIS_PASSWORD'),
+        },
+      }),
     }),
     LoggerModule,
     PrismaModule,
@@ -33,6 +46,7 @@ import { TimeLogsModule } from './modules/time-logs/time-logs.module';
     UserPreferencesModule,
     TasksModule,
     TimeLogsModule,
+    ImportModule,
   ],
   controllers: [AppController],
 })

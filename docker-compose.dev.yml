@@ -25,6 +25,10 @@ services:
     environment:
       NODE_ENV: development
 
+  redis:
+    ports:
+      - '6379:6379'
+
   db:
     ports:
       - '5432:5432'
