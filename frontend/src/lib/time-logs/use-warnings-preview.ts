@@ -8,5 +8,6 @@ export function useWarningsPreview(params: WarningsPreviewParams) {
     queryKey: timeLogsKeys.warnings(params),
     queryFn: () => fetchWarningsPreview(params),
     enabled: !!params.date,
+    staleTime: 10_000,
   });
 }

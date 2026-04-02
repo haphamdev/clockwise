@@ -1,4 +1,4 @@
-import { IsDateString, IsOptional, IsString, IsNumber, Min, Max } from 'class-validator';
+import { IsDateString, IsOptional, IsUUID, IsNumber, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -9,7 +9,7 @@ export class WarningsQueryDto {
 
   @ApiProperty({ required: false, description: 'Project ID for project-specific limits' })
   @IsOptional()
-  @IsString()
+  @IsUUID()
   projectId?: string;
 
   @ApiProperty({ required: false, description: 'Additional hours to include in the check', default: 0 })

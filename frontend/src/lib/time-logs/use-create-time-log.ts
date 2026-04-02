@@ -12,14 +12,11 @@ export function useCreateTimeLog() {
   return useMutation({
     mutationFn: (payload: CreateTimeLogPayload) => createTimeLog(payload),
     onSuccess: (data: TimeLogWithWarnings) => {
-      queryClient.invalidateQueries({ queryKey: timeLogsKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: timeLogsKeys.all });
       queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
       queryClient.invalidateQueries({ queryKey: tasksKeys.all });
-      if (data.warnings.length > 0) {
-        data.warnings.forEach((w) => toast.warning(w.message));
-      } else {
-        toast.success('Time logged');
-      }
+      toast.success('Time logged');
+      data.warnings.forEach((w) => toast.warning(w.message));
     },
     onError: (err) => {
       showErrorToast(err, 'Failed to log time');

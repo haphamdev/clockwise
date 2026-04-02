@@ -28,8 +28,6 @@ import { useCreateTimeLog } from '@/lib/time-logs/use-create-time-log';
 import { useWarningsPreview } from '@/lib/time-logs/use-warnings-preview';
 import { useProjects } from '@/lib/projects/use-projects';
 import type { ComboboxOption } from '@/components/ui/combobox';
-import type { Warning } from '@/lib/time-logs/types';
-import { useState } from 'react';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -67,7 +65,6 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
   });
   const createTimeLog = useCreateTimeLog();
   const { data: projectsData } = useProjects({ limit: 100 });
-  const [warnings, setWarnings] = useState<Warning[]>([]);
 
   const projectOptions: ComboboxOption[] = (projectsData?.data ?? [])
     .filter((p) => p.status === 'active')
@@ -82,7 +79,6 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
         hours: '',
         notes: '',
       });
-      setWarnings([]);
     }
   }, [open, defaultProjectId, form]);
 
@@ -105,26 +101,16 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
 
   const onSubmit = (values: FormValues) => {
     createTimeLog.mutate({ ...values, hours: parseFloat(values.hours) }, {
-      onSuccess: (data) => {
-        setWarnings(data.warnings);
-        if (data.warnings.length === 0) {
-          onOpenChange(false);
-        } else {
-          // Keep sheet open to show warnings, reset form for "log another"
-          form.reset({
-            projectId: values.projectId,
-            taskLabels: [],
-            date: values.date,
-            hours: '',
-            notes: '',
-          });
-        }
+      onSuccess: () => {
+        form.reset({
+          projectId: values.projectId,
+          taskLabels: [],
+          date: values.date,
+          hours: '',
+          notes: '',
+        });
       },
     });
-  };
-
-  const handleLogAnother = () => {
-    setWarnings([]);
   };
 
   return (
@@ -134,20 +120,6 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
           <SheetTitle>Log Time</SheetTitle>
           <SheetDescription>Record hours worked on a project.</SheetDescription>
         </SheetHeader>
-
-        {warnings.length > 0 && (
-          <div className="mt-4">
-            <WarningAlert warnings={warnings} />
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              onClick={handleLogAnother}
-            >
-              Log Another
-            </Button>
-          </div>
-        )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
@@ -220,7 +192,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                       {...field}
                       onChange={(e) => {
                         const v = e.target.value.replace(',', '.');
-                        if (v === '' || /^\d*\.?\d*$/.test(v)) {
+                        if (v === '' || /^(0|[1-9]\d*)?(\.\d*)?$/.test(v)) {
                           field.onChange(v);
                         }
                       }}

@@ -181,28 +181,6 @@ export class TimeLogsService {
       }
     }
 
-    const updateData: { date?: Date; hours?: number; notes?: string } = {};
-    if (dto.date !== undefined) updateData.date = new Date(dto.date);
-    if (dto.hours !== undefined) updateData.hours = dto.hours;
-    if (dto.notes !== undefined) updateData.notes = dto.notes;
-
-    if (Object.keys(updateData).length > 0) {
-      await this.timeLogsRepository.update(id, updateData);
-    }
-
-    if (dto.taskLabels) {
-      const uniqueLabels = [...new Set(dto.taskLabels)];
-      const tasks = await Promise.all(
-        uniqueLabels.map((label) =>
-          this.tasksService.findOrCreate(existing.projectId, label, userId),
-        ),
-      );
-      await this.timeLogsRepository.replaceTimeLogTasks(
-        id,
-        tasks.map((t) => t.id),
-      );
-    }
-
     const before: Record<string, unknown> = {};
     const after: Record<string, unknown> = {};
     if (dto.hours !== undefined && dto.hours !== existing.hours) {
@@ -217,12 +195,31 @@ export class TimeLogsService {
       before.notes = existing.notes ?? '';
       after.notes = dto.notes;
     }
+
+    const updateData: { date?: Date; hours?: number; notes?: string } = {};
+    if (after.hours !== undefined) updateData.hours = dto.hours;
+    if (after.date !== undefined) updateData.date = new Date(dto.date!);
+    if (after.notes !== undefined) updateData.notes = dto.notes;
+
+    if (Object.keys(updateData).length > 0) {
+      await this.timeLogsRepository.update(id, updateData);
+    }
+
     if (dto.taskLabels !== undefined) {
       const existingLabels = existing.tasks.map((t) => t.label).sort();
       const newLabels = [...new Set(dto.taskLabels)].sort();
       if (JSON.stringify(existingLabels) !== JSON.stringify(newLabels)) {
         before.tasks = existingLabels;
         after.tasks = newLabels;
+        const tasks = await Promise.all(
+          newLabels.map((label) =>
+            this.tasksService.findOrCreate(existing.projectId, label, userId),
+          ),
+        );
+        await this.timeLogsRepository.replaceTimeLogTasks(
+          id,
+          tasks.map((t) => t.id),
+        );
       }
     }
 
@@ -345,11 +342,12 @@ export class TimeLogsService {
     const effectiveDaily = dailyTotal + additionalHours;
     const effectiveWeekly = weeklyTotal + additionalHours;
     const warnings: Warning[] = [];
+    const fh = (n: number) => parseFloat(n.toFixed(2)).toString();
 
     if (effectiveDaily > effectiveDailyLimit) {
       const msg = additionalHours > 0
-        ? `Already logged ${dailyTotal}h today + ${additionalHours}h = ${effectiveDaily}h (threshold: ${effectiveDailyLimit}h)`
-        : `Daily hours (${effectiveDaily}h) exceed ${effectiveDailyLimit}h threshold`;
+        ? `Already logged ${fh(dailyTotal)}h today + ${fh(additionalHours)}h = ${fh(effectiveDaily)}h (threshold: ${fh(effectiveDailyLimit)}h)`
+        : `Daily hours (${fh(effectiveDaily)}h) exceed ${fh(effectiveDailyLimit)}h threshold`;
       warnings.push({
         type: 'daily_limit',
         message: msg,
@@ -360,8 +358,8 @@ export class TimeLogsService {
 
     if (effectiveWeekly > effectiveWeeklyLimit) {
       const msg = additionalHours > 0
-        ? `Already logged ${weeklyTotal}h this week + ${additionalHours}h = ${effectiveWeekly}h (threshold: ${effectiveWeeklyLimit}h)`
-        : `Weekly hours (${effectiveWeekly}h) exceed ${effectiveWeeklyLimit}h threshold`;
+        ? `Already logged ${fh(weeklyTotal)}h this week + ${fh(additionalHours)}h = ${fh(effectiveWeekly)}h (threshold: ${fh(effectiveWeeklyLimit)}h)`
+        : `Weekly hours (${fh(effectiveWeekly)}h) exceed ${fh(effectiveWeeklyLimit)}h threshold`;
       warnings.push({
         type: 'weekly_limit',
         message: msg,
