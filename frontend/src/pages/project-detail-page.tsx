@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Clock, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
@@ -10,6 +10,7 @@ import { ProjectTeamsTable } from '@/components/projects/project-teams-table';
 import { EditProjectSheet } from '@/components/projects/edit-project-sheet';
 import { AssignTeamSheet } from '@/components/projects/assign-team-sheet';
 import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
+import { LogTimeSheet } from '@/components/time-logs/log-time-sheet';
 import { useProjectDetail } from '@/lib/projects/use-project-detail';
 import { useArchiveProject } from '@/lib/projects/use-archive-project';
 import { useUnarchiveProject } from '@/lib/projects/use-unarchive-project';
@@ -26,6 +27,7 @@ export function ProjectDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [assignTeamOpen, setAssignTeamOpen] = useState(false);
+  const [logTimeOpen, setLogTimeOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'archive' | 'unarchive' | null>(null);
 
   if (isLoading) {
@@ -71,6 +73,14 @@ export function ProjectDetailPage() {
           { label: 'Projects', href: '/projects' },
           { label: project.name },
         ]}
+        actions={
+          isActive ? (
+            <Button onClick={() => setLogTimeOpen(true)}>
+              <Clock className="mr-1.5 h-4 w-4" />
+              Log Hours
+            </Button>
+          ) : undefined
+        }
       />
 
       <ProjectInfoCard
@@ -113,6 +123,11 @@ export function ProjectDetailPage() {
         existingTeams={project.teams}
         open={assignTeamOpen}
         onOpenChange={setAssignTeamOpen}
+      />
+      <LogTimeSheet
+        open={logTimeOpen}
+        onOpenChange={setLogTimeOpen}
+        defaultProjectId={project.id}
       />
 
       <ConfirmDialog
