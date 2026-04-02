@@ -13,6 +13,7 @@ import { AuditLogModule } from './modules/audit-log/audit-log.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { UserPreferencesModule } from './modules/user-preferences/user-preferences.module';
 import { TasksModule } from './modules/tasks/tasks.module';
+import { TimeLogsModule } from './modules/time-logs/time-logs.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
     ProjectsModule,
     UserPreferencesModule,
     TasksModule,
+    TimeLogsModule,
   ],
   controllers: [AppController],
 })

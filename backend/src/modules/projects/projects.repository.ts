@@ -11,6 +11,10 @@ import {
   ProjectWithTeams,
   ProjectTeamEntity,
 } from './entities/project.entity';
+import {
+  ProjectSettingsEntity,
+  DEFAULT_PROJECT_SETTINGS,
+} from './entities/project-settings.entity';
 
 type ProjectTeamWithTeam = ProjectTeam & {
   team: Team & { _count: { members: number } };
@@ -314,6 +318,50 @@ export class ProjectsRepository {
       where: { teamId, userId, role: 'manager' },
     });
     return count > 0;
+  }
+
+  async findSettings(projectId: string): Promise<ProjectSettingsEntity | null> {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      select: { settings: true },
+    });
+    if (!project) return null;
+    return this.toSettingsEntity(project.settings);
+  }
+
+  async updateSettings(
+    projectId: string,
+    data: { dailyHourLimit?: number | null; weeklyHourLimit?: number | null },
+  ): Promise<ProjectSettingsEntity> {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      select: { settings: true },
+    });
+    const current = (project?.settings ?? {}) as Record<string, unknown>;
+    const merged = { ...current };
+    if (data.dailyHourLimit !== undefined) {
+      merged.dailyHourLimit = data.dailyHourLimit;
+    }
+    if (data.weeklyHourLimit !== undefined) {
+      merged.weeklyHourLimit = data.weeklyHourLimit;
+    }
+
+    const updated = await this.prisma.project.update({
+      where: { id: projectId },
+      data: { settings: merged as Prisma.InputJsonValue },
+      select: { settings: true },
+    });
+    return this.toSettingsEntity(updated.settings);
+  }
+
+  private toSettingsEntity(settings: unknown): ProjectSettingsEntity {
+    const s = (settings ?? {}) as Record<string, unknown>;
+    return {
+      dailyHourLimit:
+        typeof s.dailyHourLimit === 'number' ? s.dailyHourLimit : DEFAULT_PROJECT_SETTINGS.dailyHourLimit,
+      weeklyHourLimit:
+        typeof s.weeklyHourLimit === 'number' ? s.weeklyHourLimit : DEFAULT_PROJECT_SETTINGS.weeklyHourLimit,
+    };
   }
 
   private toListItem(

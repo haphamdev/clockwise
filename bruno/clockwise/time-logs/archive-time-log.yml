@@ -1,0 +1,34 @@
+info:
+  name: archive-time-log
+  type: http
+  seq: 5
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/v1/time-logs/{{timeLogId}}/archive
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "reason": "Wrong entry"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.message
+      operator: eq
+      value: "Time log archived"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

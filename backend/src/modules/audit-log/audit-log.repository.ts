@@ -10,6 +10,7 @@ export interface CreateAuditLogInput {
   action: string;
   performedBy: string;
   metadata?: Record<string, unknown>;
+  reason?: string;
 }
 
 @Injectable()
@@ -81,6 +82,7 @@ export class AuditLogRepository {
           ? { id: 'system', name: 'System' }
           : performerMap.get(log.performedBy) ?? { id: log.performedBy, name: 'Unknown' },
         metadata: log.metadata as Record<string, unknown>,
+        reason: log.reason,
         createdAt: log.createdAt,
       })),
       total,
