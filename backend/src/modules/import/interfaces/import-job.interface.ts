@@ -6,6 +6,7 @@ export interface ImportJobData {
   userId: string;
   orgId: string;
   isAdmin: boolean;
+  importJobId: string;
 }
 
 export type ImportJobStatus = 'pending' | 'processing' | 'completed' | 'failed';

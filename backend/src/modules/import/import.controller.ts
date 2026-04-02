@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Res, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, Res, HttpCode } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Auth } from '../../common/decorators/auth.decorators';
@@ -8,6 +8,8 @@ import { ImportService } from './import.service';
 import { ImportPreviewDto, ImportPreviewResponseDto } from './dto/import-preview.dto';
 import { ImportExecuteDto } from './dto/import-execute.dto';
 import { ImportJobResponseDto } from './dto/import-job-response.dto';
+import { ListImportJobsQueryDto } from './dto/list-import-jobs-query.dto';
+import { ImportJobListResponseDto } from './dto/import-job-list-response.dto';
 import { ImportUnsupportedTypeException } from '../../common/exceptions/import.exceptions';
 import { CSV_TEMPLATES } from './import-templates';
 
@@ -56,6 +58,35 @@ export class ImportController {
       totalRows,
       imported: 0,
       errors: [],
+    };
+  }
+
+  @Get('jobs')
+  @Auth()
+  @ApiOperation({ summary: 'List import job history' })
+  @ApiOkResponse({ type: ImportJobListResponseDto })
+  async listJobs(
+    @CurrentUser() user: UserEntity,
+    @Query() query: ListImportJobsQueryDto,
+  ): Promise<ImportJobListResponseDto> {
+    const result = await this.importService.listJobs(
+      user.id,
+      user.orgId,
+      user.isAdmin,
+      query,
+    );
+    return {
+      ...result,
+      data: result.data.map((job) => ({
+        id: job.id,
+        type: job.type,
+        status: job.status,
+        totalRows: job.totalRows,
+        imported: job.imported,
+        errorCount: job.errorCount,
+        createdAt: job.createdAt.toISOString(),
+        completedAt: job.completedAt?.toISOString() ?? null,
+      })),
     };
   }
 

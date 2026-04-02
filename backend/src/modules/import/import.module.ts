@@ -4,6 +4,7 @@ import { IMPORT_QUEUE } from './import.constants';
 import { ImportService } from './import.service';
 import { ImportController } from './import.controller';
 import { ImportJobProcessor } from './import-job.processor';
+import { ImportJobRepository } from './import-job.repository';
 import { TimeLogImportProcessor } from './processors/time-log-import.processor';
 import { ProjectsModule } from '../projects/projects.module';
 import { UsersModule } from '../users/users.module';
@@ -17,7 +18,7 @@ import { TimeLogsModule } from '../time-logs/time-logs.module';
     TimeLogsModule,
   ],
   controllers: [ImportController],
-  providers: [ImportService, ImportJobProcessor, TimeLogImportProcessor],
+  providers: [ImportService, ImportJobProcessor, ImportJobRepository, TimeLogImportProcessor],
   exports: [ImportService],
 })
 export class ImportModule implements OnModuleInit {
