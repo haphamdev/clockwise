@@ -493,33 +493,33 @@ describe('TimeLogsService', () => {
       );
     });
 
-    it('should intersect userId filter with scope for manager', async () => {
+    it('should intersect userIds filter with scope for manager', async () => {
       repo.findManagedUserIds.mockResolvedValue(['user-a', 'user-b']);
       repo.findAll.mockResolvedValue({ data: [], total: 0, totalHours: 0 });
 
       await service.findAll('org-1', 'manager-1', false, {
         page: 1,
         limit: 20,
-        userId: 'user-a',
+        userIds: ['user-a'],
       });
 
       expect(repo.findAll).toHaveBeenCalledWith(
         'org-1',
         expect.objectContaining({
           scopedUserIds: ['user-a'],
-          userId: undefined,
+          userIds: undefined,
         }),
       );
     });
 
-    it('should return empty scope when userId filter is outside permitted scope', async () => {
+    it('should return empty scope when userIds filter is outside permitted scope', async () => {
       repo.findManagedUserIds.mockResolvedValue(['user-a', 'user-b']);
       repo.findAll.mockResolvedValue({ data: [], total: 0, totalHours: 0 });
 
       await service.findAll('org-1', 'manager-1', false, {
         page: 1,
         limit: 20,
-        userId: 'user-outside-scope',
+        userIds: ['user-outside-scope'],
       });
 
       expect(repo.findAll).toHaveBeenCalledWith(
@@ -528,19 +528,19 @@ describe('TimeLogsService', () => {
       );
     });
 
-    it('should pass userId filter directly for admin', async () => {
+    it('should pass userIds filter directly for admin', async () => {
       repo.findAll.mockResolvedValue({ data: [], total: 0, totalHours: 0 });
 
       await service.findAll('org-1', 'admin-1', true, {
         page: 1,
         limit: 20,
-        userId: 'any-user',
+        userIds: ['any-user'],
       });
 
       expect(repo.findAll).toHaveBeenCalledWith(
         'org-1',
         expect.objectContaining({
-          userId: 'any-user',
+          userIds: ['any-user'],
           scopedUserIds: undefined,
         }),
       );

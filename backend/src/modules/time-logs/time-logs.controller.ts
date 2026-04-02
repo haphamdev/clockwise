@@ -60,9 +60,9 @@ export class TimeLogsController {
         limit,
         dateFrom: query.dateFrom,
         dateTo: query.dateTo,
-        projectId: query.projectId,
-        userId: query.userId,
-        teamId: query.teamId,
+        projectIds: query.projectIds,
+        userIds: query.userIds,
+        teamIds: query.teamIds,
         includeArchived: query.includeArchived,
       },
     );

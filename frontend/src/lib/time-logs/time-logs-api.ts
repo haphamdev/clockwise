@@ -17,9 +17,9 @@ export function fetchTimeLogs(params: ListTimeLogsParams = {}) {
   if (params.limit) searchParams.set('limit', String(params.limit));
   if (params.dateFrom) searchParams.set('dateFrom', params.dateFrom);
   if (params.dateTo) searchParams.set('dateTo', params.dateTo);
-  if (params.projectId) searchParams.set('projectId', params.projectId);
-  if (params.userId) searchParams.set('userId', params.userId);
-  if (params.teamId) searchParams.set('teamId', params.teamId);
+  if (params.projectIds?.length) searchParams.set('projectIds', params.projectIds.join(','));
+  if (params.userIds?.length) searchParams.set('userIds', params.userIds.join(','));
+  if (params.teamIds?.length) searchParams.set('teamIds', params.teamIds.join(','));
   if (params.includeArchived) searchParams.set('includeArchived', 'true');
   const qs = searchParams.toString();
   return apiClient<TimeLogListResponse>(`/time-logs${qs ? `?${qs}` : ''}`);

@@ -28,20 +28,23 @@ export class ListTimeLogsQueryDto {
   @IsDateString()
   dateTo?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, description: 'Comma-separated project UUIDs' })
   @IsOptional()
-  @IsUUID()
-  projectId?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',').filter(Boolean) : value))
+  @IsUUID(4, { each: true })
+  projectIds?: string[];
 
-  @ApiProperty({ required: false, description: 'Filter by user (manager/admin only)' })
+  @ApiProperty({ required: false, description: 'Comma-separated user UUIDs (manager/admin only)' })
   @IsOptional()
-  @IsUUID()
-  userId?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',').filter(Boolean) : value))
+  @IsUUID(4, { each: true })
+  userIds?: string[];
 
-  @ApiProperty({ required: false, description: 'Filter by team (manager/admin only)' })
+  @ApiProperty({ required: false, description: 'Comma-separated team UUIDs (manager/admin only)' })
   @IsOptional()
-  @IsUUID()
-  teamId?: string;
+  @Transform(({ value }) => (typeof value === 'string' ? value.split(',').filter(Boolean) : value))
+  @IsUUID(4, { each: true })
+  teamIds?: string[];
 
   @ApiProperty({ required: false, description: 'Include archived time logs', default: false })
   @IsOptional()

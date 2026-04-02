@@ -83,8 +83,8 @@ export interface WarningsPreviewParams {
 export interface ListTimeLogsParams extends PaginationParams {
   dateFrom?: string;
   dateTo?: string;
-  projectId?: string;
-  userId?: string;
-  teamId?: string;
+  projectIds?: string[];
+  userIds?: string[];
+  teamIds?: string[];
   includeArchived?: boolean;
 }
