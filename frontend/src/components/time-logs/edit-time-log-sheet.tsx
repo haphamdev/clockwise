@@ -144,7 +144,7 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
                       {...field}
                       onChange={(e) => {
                         const v = e.target.value.replace(',', '.');
-                        if (v === '' || /^\d*\.?\d*$/.test(v)) {
+                        if (v === '' || /^(0|[1-9]\d*)?(\.\d*)?$/.test(v)) {
                           field.onChange(v);
                         }
                       }}

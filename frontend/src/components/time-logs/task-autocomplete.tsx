@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,11 @@ export function TaskAutocomplete({
 }: TaskAutocompleteProps) {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     setInputValue('');
@@ -89,6 +94,7 @@ export function TaskAutocomplete({
           onBlur={() => {
             // Delay to allow click on suggestion to fire first
             setTimeout(() => {
+              if (!mountedRef.current) return;
               addLabel(inputValue);
               setShowSuggestions(false);
             }, 200);
