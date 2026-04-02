@@ -1,0 +1,18 @@
+import { ImportRow, ImportValidationError } from './import-processor.interface';
+
+export interface ImportJobData {
+  type: string;
+  validRows: ImportRow[];
+  userId: string;
+  orgId: string;
+}
+
+export type ImportJobStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+export interface ImportJobResult {
+  status: ImportJobStatus;
+  totalRows: number;
+  imported: number;
+  errors: ImportValidationError[];
+  completedAt?: string;
+}
