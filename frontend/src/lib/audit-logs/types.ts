@@ -18,6 +18,7 @@ export interface AuditLogEntry {
   action: string;
   performedBy: AuditLogPerformer;
   metadata: AuditLogMetadata;
+  reason: string | null;
   createdAt: string;
 }
 

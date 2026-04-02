@@ -31,6 +31,11 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
         <p className="text-xs text-muted-foreground">
           {entry.performedBy.name} &middot; <TimeDisplay value={entry.createdAt} mode="datetime" />
         </p>
+        {entry.reason && (
+          <p className="mt-0.5 text-xs italic text-muted-foreground">
+            Reason: {entry.reason}
+          </p>
+        )}
 
         {hasDiff && (
           <button
