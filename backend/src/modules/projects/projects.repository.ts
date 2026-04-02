@@ -148,6 +148,13 @@ export class ProjectsRepository {
     };
   }
 
+  async findActiveByNameInOrg(name: string, orgId: string): Promise<ProjectEntity | null> {
+    const project = await this.prisma.project.findFirst({
+      where: { orgId, status: 'active', name: { equals: name, mode: 'insensitive' } },
+    });
+    return project ? this.toEntity(project) : null;
+  }
+
   async findById(id: string): Promise<ProjectWithTeams | null> {
     const project = await this.prisma.project.findUnique({
       where: { id },

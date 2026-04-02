@@ -4,8 +4,9 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import {
   ImportProcessor,
-  ImportPreviewResult,
   ImportRow,
+  ImportValidationError,
+  ImportCallerContext,
 } from './interfaces/import-processor.interface';
 import { ImportJobData, ImportJobResult } from './interfaces/import-job.interface';
 import {
@@ -22,12 +23,16 @@ import {
 
 interface CachedPreview {
   type: string;
-  validRows: ImportRow[];
+  executableRows: ImportRow[];
   userId: string;
   orgId: string;
+  isAdmin: boolean;
 }
 
-export interface ImportPreviewResponse extends ImportPreviewResult {
+export interface ImportPreviewResponse {
+  validRows: ImportRow[];
+  errors: ImportValidationError[];
+  totalRows: number;
   previewToken?: string;
 }
 
@@ -61,47 +66,49 @@ export class ImportService {
   async preview(
     type: string,
     csvContent: string,
-    userId: string,
-    orgId: string,
+    ctx: ImportCallerContext,
   ): Promise<ImportPreviewResponse> {
     const processor = this.getProcessor(type);
-    const result = await processor.parseAndValidate(csvContent, userId, orgId);
+    const result = await processor.parseAndValidate(csvContent, ctx);
 
     let previewToken: string | undefined;
-    if (result.validRows.length > 0) {
+    if (result.executableRows.length > 0) {
       previewToken = await this.cachePreviewResult({
         type,
-        validRows: result.validRows,
-        userId,
-        orgId,
+        executableRows: result.executableRows,
+        userId: ctx.userId,
+        orgId: ctx.orgId,
+        isAdmin: ctx.isAdmin,
       });
     }
 
-    return { ...result, previewToken };
+    // Return clean rows (without internal fields) to the client
+    const { executableRows: _, ...response } = result;
+    return { ...response, previewToken };
   }
 
   async execute(
     type: string,
     previewToken: string,
-    userId: string,
-    orgId: string,
+    ctx: ImportCallerContext,
   ): Promise<ImportExecuteResponse> {
     const cached = await this.retrievePreviewResult(previewToken);
-    if (!cached || cached.userId !== userId || cached.orgId !== orgId || cached.type !== type) {
+    if (!cached || cached.userId !== ctx.userId || cached.orgId !== ctx.orgId || cached.type !== type) {
       throw new ImportPreviewExpiredException();
     }
 
     this.getProcessor(type);
 
-    if (cached.validRows.length === 0) {
+    if (cached.executableRows.length === 0) {
       throw new ImportNoValidRowsException();
     }
 
     const jobData: ImportJobData = {
       type,
-      validRows: cached.validRows,
-      userId,
-      orgId,
+      executableRows: cached.executableRows,
+      userId: ctx.userId,
+      orgId: ctx.orgId,
+      isAdmin: cached.isAdmin,
     };
     const job = await this.importQueue.add('import', jobData, {
       attempts: 1,
@@ -112,7 +119,7 @@ export class ImportService {
     if (!job.id) {
       throw new Error('Failed to create import job');
     }
-    return { jobId: job.id, totalRows: cached.validRows.length };
+    return { jobId: job.id, totalRows: cached.executableRows.length };
   }
 
   async getJobStatus(
@@ -141,7 +148,7 @@ export class ImportService {
       return {
         jobId,
         status: 'failed',
-        totalRows: jobData.validRows.length,
+        totalRows: jobData.executableRows.length,
         imported: 0,
         errors: [
           { row: 0, field: '', message: 'Import failed. Please try again or contact support.' },
@@ -152,7 +159,7 @@ export class ImportService {
     return {
       jobId,
       status: state === 'active' ? 'processing' : 'pending',
-      totalRows: jobData.validRows.length,
+      totalRows: jobData.executableRows.length,
       imported: 0,
       errors: [],
     };

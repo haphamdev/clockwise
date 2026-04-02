@@ -34,6 +34,28 @@ export class TimeLogsRepository {
     return this.toEntity(timeLog);
   }
 
+  async existsByUserDateProjectTask(
+    userId: string,
+    date: Date,
+    projectId: string,
+    taskLabel: string,
+  ): Promise<boolean> {
+    const count = await this.prisma.timeLog.count({
+      where: {
+        userId,
+        date,
+        projectId,
+        status: 'active',
+        timeLogTasks: {
+          some: {
+            task: { labelNormalized: taskLabel.trim().toLowerCase() },
+          },
+        },
+      },
+    });
+    return count > 0;
+  }
+
   async findById(id: string): Promise<TimeLogEntity | null> {
     const timeLog = await this.prisma.timeLog.findUnique({ where: { id } });
     return timeLog ? this.toEntity(timeLog) : null;

@@ -22,6 +22,9 @@ export class ImportValidationErrorDto {
 
   @ApiProperty()
   message: string;
+
+  @ApiProperty({ required: false, description: 'Original row data (when available)' })
+  data?: Record<string, string>;
 }
 
 export class ImportRowDto {

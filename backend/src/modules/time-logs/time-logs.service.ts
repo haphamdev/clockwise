@@ -87,6 +87,70 @@ export class TimeLogsService {
     return { timeLog: listItem!, warnings };
   }
 
+  async createForImport(
+    targetUserId: string,
+    orgId: string,
+    performedBy: string,
+    dto: {
+      projectId: string;
+      taskLabel: string;
+      date: string;
+      hours: number;
+      notes?: string;
+    },
+  ): Promise<void> {
+    const task = await this.tasksService.findOrCreate(dto.projectId, dto.taskLabel, targetUserId);
+    const logDate = new Date(dto.date + 'T00:00:00');
+
+    const timeLog = await this.timeLogsRepository.create({
+      userId: targetUserId,
+      projectId: dto.projectId,
+      date: logDate,
+      hours: dto.hours,
+      notes: dto.notes,
+      taskIds: [task.id],
+    });
+
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'time_log',
+      entityId: timeLog.id,
+      action: 'created',
+      performedBy,
+      metadata: {
+        after: {
+          projectId: dto.projectId,
+          date: dto.date,
+          hours: dto.hours,
+          tasks: [task.label],
+        },
+        source: 'csv_import',
+        ...(targetUserId !== performedBy && { onBehalfOf: targetUserId }),
+      },
+    });
+  }
+
+  async existsByUserDateProjectTask(
+    userId: string,
+    date: string,
+    projectId: string,
+    taskLabel: string,
+  ): Promise<boolean> {
+    return this.timeLogsRepository.existsByUserDateProjectTask(
+      userId,
+      new Date(date + 'T00:00:00'),
+      projectId,
+      taskLabel,
+    );
+  }
+
+  async canLogOnBehalf(callerUserId: string, callerIsAdmin: boolean, targetUserId: string): Promise<boolean> {
+    if (callerIsAdmin) return true;
+    if (callerUserId === targetUserId) return true;
+    const managedIds = await this.timeLogsRepository.findManagedUserIds(callerUserId);
+    return managedIds.includes(targetUserId);
+  }
+
   async findById(
     id: string,
     orgId: string,

@@ -1,0 +1,7 @@
+date,project_name,task,hours,notes,user_email
+2026-03-16,Mobile App Redesign,UI wireframes,3.5,First entry,marcus.johnson@clockwise.test
+2026-03-16,Mobile App Redesign,UI wireframes,2,Duplicate - same user/date/project/task,marcus.johnson@clockwise.test
+2026-03-17,API Platform v2,Code review,4,First entry,james.obrien@clockwise.test
+2026-03-17,API Platform v2,Code review,1.5,Duplicate - same user/date/project/task,james.obrien@clockwise.test
+2026-03-17,API Platform v2,Database work,3,Different task - not a duplicate,james.obrien@clockwise.test
+2026-03-18,Design System,Color tokens,2.5,First entry,priya.patel@clockwise.test

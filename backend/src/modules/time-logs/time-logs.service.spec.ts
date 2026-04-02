@@ -81,6 +81,7 @@ describe('TimeLogsService', () => {
       sumHoursForWeek: jest.fn(),
       replaceTimeLogTasks: jest.fn(),
       findManagedUserIds: jest.fn(),
+      existsByUserDateProjectTask: jest.fn(),
     } as unknown as jest.Mocked<TimeLogsRepository>;
 
     tasksService = {
@@ -674,6 +675,122 @@ describe('TimeLogsService', () => {
       expect(projectsService.getSettingsInternal).not.toHaveBeenCalled();
       expect(warnings).toHaveLength(1);
       expect(warnings[0].threshold).toBe(12); // org default
+    });
+  });
+
+  describe('createForImport', () => {
+    const importDto = {
+      projectId: 'project-1',
+      taskLabel: 'IMPORT-TASK',
+      date: '2026-03-15',
+      hours: 4,
+      notes: 'Imported entry',
+    };
+
+    beforeEach(() => {
+      tasksService.findOrCreate.mockResolvedValue(makeTask({ label: 'IMPORT-TASK' }));
+      repo.create.mockResolvedValue(makeTimeLog({ hours: 4 }));
+    });
+
+    it('should create time log and audit log with csv_import source', async () => {
+      await service.createForImport('user-1', 'org-1', 'user-1', importDto);
+
+      expect(tasksService.findOrCreate).toHaveBeenCalledWith('project-1', 'IMPORT-TASK', 'user-1');
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: 'user-1',
+          projectId: 'project-1',
+          hours: 4,
+          taskIds: ['task-1'],
+        }),
+      );
+      expect(auditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'created',
+          metadata: expect.objectContaining({ source: 'csv_import' }),
+        }),
+      );
+    });
+
+    it('should include onBehalfOf in audit metadata when importing for another user', async () => {
+      await service.createForImport('user-2', 'org-1', 'user-1', importDto);
+
+      expect(auditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            source: 'csv_import',
+            onBehalfOf: 'user-2',
+          }),
+        }),
+      );
+    });
+
+    it('should not include onBehalfOf when importing for self', async () => {
+      await service.createForImport('user-1', 'org-1', 'user-1', importDto);
+
+      const call = auditLogService.log.mock.calls[0][0];
+      expect(call.metadata).not.toHaveProperty('onBehalfOf');
+    });
+
+    it('should parse date with local midnight (T00:00:00)', async () => {
+      await service.createForImport('user-1', 'org-1', 'user-1', importDto);
+
+      const createCall = repo.create.mock.calls[0][0];
+      expect(createCall.date).toEqual(new Date('2026-03-15T00:00:00'));
+    });
+  });
+
+  describe('canLogOnBehalf', () => {
+    it('should allow admin to log on behalf of anyone', async () => {
+      const result = await service.canLogOnBehalf('admin-1', true, 'user-2');
+      expect(result).toBe(true);
+      expect(repo.findManagedUserIds).not.toHaveBeenCalled();
+    });
+
+    it('should allow user to log for themselves', async () => {
+      const result = await service.canLogOnBehalf('user-1', false, 'user-1');
+      expect(result).toBe(true);
+      expect(repo.findManagedUserIds).not.toHaveBeenCalled();
+    });
+
+    it('should allow manager to log for managed team member', async () => {
+      repo.findManagedUserIds.mockResolvedValue(['user-2', 'user-3']);
+      const result = await service.canLogOnBehalf('manager-1', false, 'user-2');
+      expect(result).toBe(true);
+    });
+
+    it('should deny non-manager for unrelated user', async () => {
+      repo.findManagedUserIds.mockResolvedValue(['user-3']);
+      const result = await service.canLogOnBehalf('user-1', false, 'user-2');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('existsByUserDateProjectTask', () => {
+    it('should delegate to repository with local-midnight date', async () => {
+      repo.existsByUserDateProjectTask.mockResolvedValue(true);
+
+      const result = await service.existsByUserDateProjectTask(
+        'user-1', '2026-03-15', 'project-1', 'TASK-1',
+      );
+
+      expect(result).toBe(true);
+      expect(repo.existsByUserDateProjectTask).toHaveBeenCalledWith(
+        'user-1',
+        new Date('2026-03-15T00:00:00'),
+        'project-1',
+        'TASK-1',
+      );
+    });
+
+    it('should return false when no duplicate exists', async () => {
+      repo.existsByUserDateProjectTask.mockResolvedValue(false);
+
+      const result = await service.existsByUserDateProjectTask(
+        'user-1', '2026-03-15', 'project-1', 'TASK-1',
+      );
+
+      expect(result).toBe(false);
     });
   });
 });

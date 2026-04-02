@@ -25,7 +25,11 @@ export class ImportController {
     @CurrentUser() user: UserEntity,
     @Body() dto: ImportPreviewDto,
   ): Promise<ImportPreviewResponseDto> {
-    return this.importService.preview(dto.type, dto.csvContent, user.id, user.orgId);
+    return this.importService.preview(dto.type, dto.csvContent, {
+      userId: user.id,
+      orgId: user.orgId,
+      isAdmin: user.isAdmin,
+    });
   }
 
   @Post('execute')
@@ -39,8 +43,11 @@ export class ImportController {
     const { jobId, totalRows } = await this.importService.execute(
       dto.type,
       dto.previewToken,
-      user.id,
-      user.orgId,
+      {
+        userId: user.id,
+        orgId: user.orgId,
+        isAdmin: user.isAdmin,
+      },
     );
 
     return {

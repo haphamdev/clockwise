@@ -1,0 +1,13 @@
+date,project_name,task,hours,notes,user_email
+2026-03-16,Mobile App Redesign,Code review,3,,marcus.johnson@clockwise.test
+2026-03-16,Nonexistent Project,Task A,2,Project does not exist,james.obrien@clockwise.test
+2026-03-17,API Platform v2,,4,Missing task label,sofia.chen@clockwise.test
+2026-03-17,Mobile App Redesign,Design,abc,Non-numeric hours,amara.okafor@clockwise.test
+2026-03-18,Customer Dashboard,Dashboard,3,,nobody@clockwise.test
+03-18-2026,Design System,Tokens,2,Bad date format,priya.patel@clockwise.test
+2027-12-01,API Platform v2,Future work,5,Future date,james.obrien@clockwise.test
+2026-03-19,Marketing Website,Blog post,0.5,,david.kim@clockwise.test
+2026-03-19,Mobile App Redesign,Testing,3.5,Valid row,yuki.tanaka@clockwise.test
+2026-03-19,API Platform v2,Load testing,4,Valid row,liam.schmidt@clockwise.test
+2026-03-20,Automated Test Suite,Write tests,,-3,Hours empty + negative notes trick,raj.kapoor@clockwise.test
+2026-03-20,Mobile App Redesign,Code review,3,,marcus.johnson@clockwise.test

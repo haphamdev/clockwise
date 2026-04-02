@@ -14,10 +14,10 @@ export class ImportJobProcessor extends WorkerHost {
   }
 
   async process(job: Job<ImportJobData>): Promise<ImportJobResult> {
-    const { type, validRows, userId, orgId } = job.data;
+    const { type, executableRows, userId, orgId, isAdmin } = job.data;
 
     const processor = this.importService.getProcessor(type);
-    const result = await processor.execute(validRows, userId, orgId);
+    const result = await processor.execute(executableRows, { userId, orgId, isAdmin });
 
     return {
       status: 'completed',

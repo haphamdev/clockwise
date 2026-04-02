@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Plus, Clock } from 'lucide-react';
+import { Plus, Clock, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/ui/page-header';
 import { ServerDataTable } from '@/components/ui/server-data-table';
@@ -11,6 +11,7 @@ import { LogTimeSheet } from '@/components/time-logs/log-time-sheet';
 import { EditTimeLogSheet } from '@/components/time-logs/edit-time-log-sheet';
 import { TimeLogDetailSheet } from '@/components/time-logs/time-log-detail-sheet';
 import { ArchiveTimeLogDialog } from '@/components/time-logs/archive-time-log-dialog';
+import { ImportCsvDialog } from '@/components/time-logs/import-csv-dialog';
 import { useTimeLogs } from '@/lib/time-logs/use-time-logs';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
@@ -53,6 +54,7 @@ export function TimeLogsPage() {
   });
 
   const [logOpen, setLogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [editTimeLog, setEditTimeLog] = useState<TimeLog | null>(null);
   const [viewTimeLog, setViewTimeLog] = useState<TimeLog | null>(null);
   const [archiveState, setArchiveState] = useState<{
@@ -80,10 +82,16 @@ export function TimeLogsPage() {
         title="Time Logs"
         description="Track and manage time entries."
         actions={
-          <Button onClick={() => setLogOpen(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
-            Log Time
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="mr-1.5 h-4 w-4" />
+              Import CSV
+            </Button>
+            <Button onClick={() => setLogOpen(true)}>
+              <Plus className="mr-1.5 h-4 w-4" />
+              Log Time
+            </Button>
+          </div>
         }
       />
 
@@ -149,6 +157,7 @@ export function TimeLogsPage() {
         open={archiveState !== null}
         onOpenChange={(open) => !open && setArchiveState(null)}
       />
+      <ImportCsvDialog open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }

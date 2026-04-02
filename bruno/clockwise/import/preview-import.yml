@@ -1,0 +1,36 @@
+info:
+  name: preview-import
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3000/api/v1/import/preview
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "type": "time-log",
+        "csvContent": "date,project_name,task,hours,notes\n2026-04-01,My Project,TASK-001,8,Working on feature\n2026-04-02,My Project,TASK-002,4,Code review"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.totalRows
+      operator: isNumber
+    - expression: res.body.validRows
+      operator: isArray
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
