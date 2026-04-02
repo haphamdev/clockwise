@@ -1,0 +1,34 @@
+info:
+  name: update-time-log
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/v1/time-logs/{{timeLogId}}
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "hours": 6,
+        "reason": "Correcting hours logged"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.id
+      operator: isString
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

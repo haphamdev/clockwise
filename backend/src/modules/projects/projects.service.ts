@@ -8,6 +8,7 @@ import {
   ProjectWithTeams,
   ProjectTeamEntity,
 } from './entities/project.entity';
+import { ProjectSettingsEntity } from './entities/project-settings.entity';
 import {
   ProjectNotFoundException,
   ProjectArchivedException,
@@ -289,6 +290,68 @@ export class ProjectsService {
       { orgId, entityType: 'project', entityId: projectId, action: 'team_removed', performedBy: userId, metadata: meta },
       { orgId, entityType: 'team', entityId: teamId, action: 'team_removed', performedBy: userId, metadata: meta },
     ]);
+  }
+
+  async getSettings(
+    projectId: string,
+    orgId: string,
+    userId: string,
+    isAdmin: boolean,
+  ): Promise<ProjectSettingsEntity> {
+    await this.validateProjectAccess(projectId, orgId, userId, isAdmin);
+    const settings = await this.projectsRepository.findSettings(projectId);
+    if (!settings) {
+      throw new ProjectNotFoundException();
+    }
+    return settings;
+  }
+
+  async updateSettings(
+    projectId: string,
+    orgId: string,
+    data: { dailyHourLimit?: number | null; weeklyHourLimit?: number | null },
+    userId: string,
+    isAdmin: boolean,
+  ): Promise<ProjectSettingsEntity> {
+    const project = await this.getProjectOrThrow(projectId, orgId);
+    this.ensureNotArchived(project);
+
+    if (!isAdmin) {
+      const isManager = await this.projectsRepository.isManagerOfLinkedTeam(projectId, userId);
+      if (!isManager) {
+        throw new ProjectInsufficientRoleException();
+      }
+    }
+
+    if (data.dailyHourLimit === undefined && data.weeklyHourLimit === undefined) {
+      const current = await this.projectsRepository.findSettings(projectId);
+      return current!;
+    }
+
+    const currentSettings = await this.projectsRepository.findSettings(projectId);
+    const updated = await this.projectsRepository.updateSettings(projectId, data);
+
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'project',
+      entityId: projectId,
+      action: 'settings_updated',
+      performedBy: userId,
+      metadata: {
+        before: { ...currentSettings },
+        after: { ...updated },
+      },
+    });
+
+    return updated;
+  }
+
+  async getSettingsInternal(projectId: string): Promise<ProjectSettingsEntity> {
+    const settings = await this.projectsRepository.findSettings(projectId);
+    if (!settings) {
+      throw new ProjectNotFoundException();
+    }
+    return settings;
   }
 
   async validateProjectAccess(

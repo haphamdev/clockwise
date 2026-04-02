@@ -1,0 +1,37 @@
+info:
+  name: create-time-log
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:3000/api/v1/time-logs
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "projectId": "{{projectId}}",
+        "taskLabels": ["JIRA-123"],
+        "date": "2026-04-02",
+        "hours": 8,
+        "notes": "Working on feature"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.body.id
+      operator: isString
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

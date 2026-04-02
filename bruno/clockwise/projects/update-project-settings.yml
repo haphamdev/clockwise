@@ -1,0 +1,32 @@
+info:
+  name: update-project-settings
+  type: http
+  seq: 2
+
+http:
+  method: PATCH
+  url: http://localhost:3000/api/v1/projects/{{projectId}}/settings
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "dailyHourLimit": 10,
+        "weeklyHourLimit": 50
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -14,6 +14,8 @@ import {
   ProjectListResponseDto,
   ProjectTeamResponseDto,
 } from './dto/project-response.dto';
+import { ProjectSettingsResponseDto } from './dto/project-settings-response.dto';
+import { UpdateProjectSettingsDto } from './dto/update-project-settings.dto';
 import { ProjectListItem, ProjectWithTeams, ProjectTeamEntity } from './entities/project.entity';
 
 @ApiTags('Projects')
@@ -119,6 +121,35 @@ export class ProjectsController {
   ): Promise<ProjectResponseDto> {
     const project = await this.projectsService.unarchive(id, user.orgId, user.id);
     return this.toProjectResponse(project);
+  }
+
+  @Get(':id/settings')
+  @Auth()
+  @ApiOperation({ summary: 'Get project settings' })
+  @ApiOkResponse({ type: ProjectSettingsResponseDto })
+  async getSettings(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+  ): Promise<ProjectSettingsResponseDto> {
+    return this.projectsService.getSettings(id, user.orgId, user.id, user.isAdmin);
+  }
+
+  @Patch(':id/settings')
+  @Auth()
+  @ApiOperation({ summary: 'Update project settings' })
+  @ApiOkResponse({ type: ProjectSettingsResponseDto })
+  async updateSettings(
+    @Param('id') id: string,
+    @CurrentUser() user: UserEntity,
+    @Body() dto: UpdateProjectSettingsDto,
+  ): Promise<ProjectSettingsResponseDto> {
+    return this.projectsService.updateSettings(
+      id,
+      user.orgId,
+      dto,
+      user.id,
+      user.isAdmin,
+    );
   }
 
   @Post(':id/teams')
