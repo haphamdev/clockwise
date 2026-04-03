@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { UserLink } from '@/components/users/user-link';
 import {
   Select,
   SelectContent,
@@ -73,17 +72,11 @@ export function TeamMembersTable({
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/admin/users/${member.userId}`}
-                          className="text-sm font-medium hover:underline"
-                        >
-                          {member.userName}
-                        </Link>
-                        {member.userStatus === 'deactivated' && (
-                          <StatusBadge status="deactivated" />
-                        )}
-                      </div>
+                      <UserLink
+                        id={member.userId}
+                        name={member.userName}
+                        status={member.userStatus}
+                      />
                       <p className="text-xs text-muted-foreground">{member.userEmail}</p>
                     </div>
                   </div>

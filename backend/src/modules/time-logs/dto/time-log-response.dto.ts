@@ -17,6 +17,12 @@ export class TimeLogUserDto {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty()
+  email: string;
+
+  @ApiProperty()
+  status: string;
 }
 
 export class TimeLogProjectDto {
@@ -25,6 +31,12 @@ export class TimeLogProjectDto {
 
   @ApiProperty()
   name: string;
+
+  @ApiProperty({ required: false })
+  description: string | null;
+
+  @ApiProperty()
+  status: string;
 }
 
 export class WarningDto {

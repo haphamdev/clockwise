@@ -1,8 +1,8 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { Link } from 'react-router-dom';
 import { Loader2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { ProjectLink } from '@/components/projects/project-link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,12 +26,11 @@ export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Pro
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
-        <Link
-          to={`/projects/${row.original.id}`}
-          className="font-medium hover:underline"
-        >
-          {row.original.name}
-        </Link>
+        <ProjectLink
+          id={row.original.id}
+          name={row.original.name}
+          status={row.original.status}
+        />
       ),
     },
     {

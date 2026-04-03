@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -20,6 +19,7 @@ import {
 export interface ComboboxOption {
   value: string;
   label: string;
+  group?: string;
 }
 
 interface ComboboxBaseProps {
@@ -44,6 +44,24 @@ interface MultiComboboxProps extends ComboboxBaseProps {
 }
 
 type ComboboxProps = SingleComboboxProps | MultiComboboxProps;
+
+function groupOptions(options: ComboboxOption[]) {
+  const groups: { name: string | undefined; items: ComboboxOption[] }[] = [];
+  const seen = new Map<string | undefined, number>();
+
+  for (const option of options) {
+    const key = option.group;
+    const idx = seen.get(key);
+    if (idx !== undefined) {
+      groups[idx].items.push(option);
+    } else {
+      seen.set(key, groups.length);
+      groups.push({ name: key, items: [option] });
+    }
+  }
+
+  return groups;
+}
 
 export function Combobox(props: ComboboxProps) {
   const {
@@ -74,37 +92,27 @@ export function Combobox(props: ComboboxProps) {
     }
   };
 
-  const handleRemove = (optionValue: string, e: React.MouseEvent) => {
+  const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (props.multiple) {
-      props.onChange(props.value.filter((v) => v !== optionValue));
+      props.onChange([]);
+    } else {
+      props.onChange('');
     }
   };
+
+  const hasValue = props.multiple ? props.value.length > 0 : !!props.value;
 
   const renderTriggerContent = () => {
     if (props.multiple) {
       if (props.value.length === 0) {
         return <span className="text-muted-foreground">{placeholder}</span>;
       }
-      return (
-        <div className="flex flex-wrap gap-1">
-          {props.value.map((v) => {
-            const opt = options.find((o) => o.value === v);
-            return (
-              <Badge key={v} variant="secondary" className="text-xs">
-                {opt?.label ?? v}
-                <button
-                  type="button"
-                  className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onClick={(e) => handleRemove(v, e)}
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            );
-          })}
-        </div>
-      );
+      if (props.value.length === 1) {
+        const opt = options.find((o) => o.value === props.value[0]);
+        return <span className="truncate">{opt?.label ?? props.value[0]}</span>;
+      }
+      return <span className="truncate">{props.value.length} selected</span>;
     }
 
     const selected = options.find((o) => o.value === props.value);
@@ -113,6 +121,8 @@ export function Combobox(props: ComboboxProps) {
     }
     return <span className="truncate">{selected.label}</span>;
   };
+
+  const groups = groupOptions(options);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -128,7 +138,24 @@ export function Combobox(props: ComboboxProps) {
           )}
         >
           {renderTriggerContent()}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <div className="ml-2 flex shrink-0 items-center">
+            {hasValue && (
+              <span
+                role="button"
+                tabIndex={0}
+                className="rounded-sm opacity-50 hover:opacity-100"
+                onClick={handleClear}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleClear(e as unknown as React.MouseEvent);
+                  }
+                }}
+              >
+                <X className="h-4 w-4" />
+              </span>
+            )}
+            <ChevronsUpDown className="ml-1 h-4 w-4 opacity-50" />
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
@@ -136,23 +163,30 @@ export function Combobox(props: ComboboxProps) {
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  onSelect={() => handleSelect(option.value)}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      isSelected(option.value) ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {groups.map((group, i) => (
+              <CommandGroup
+                key={group.name ?? `__default_${i}`}
+                heading={group.name}
+              >
+                {group.items.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.label}
+                    onSelect={() => handleSelect(option.value)}
+                  >
+                    <Check
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        isSelected(option.value)
+                          ? 'opacity-100'
+                          : 'opacity-0',
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ))}
           </CommandList>
         </Command>
       </PopoverContent>

@@ -9,11 +9,15 @@ export interface TimeLogTask {
 export interface TimeLogUser {
   id: string;
   name: string;
+  email: string;
+  status: string;
 }
 
 export interface TimeLogProject {
   id: string;
   name: string;
+  description: string | null;
+  status: string;
 }
 
 export type TimeLogStatus = 'active' | 'archived';

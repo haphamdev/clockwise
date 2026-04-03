@@ -65,8 +65,8 @@ export class TimeLogsRepository {
     const timeLog = await this.prisma.timeLog.findFirst({
       where: { id, user: { orgId } },
       include: {
-        user: { select: { id: true, name: true } },
-        project: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, email: true, status: true } },
+        project: { select: { id: true, name: true, description: true, status: true } },
         timeLogTasks: {
           include: {
             task: { select: { id: true, label: true, description: true } },
@@ -79,8 +79,8 @@ export class TimeLogsRepository {
 
     return {
       ...this.toEntity(timeLog),
-      user: { id: timeLog.user.id, name: timeLog.user.name },
-      project: { id: timeLog.project.id, name: timeLog.project.name },
+      user: { id: timeLog.user.id, name: timeLog.user.name, email: timeLog.user.email, status: timeLog.user.status },
+      project: { id: timeLog.project.id, name: timeLog.project.name, description: timeLog.project.description, status: timeLog.project.status },
       tasks: timeLog.timeLogTasks.map((tlt) => this.toTaskEntity(tlt.task)),
     };
   }
@@ -165,8 +165,8 @@ export class TimeLogsRepository {
       this.prisma.timeLog.findMany({
         where,
         include: {
-          user: { select: { id: true, name: true } },
-          project: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true, email: true, status: true } },
+          project: { select: { id: true, name: true, description: true, status: true } },
           timeLogTasks: {
             include: {
               task: { select: { id: true, label: true, description: true } },
@@ -187,8 +187,8 @@ export class TimeLogsRepository {
     return {
       data: timeLogs.map((tl) => ({
         ...this.toEntity(tl),
-        user: { id: tl.user.id, name: tl.user.name },
-        project: { id: tl.project.id, name: tl.project.name },
+        user: { id: tl.user.id, name: tl.user.name, email: tl.user.email, status: tl.user.status },
+        project: { id: tl.project.id, name: tl.project.name, description: tl.project.description, status: tl.project.status },
         tasks: tl.timeLogTasks.map((tlt) => this.toTaskEntity(tlt.task)),
       })),
       total,

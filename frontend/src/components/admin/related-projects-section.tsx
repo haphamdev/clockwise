@@ -1,8 +1,8 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { Link } from 'react-router-dom';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { ProjectLink } from '@/components/projects/project-link';
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import type { Project } from '@/lib/projects/types';
 
@@ -11,9 +11,12 @@ const columns: ColumnDef<Project>[] = [
     accessorKey: 'name',
     header: 'Name',
     cell: ({ row }) => (
-      <Link to={`/projects/${row.original.id}`} className="font-medium hover:underline">
-        {row.original.name}
-      </Link>
+      <ProjectLink
+        id={row.original.id}
+        name={row.original.name}
+        description={row.original.description}
+        status={row.original.status}
+      />
     ),
   },
   {

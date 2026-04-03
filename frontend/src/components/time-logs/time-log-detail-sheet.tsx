@@ -1,6 +1,8 @@
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TaskDisplay } from '@/components/ui/task-display';
 import { TimeDisplay } from '@/components/ui/time-display';
+import { ProjectLink } from '@/components/projects/project-link';
+import { UserLink } from '@/components/users/user-link';
 import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
 import {
   Sheet,
@@ -35,10 +37,20 @@ export function TimeLogDetailSheet({ timeLog, open, onOpenChange }: TimeLogDetai
             <TimeDisplay value={timeLog.date} mode="date" />
           </DetailRow>
           <DetailRow label="Project">
-            {timeLog.project.name}
+            <ProjectLink
+              id={timeLog.project.id}
+              name={timeLog.project.name}
+              description={timeLog.project.description}
+              status={timeLog.project.status}
+            />
           </DetailRow>
           <DetailRow label="User">
-            {timeLog.user.name}
+            <UserLink
+              id={timeLog.user.id}
+              name={timeLog.user.name}
+              email={timeLog.user.email}
+              status={timeLog.user.status}
+            />
           </DetailRow>
           <DetailRow label="Hours">
             <span className="font-mono">{timeLog.hours}h</span>

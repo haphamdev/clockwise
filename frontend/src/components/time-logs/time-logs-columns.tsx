@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { TaskDisplay } from '@/components/ui/task-display';
 import { TimeDisplay } from '@/components/ui/time-display';
+import { ProjectLink } from '@/components/projects/project-link';
+import { UserLink } from '@/components/users/user-link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,9 +33,17 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
     {
       accessorKey: 'project',
       header: 'Project',
-      cell: ({ row }) => (
-        <span className="font-medium">{row.original.project.name}</span>
-      ),
+      cell: ({ row }) => {
+        const project = row.original.project;
+        return (
+          <ProjectLink
+            id={project.id}
+            name={project.name}
+            description={project.description}
+            status={project.status}
+          />
+        );
+      },
     },
     {
       id: 'tasks',
@@ -68,7 +78,17 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
     columns.push({
       id: 'user',
       header: 'User',
-      cell: ({ row }) => row.original.user.name,
+      cell: ({ row }) => {
+        const user = row.original.user;
+        return (
+          <UserLink
+            id={user.id}
+            name={user.name}
+            email={user.email}
+            status={user.status}
+          />
+        );
+      },
     });
   }
 
