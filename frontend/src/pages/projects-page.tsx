@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -73,11 +74,23 @@ export function ProjectsPage() {
         title="Projects"
         description="Manage your organization's projects."
         actions={
-          canCreate ? (
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Create Project
-            </Button>
+          (isAdmin || canCreate) ? (
+            <div className="flex gap-2">
+              {isAdmin && (
+                <Button variant="outline" asChild>
+                  <Link to="/import?type=project">
+                    <Upload className="mr-1.5 h-4 w-4" />
+                    Import CSV
+                  </Link>
+                </Button>
+              )}
+              {canCreate && (
+                <Button onClick={() => setCreateOpen(true)}>
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  Create Project
+                </Button>
+              )}
+            </div>
           ) : undefined
         }
       />
