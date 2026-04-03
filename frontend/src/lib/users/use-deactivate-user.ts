@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/query-client';
 import { showErrorToast } from '@/lib/api-error-toast';
 import { usersKeys } from './users-keys';
 import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
+import { timeLogsKeys } from '@/lib/time-logs/time-logs-keys';
 import { deactivateUser } from './users-api';
 
 export function useDeactivateUser() {
@@ -12,6 +13,7 @@ export function useDeactivateUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: usersKeys.all });
       queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
+      queryClient.invalidateQueries({ queryKey: timeLogsKeys.all });
       toast.success('User deactivated');
     },
     onError: (err) => {

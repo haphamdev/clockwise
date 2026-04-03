@@ -10,10 +10,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge, type Status } from '@/components/ui/status-badge';
+import { UserLink } from '@/components/users/user-link';
 import type { User } from '@/lib/users/types';
 
 export function getUsersColumns(
-  onView: (user: User) => void,
   onNavigate: (user: User) => void,
 ): ColumnDef<User>[] {
   return [
@@ -31,13 +31,11 @@ export function getUsersColumns(
               </AvatarFallback>
             </Avatar>
             <div>
-              <button
-                type="button"
-                className="text-sm font-medium hover:underline text-left"
-                onClick={() => onView(user)}
-              >
-                {user.name}
-              </button>
+              <UserLink
+                id={user.id}
+                name={user.name}
+                status={user.status}
+              />
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
           </div>

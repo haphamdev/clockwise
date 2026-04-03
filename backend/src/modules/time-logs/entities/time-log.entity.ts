@@ -17,8 +17,8 @@ export interface TimeLogTaskEntity {
 }
 
 export interface TimeLogListItem extends TimeLogEntity {
-  user: { id: string; name: string };
-  project: { id: string; name: string };
+  user: { id: string; name: string; email: string; status: string };
+  project: { id: string; name: string; description: string | null; status: string };
   tasks: TimeLogTaskEntity[];
 }
 

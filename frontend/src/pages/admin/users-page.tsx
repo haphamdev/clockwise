@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,6 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ServerDataTable } from '@/components/ui/server-data-table';
 import { getUsersColumns } from '@/components/admin/users/users-columns';
 import { UsersFilterBar } from '@/components/admin/users/users-filter-bar';
-import { UserDetailSheet } from '@/components/admin/users/user-detail-sheet';
 import { useUsers } from '@/lib/users/use-users';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import type { User, UserStatus } from '@/lib/users/types';
@@ -17,8 +16,6 @@ export function UsersPage() {
   const search = getParam('search');
   const status = getParam('status');
   const teamId = getParam('teamId');
-
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const { data, isLoading } = useUsers({
     page,
@@ -44,7 +41,6 @@ export function UsersPage() {
   const columns = useMemo(
     () =>
       getUsersColumns(
-        (user: User) => setSelectedUserId(user.id),
         (user: User) => navigate(`/admin/users/${user.id}`),
       ),
     [navigate],
@@ -84,12 +80,6 @@ export function UsersPage() {
         total={data?.total ?? 0}
         onPageChange={setPage}
         isLoading={isLoading}
-      />
-
-      <UserDetailSheet
-        userId={selectedUserId}
-        open={!!selectedUserId}
-        onOpenChange={(open) => !open && setSelectedUserId(null)}
       />
     </div>
   );
