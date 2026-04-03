@@ -1,0 +1,201 @@
+date,project_name,task,hours,notes,user_email
+2024-06-19,Employee Onboarding,Process documentation,6.25,,carlos.diaz@clockwise.test
+2024-06-10,API Platform v2,Database schema design,2.5,,eva.johnson@clockwise.test
+2024-07-11,Cloud Migration,Database migration,1,Tech debt cleanup,frank.lee@clockwise.test
+2024-08-06,Data Pipeline,Schema validation,6.75,Refactored approach,frank.lee@clockwise.test
+2024-07-22,Q1 Sales Campaign,CRM integration,2.75,Performance improvements,carol.white@clockwise.test
+2024-03-19,Customer Dashboard,User research,2.25,"Blocked by dependency, switched to docs",george.fox@clockwise.test
+2024-03-11,Employee Onboarding,Training modules,5.75,Cross-team collaboration,carlos.diaz@clockwise.test
+2024-07-30,Customer Dashboard,Export feature,7.5,Fixed edge cases,jack.rivera@clockwise.test
+2024-08-05,Customer Dashboard,Dashboard layout,0.25,Fixed edge cases,karen.patel@clockwise.test
+2024-08-21,Customer Dashboard,Filter components,6,Stakeholder feedback incorporated,sam.wilson@clockwise.test
+2024-07-29,Cloud Migration,Load testing,2.25,Refactored approach,bob.martinez@clockwise.test
+2024-08-14,Q1 Sales Campaign,Email sequences,2,,kevin.yang@clockwise.test
+2024-03-21,Mobile App Redesign,Prototype navigation,4.5,,irene.costa@clockwise.test
+2024-05-22,Marketing Website,Responsive layout,3.5,Initial implementation,sam.wilson@clockwise.test
+2024-07-19,Automated Test Suite,Test data fixtures,5.5,"Blocked by dependency, switched to docs",david.kim@clockwise.test
+2024-07-22,Cloud Migration,DNS cutover plan,2,Initial implementation,jack.rivera@clockwise.test
+2024-05-07,Employee Onboarding,Welcome email flow,6.75,Ready for QA,priya.sharma@clockwise.test
+2024-03-27,Q1 Sales Campaign,Lead scoring,1,Pair programming session,olivia.scott@clockwise.test
+2024-08-01,Cloud Migration,DNS cutover plan,5.25,Tech debt cleanup,george.fox@clockwise.test
+2024-05-08,API Platform v2,Rate limiting,7.25,Updated based on design review,bob.martinez@clockwise.test
+2024-07-11,Employee Onboarding,Onboarding checklist,4.5,,bob.martinez@clockwise.test
+2024-08-22,Mobile App Redesign,Bug fixes,5,Ready for QA,oscar.ruiz@clockwise.test
+2024-06-10,Automated Test Suite,E2E test coverage,2,Pair programming session,eva.johnson@clockwise.test
+2024-05-07,Q1 Sales Campaign,Lead scoring,5.75,Reviewed PR feedback,eva.johnson@clockwise.test
+2024-07-11,Data Pipeline,Transform logic,4.5,,bob.martinez@clockwise.test
+2024-07-01,Customer Dashboard,Export feature,1.5,Initial implementation,oscar.ruiz@clockwise.test
+2024-04-22,API Platform v2,Rate limiting,6.25,Sprint planning follow-up,eva.johnson@clockwise.test
+2024-03-20,API Platform v2,Auth middleware,6.75,Initial implementation,alice.chen@clockwise.test
+2024-08-09,Mobile App Redesign,User testing,6.25,Reviewed PR feedback,david.kim@clockwise.test
+2024-05-15,Employee Onboarding,Training modules,6,Performance improvements,carlos.diaz@clockwise.test
+2024-05-21,Marketing Website,Blog integration,7.5,,george.fox@clockwise.test
+2024-03-19,Mobile App Redesign,Bug fixes,4.75,Tech debt cleanup,olivia.scott@clockwise.test
+2024-07-31,Data Pipeline,Backfill scripts,3.25,,alice.chen@clockwise.test
+2024-03-15,Automated Test Suite,Test data fixtures,6.75,Performance improvements,sam.wilson@clockwise.test
+2024-07-04,Mobile App Redesign,Design review,2.5,Fixed edge cases,olivia.scott@clockwise.test
+2024-04-08,Mobile App Redesign,Prototype navigation,0.75,Fixed edge cases,diana.ross@clockwise.test
+2024-07-08,API Platform v2,REST endpoint impl,1.25,Cross-team collaboration,alice.chen@clockwise.test
+2024-07-18,Marketing Website,Responsive layout,3.25,Ready for QA,carlos.diaz@clockwise.test
+2024-08-01,Cloud Migration,Database migration,0.5,Initial implementation,alice.chen@clockwise.test
+2024-05-10,Employee Onboarding,Onboarding checklist,5.75,,diana.ross@clockwise.test
+2024-03-26,Customer Dashboard,Filter components,1.5,Performance improvements,diana.ross@clockwise.test
+2024-08-06,Automated Test Suite,Flaky test fixes,5.75,Pair programming session,carol.white@clockwise.test
+2024-08-27,Employee Onboarding,Feedback survey,4.75,,henry.zhao@clockwise.test
+2024-08-23,Mobile App Redesign,UI wireframes,2.5,Updated based on design review,noah.green@clockwise.test
+2024-04-12,Cloud Migration,Terraform scripts,4.75,,frank.lee@clockwise.test
+2024-04-19,Automated Test Suite,CI pipeline integration,5.25,,carol.white@clockwise.test
+2024-07-31,Mobile App Redesign,Design review,6,Performance improvements,marcus.hall@clockwise.test
+2024-05-17,Mobile App Redesign,Bug fixes,8,Sprint planning follow-up,sam.wilson@clockwise.test
+2024-07-03,Automated Test Suite,Flaky test fixes,5,Refactored approach,kevin.yang@clockwise.test
+2024-06-28,Q1 Sales Campaign,Campaign brief,5.25,Pair programming session,david.kim@clockwise.test
+2024-08-19,Customer Dashboard,Data aggregation,5.5,Stakeholder feedback incorporated,noah.green@clockwise.test
+2024-04-15,API Platform v2,Performance profiling,5,,olivia.scott@clockwise.test
+2024-07-15,Q1 Sales Campaign,Performance report,7.5,Fixed edge cases,carol.white@clockwise.test
+2024-08-28,API Platform v2,Code review,2.25,Initial implementation,irene.costa@clockwise.test
+2024-05-01,Employee Onboarding,Process documentation,3,Reviewed PR feedback,henry.zhao@clockwise.test
+2024-05-21,Marketing Website,Content writing,2.25,,jack.rivera@clockwise.test
+2024-07-22,Q1 Sales Campaign,Email sequences,2.25,Sprint planning follow-up,frank.lee@clockwise.test
+2024-08-05,API Platform v2,Auth middleware,2.25,,priya.sharma@clockwise.test
+2024-08-08,Cloud Migration,Database migration,7.75,Sprint planning follow-up,olivia.scott@clockwise.test
+2024-07-05,API Platform v2,Code review,0.25,,olivia.scott@clockwise.test
+2024-03-29,API Platform v2,Code review,1,,marcus.hall@clockwise.test
+2024-05-08,Cloud Migration,Load testing,3,,henry.zhao@clockwise.test
+2024-04-02,Q1 Sales Campaign,CRM integration,4.75,Updated based on design review,alice.chen@clockwise.test
+2024-04-12,Support Portal,FAQ page,6.25,Cross-team collaboration,sam.wilson@clockwise.test
+2024-06-28,Q1 Sales Campaign,Performance report,7.25,Fixed edge cases,karen.patel@clockwise.test
+2024-03-19,Marketing Website,Responsive layout,0.75,,irene.costa@clockwise.test
+2024-05-30,Data Pipeline,Backfill scripts,7.25,Initial implementation,george.fox@clockwise.test
+2024-05-07,Q1 Sales Campaign,CRM integration,7.25,,frank.lee@clockwise.test
+2024-05-29,Automated Test Suite,Test framework setup,5.75,,sam.wilson@clockwise.test
+2024-07-05,Support Portal,Admin panel,3.5,Stakeholder feedback incorporated,carol.white@clockwise.test
+2024-08-09,Customer Dashboard,Dashboard layout,7.75,Cross-team collaboration,oscar.ruiz@clockwise.test
+2024-07-05,Mobile App Redesign,Icon design,7.5,,henry.zhao@clockwise.test
+2024-08-26,Cloud Migration,Database migration,2.75,Pair programming session,eva.johnson@clockwise.test
+2024-06-21,Support Portal,Admin panel,0.5,Tech debt cleanup,irene.costa@clockwise.test
+2024-07-26,Marketing Website,A/B test setup,4.75,,marcus.hall@clockwise.test
+2024-06-06,API Platform v2,REST endpoint impl,2.5,,priya.sharma@clockwise.test
+2024-04-29,Q1 Sales Campaign,Performance report,5,,carlos.diaz@clockwise.test
+2024-06-10,Data Pipeline,Schema validation,3.75,Refactored approach,eva.johnson@clockwise.test
+2024-05-30,Automated Test Suite,Test framework setup,3,Reviewed PR feedback,david.kim@clockwise.test
+2024-04-19,Mobile App Redesign,Prototype navigation,0.25,Added error handling,kevin.yang@clockwise.test
+2024-08-20,Automated Test Suite,Flaky test fixes,6.25,,jack.rivera@clockwise.test
+2024-04-24,Q1 Sales Campaign,CRM integration,4.5,Performance improvements,george.fox@clockwise.test
+2024-06-11,Data Pipeline,Alerting rules,6.75,Reviewed PR feedback,kevin.yang@clockwise.test
+2024-04-10,Customer Dashboard,Chart widgets,7.5,Fixed edge cases,oscar.ruiz@clockwise.test
+2024-06-12,Mobile App Redesign,Animation prototyping,5.5,Cross-team collaboration,david.kim@clockwise.test
+2024-07-23,Support Portal,Ticket submission form,0.75,Tech debt cleanup,david.kim@clockwise.test
+2024-07-19,Marketing Website,A/B test setup,4.75,Updated based on design review,marcus.hall@clockwise.test
+2024-08-14,Mobile App Redesign,Design review,6.25,Cross-team collaboration,george.fox@clockwise.test
+2024-06-11,Automated Test Suite,E2E test coverage,5.25,,diana.ross@clockwise.test
+2024-08-23,Support Portal,Status page,6.75,Added error handling,oscar.ruiz@clockwise.test
+2024-06-28,Marketing Website,A/B test setup,8,Pair programming session,olivia.scott@clockwise.test
+2024-05-10,Q1 Sales Campaign,Email sequences,0.25,Added error handling,sam.wilson@clockwise.test
+2024-08-06,Automated Test Suite,Flaky test fixes,2,,sam.wilson@clockwise.test
+2024-04-23,Automated Test Suite,Test data fixtures,3.5,Added error handling,carol.white@clockwise.test
+2024-04-04,Data Pipeline,Dashboard queries,7.25,"Blocked by dependency, switched to docs",sam.wilson@clockwise.test
+2024-08-13,API Platform v2,REST endpoint impl,6.25,,carlos.diaz@clockwise.test
+2024-06-14,Employee Onboarding,Training modules,6.5,Updated based on design review,olivia.scott@clockwise.test
+2024-06-26,Support Portal,FAQ page,2.5,,irene.costa@clockwise.test
+2024-05-31,Customer Dashboard,Chart widgets,0.75,,karen.patel@clockwise.test
+2024-03-27,API Platform v2,Performance profiling,3.75,,oscar.ruiz@clockwise.test
+2024-03-11,Support Portal,Chat widget,3.5,,frank.lee@clockwise.test
+2024-05-07,Employee Onboarding,Process documentation,4.25,,jack.rivera@clockwise.test
+2024-06-21,Support Portal,Chat widget,1.5,,david.kim@clockwise.test
+2024-04-03,Cloud Migration,DNS cutover plan,5.5,Refactored approach,kevin.yang@clockwise.test
+2024-05-13,API Platform v2,Error handling,7.25,,noah.green@clockwise.test
+2024-04-25,Employee Onboarding,Onboarding checklist,6.5,Sprint planning follow-up,sam.wilson@clockwise.test
+2024-08-01,Customer Dashboard,Export feature,2.5,Sprint planning follow-up,oscar.ruiz@clockwise.test
+2024-07-08,Q1 Sales Campaign,Campaign brief,5.5,Initial implementation,alice.chen@clockwise.test
+2024-03-20,Cloud Migration,Architecture planning,4.5,Reviewed PR feedback,alice.chen@clockwise.test
+2024-03-29,Automated Test Suite,Flaky test fixes,3.75,Cross-team collaboration,diana.ross@clockwise.test
+2024-07-29,Automated Test Suite,Write API tests,4,Pair programming session,diana.ross@clockwise.test
+2024-08-28,API Platform v2,REST endpoint impl,5,,bob.martinez@clockwise.test
+2024-04-19,Data Pipeline,Transform logic,7.25,,noah.green@clockwise.test
+2024-08-27,API Platform v2,Performance profiling,3.75,Initial implementation,frank.lee@clockwise.test
+2024-07-11,Automated Test Suite,Flaky test fixes,2.25,Ready for QA,george.fox@clockwise.test
+2024-05-24,Q1 Sales Campaign,Landing page copy,3.25,Added error handling,carol.white@clockwise.test
+2024-08-15,Q1 Sales Campaign,Landing page copy,4,Tech debt cleanup,priya.sharma@clockwise.test
+2024-04-10,Marketing Website,A/B test setup,3,Pair programming session,david.kim@clockwise.test
+2024-07-23,Automated Test Suite,E2E test coverage,1.25,,diana.ross@clockwise.test
+2024-08-12,API Platform v2,Database schema design,3.5,"Blocked by dependency, switched to docs",carol.white@clockwise.test
+2024-06-18,Support Portal,Knowledge base search,0.5,Added error handling,oscar.ruiz@clockwise.test
+2024-03-21,Employee Onboarding,Welcome email flow,0.25,,sam.wilson@clockwise.test
+2024-03-11,Customer Dashboard,Filter components,2.75,Tech debt cleanup,george.fox@clockwise.test
+2024-06-07,Support Portal,Knowledge base search,6.5,Added error handling,carol.white@clockwise.test
+2024-05-20,Marketing Website,Content writing,4,,bob.martinez@clockwise.test
+2024-03-21,Mobile App Redesign,UI wireframes,6.5,,marcus.hall@clockwise.test
+2024-05-17,Cloud Migration,Monitoring setup,6.25,Cross-team collaboration,carol.white@clockwise.test
+2024-04-05,Data Pipeline,Ingestion service,6.5,,carlos.diaz@clockwise.test
+2024-05-01,Support Portal,Status page,7.75,,jack.rivera@clockwise.test
+2024-07-01,Automated Test Suite,E2E test coverage,5.25,Ready for QA,jack.rivera@clockwise.test
+2024-07-30,Customer Dashboard,Dashboard layout,2.5,Fixed edge cases,kevin.yang@clockwise.test
+2024-04-22,Employee Onboarding,Process documentation,4.25,Added error handling,diana.ross@clockwise.test
+2024-03-12,Automated Test Suite,Test data fixtures,7.5,Pair programming session,bob.martinez@clockwise.test
+2024-04-15,Cloud Migration,Database migration,3.25,,alice.chen@clockwise.test
+2024-03-14,Support Portal,Ticket submission form,7.5,,henry.zhao@clockwise.test
+2024-06-17,Q1 Sales Campaign,Landing page copy,4,,alice.chen@clockwise.test
+2024-07-25,Q1 Sales Campaign,Lead scoring,7.75,Pair programming session,priya.sharma@clockwise.test
+2024-07-25,Marketing Website,A/B test setup,3,Reviewed PR feedback,priya.sharma@clockwise.test
+2024-03-13,Support Portal,Chat widget,0.75,,oscar.ruiz@clockwise.test
+2024-04-08,Automated Test Suite,Flaky test fixes,6.5,Tech debt cleanup,oscar.ruiz@clockwise.test
+2024-06-14,Employee Onboarding,Onboarding checklist,7.75,Cross-team collaboration,oscar.ruiz@clockwise.test
+2024-06-13,Q1 Sales Campaign,CRM integration,8,,carlos.diaz@clockwise.test
+2024-03-21,Data Pipeline,Dashboard queries,2.75,Tech debt cleanup,carol.white@clockwise.test
+2024-07-04,Support Portal,FAQ page,2.25,,eva.johnson@clockwise.test
+2024-06-27,API Platform v2,Code review,0.5,Reviewed PR feedback,eva.johnson@clockwise.test
+2024-04-17,Customer Dashboard,Filter components,0.25,Reviewed PR feedback,carol.white@clockwise.test
+2024-06-14,Data Pipeline,Ingestion service,1,Pair programming session,carol.white@clockwise.test
+2024-06-10,Customer Dashboard,Filter components,2.25,,eva.johnson@clockwise.test
+2024-06-03,Marketing Website,Content writing,1.75,Fixed edge cases,bob.martinez@clockwise.test
+2024-03-27,Automated Test Suite,Test framework setup,1,Ready for QA,oscar.ruiz@clockwise.test
+2024-03-22,Customer Dashboard,Chart widgets,2.75,Refactored approach,henry.zhao@clockwise.test
+2024-07-03,Cloud Migration,Terraform scripts,7.25,Stakeholder feedback incorporated,henry.zhao@clockwise.test
+2024-04-04,Automated Test Suite,Test framework setup,0.75,Cross-team collaboration,sam.wilson@clockwise.test
+2024-08-30,Marketing Website,Analytics setup,6.5,Cross-team collaboration,bob.martinez@clockwise.test
+2024-03-27,Employee Onboarding,Onboarding checklist,6.75,Added error handling,karen.patel@clockwise.test
+2024-03-14,Support Portal,Admin panel,2.5,Fixed edge cases,oscar.ruiz@clockwise.test
+2024-04-17,Customer Dashboard,Chart widgets,6.5,,bob.martinez@clockwise.test
+2024-04-11,Support Portal,FAQ page,1.25,,priya.sharma@clockwise.test
+2024-06-18,Q1 Sales Campaign,Email sequences,6.75,Added error handling,irene.costa@clockwise.test
+2024-08-07,Support Portal,Knowledge base search,6,"Blocked by dependency, switched to docs",irene.costa@clockwise.test
+2024-03-21,Q1 Sales Campaign,CRM integration,1.25,Stakeholder feedback incorporated,alice.chen@clockwise.test
+2024-03-20,Mobile App Redesign,Animation prototyping,2.25,Stakeholder feedback incorporated,bob.martinez@clockwise.test
+2024-07-25,Automated Test Suite,E2E test coverage,4.75,Reviewed PR feedback,frank.lee@clockwise.test
+2024-05-23,Automated Test Suite,E2E test coverage,2,"Blocked by dependency, switched to docs",frank.lee@clockwise.test
+2024-08-29,Cloud Migration,Terraform scripts,4.75,Fixed edge cases,olivia.scott@clockwise.test
+2024-03-18,Support Portal,Knowledge base search,4.5,Refactored approach,frank.lee@clockwise.test
+2024-08-27,Support Portal,Status page,0.25,Pair programming session,marcus.hall@clockwise.test
+2024-03-26,Cloud Migration,Architecture planning,1.25,,irene.costa@clockwise.test
+2024-03-22,Support Portal,Chat widget,5.75,,olivia.scott@clockwise.test
+2024-06-27,Marketing Website,Landing page,4.5,Refactored approach,carol.white@clockwise.test
+2024-05-14,API Platform v2,REST endpoint impl,1,Cross-team collaboration,olivia.scott@clockwise.test
+2024-08-16,Automated Test Suite,Flaky test fixes,3.75,,karen.patel@clockwise.test
+2024-08-28,Cloud Migration,Monitoring setup,3,,eva.johnson@clockwise.test
+2024-03-22,Support Portal,Ticket submission form,5.25,"Blocked by dependency, switched to docs",sam.wilson@clockwise.test
+2024-05-13,Support Portal,Ticket submission form,3.75,Sprint planning follow-up,george.fox@clockwise.test
+2024-05-03,Automated Test Suite,Test data fixtures,3.5,Stakeholder feedback incorporated,jack.rivera@clockwise.test
+2024-07-24,Mobile App Redesign,Bug fixes,3.75,Sprint planning follow-up,olivia.scott@clockwise.test
+2024-08-13,API Platform v2,Performance profiling,1.25,,kevin.yang@clockwise.test
+2024-06-26,Cloud Migration,Architecture planning,3,,eva.johnson@clockwise.test
+2024-03-27,Support Portal,Status page,6.5,,noah.green@clockwise.test
+2024-07-09,Automated Test Suite,Test framework setup,7.25,Updated based on design review,frank.lee@clockwise.test
+2024-07-30,Support Portal,Chat widget,3.25,Performance improvements,bob.martinez@clockwise.test
+2024-04-02,Customer Dashboard,Export feature,3.75,Ready for QA,alice.chen@clockwise.test
+2024-04-15,Support Portal,Ticket submission form,4.25,Stakeholder feedback incorporated,eva.johnson@clockwise.test
+2024-03-14,Q1 Sales Campaign,Landing page copy,2.25,,diana.ross@clockwise.test
+2024-04-26,Marketing Website,Landing page,2.75,,kevin.yang@clockwise.test
+2024-04-18,Customer Dashboard,Data aggregation,3,Updated based on design review,bob.martinez@clockwise.test
+2024-05-16,Support Portal,Status page,6.25,Cross-team collaboration,bob.martinez@clockwise.test
+2024-08-28,API Platform v2,Rate limiting,8,Performance improvements,george.fox@clockwise.test
+2024-08-08,Cloud Migration,Terraform scripts,3.75,,bob.martinez@clockwise.test
+2024-03-14,API Platform v2,Error handling,0.5,Performance improvements,henry.zhao@clockwise.test
+2024-05-02,Customer Dashboard,Responsiveness,1.5,,eva.johnson@clockwise.test
+2024-07-10,Automated Test Suite,Write API tests,6.75,,oscar.ruiz@clockwise.test
+2024-08-07,API Platform v2,Performance profiling,2,Cross-team collaboration,alice.chen@clockwise.test
+2024-08-12,Cloud Migration,Architecture planning,1.75,Ready for QA,jack.rivera@clockwise.test
+2024-04-12,Q1 Sales Campaign,Lead scoring,8,Performance improvements,marcus.hall@clockwise.test
+2024-08-05,Mobile App Redesign,Design review,1.75,Performance improvements,henry.zhao@clockwise.test
+2024-08-21,Mobile App Redesign,UI wireframes,4,"Blocked by dependency, switched to docs",jack.rivera@clockwise.test
+2024-05-17,Support Portal,FAQ page,1.5,Initial implementation,george.fox@clockwise.test
+2024-07-26,Support Portal,Admin panel,5.5,Reviewed PR feedback,frank.lee@clockwise.test
