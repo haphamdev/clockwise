@@ -255,7 +255,7 @@ export class InvitationsService {
   ): Promise<InvitationEntity> {
     const existingUser = await this.usersService.findByEmail(data.email);
     if (!existingUser) {
-      await this.usersService.createPendingUser(orgId, data.email, invitedBy);
+      await this.usersService.createPendingUser(orgId, data.email, invitedBy, 'import');
     }
 
     const token = randomBytes(32).toString('hex');

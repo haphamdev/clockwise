@@ -28,7 +28,7 @@ export class UsersService {
     return this.usersRepository.findById(id);
   }
 
-  async createPendingUser(orgId: string, email: string, performedBy: string): Promise<UserEntity> {
+  async createPendingUser(orgId: string, email: string, performedBy: string, source?: string): Promise<UserEntity> {
     const user = await this.usersRepository.createPendingUser(orgId, email);
     await this.auditLogService.log({
       orgId,
@@ -36,7 +36,7 @@ export class UsersService {
       entityId: user.id,
       action: 'created',
       performedBy,
-      metadata: { after: { email, status: 'pending' } },
+      metadata: { after: { email, status: 'pending' }, ...(source && { source }) },
     });
     return user;
   }

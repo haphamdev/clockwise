@@ -692,7 +692,7 @@ describe('TimeLogsService', () => {
       repo.create.mockResolvedValue(makeTimeLog({ hours: 4 }));
     });
 
-    it('should create time log and audit log with csv_import source', async () => {
+    it('should create time log and audit log with import source', async () => {
       await service.createForImport('user-1', 'org-1', 'user-1', importDto);
 
       expect(tasksService.findOrCreate).toHaveBeenCalledWith('project-1', 'IMPORT-TASK', 'user-1');
@@ -707,7 +707,7 @@ describe('TimeLogsService', () => {
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           action: 'created',
-          metadata: expect.objectContaining({ source: 'csv_import' }),
+          metadata: expect.objectContaining({ source: 'import' }),
         }),
       );
     });
@@ -718,7 +718,7 @@ describe('TimeLogsService', () => {
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            source: 'csv_import',
+            source: 'import',
             onBehalfOf: 'user-2',
           }),
         }),
