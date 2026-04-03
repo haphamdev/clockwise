@@ -51,6 +51,8 @@ export class TimeLogImportProcessor implements ImportProcessor {
     const onBehalfCache = new Map<string, boolean>();
     const duplicateCache = new Map<string, boolean>();
 
+    // Highest expected column index + 1 → minimum fields a row must have.
+    // Handles CSVs where expected headers aren't the first columns.
     const minFieldCount = Math.max(...columnMap.values()) + 1;
     let dataRowCount = 0;
 
@@ -163,6 +165,8 @@ export class TimeLogImportProcessor implements ImportProcessor {
       errors.push({ row: rowNumber, field: 'date', message: 'Invalid date' });
       return errors;
     }
+    // String comparison on YYYY-MM-DD avoids timezone issues that arise
+    // when comparing Date objects (midnight local vs current time, UTC shifts).
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     if (data.date > todayStr) {
@@ -173,7 +177,7 @@ export class TimeLogImportProcessor implements ImportProcessor {
     const hours = parseFloat(data.hours);
     if (isNaN(hours)) {
       errors.push({ row: rowNumber, field: 'hours', message: 'Hours must be a number' });
-    } else if (hours < 0.01 || hours > 24) {
+    } else if (hours < 0.01 || hours > 24) { // No 0.25 increment rule — imports accept arbitrary precision from external systems
       errors.push({ row: rowNumber, field: 'hours', message: 'Hours must be between 0.01 and 24' });
     }
 
