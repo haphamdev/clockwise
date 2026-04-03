@@ -12,7 +12,7 @@ import { useImportJobs } from '@/lib/import/use-import-jobs';
 import type { ImportJobStatus } from '@/lib/import/types';
 
 interface ImportHistoryProps {
-  type: string;
+  type?: string;
 }
 
 const statusConfig: Record<ImportJobStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {

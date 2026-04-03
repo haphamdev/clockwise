@@ -11,7 +11,14 @@ import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-par
 import { ProjectsService } from '../../projects/projects.service';
 import { TeamsService } from '../../teams/teams.service';
 
-const EXPECTED_HEADERS = ['name', 'description', 'status', 'teams', 'daily_hour_limit', 'weekly_hour_limit'];
+const EXPECTED_HEADERS = [
+  'name',
+  'description',
+  'status',
+  'teams',
+  'daily_hour_limit',
+  'weekly_hour_limit',
+];
 const VALID_STATUSES = ['active', 'archived'];
 
 @Injectable()
@@ -77,7 +84,12 @@ export class ProjectImportProcessor implements ImportProcessor {
       }
 
       const rowErrors = await this.validateRow(
-        data, rowNumber, ctx, projectNameCache, teamCache, seenNames,
+        data,
+        rowNumber,
+        ctx,
+        projectNameCache,
+        teamCache,
+        seenNames,
       );
 
       const cleanData: Record<string, string> = {};
@@ -108,22 +120,17 @@ export class ProjectImportProcessor implements ImportProcessor {
     return { validRows, executableRows, errors, totalRows: dataRowCount };
   }
 
-  async execute(
-    validRows: ImportRow[],
-    ctx: ImportCallerContext,
-  ): Promise<ImportResult> {
+  async execute(validRows: ImportRow[], ctx: ImportCallerContext): Promise<ImportResult> {
     let imported = 0;
     const errors: ImportValidationError[] = [];
 
     for (const row of validRows) {
       try {
         const teamIds: string[] = JSON.parse(row.data._resolved_team_ids);
-        const dailyHourLimit = row.data.daily_hour_limit !== ''
-          ? parseFloat(row.data.daily_hour_limit)
-          : undefined;
-        const weeklyHourLimit = row.data.weekly_hour_limit !== ''
-          ? parseFloat(row.data.weekly_hour_limit)
-          : undefined;
+        const dailyHourLimit =
+          row.data.daily_hour_limit !== '' ? parseFloat(row.data.daily_hour_limit) : undefined;
+        const weeklyHourLimit =
+          row.data.weekly_hour_limit !== '' ? parseFloat(row.data.weekly_hour_limit) : undefined;
 
         await this.projectsService.createForImport(
           ctx.orgId,
@@ -163,7 +170,11 @@ export class ProjectImportProcessor implements ImportProcessor {
       return errors;
     }
     if (data.name.length > 255) {
-      errors.push({ row: rowNumber, field: 'name', message: 'Name must be 255 characters or less' });
+      errors.push({
+        row: rowNumber,
+        field: 'name',
+        message: 'Name must be 255 characters or less',
+      });
       return errors;
     }
 
@@ -294,5 +305,4 @@ export class ProjectImportProcessor implements ImportProcessor {
 
     return ids;
   }
-
 }
