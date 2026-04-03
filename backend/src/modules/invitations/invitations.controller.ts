@@ -119,7 +119,7 @@ export class InvitationsController {
       invitedByName: invitation.invitedByName,
       status: invitation.status,
       expiresAt: invitation.expiresAt,
-      isExpired: invitation.status === 'sent' && new Date() > invitation.expiresAt,
+      isExpired: !['accepted', 'revoked'].includes(invitation.status) && new Date() > invitation.expiresAt,
       createdAt: invitation.createdAt,
       teamAssignments: invitation.teamAssignments.map((ta) => ({
         teamId: ta.teamId,
