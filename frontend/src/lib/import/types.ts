@@ -1,3 +1,5 @@
+export type ImportType = 'time-log' | 'team' | 'project' | 'invitation';
+
 export interface ImportValidationError {
   row: number;
   field: string;
