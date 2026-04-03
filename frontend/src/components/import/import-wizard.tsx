@@ -1,33 +1,25 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Upload, Download, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ImportPreviewTable } from './import-preview-table';
 import { useImportPreview } from '@/lib/import/use-import-preview';
 import { useImportExecute } from '@/lib/import/use-import-execute';
 import { useImportJob } from '@/lib/import/use-import-job';
 import { downloadTemplate } from '@/lib/import/import-api';
-import type { ImportPreviewResponse } from '@/lib/import/types';
-import { useQueryClient } from '@tanstack/react-query';
-import { timeLogsKeys } from '@/lib/time-logs/time-logs-keys';
 import { importKeys } from '@/lib/import/import-keys';
+import { useQueryClient } from '@tanstack/react-query';
+import type { ImportPreviewResponse } from '@/lib/import/types';
 
 type Step = 'upload' | 'preview' | 'importing' | 'done';
 
-interface ImportCsvDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface ImportWizardProps {
+  type: string;
 }
 
-export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
+export function ImportWizard({ type }: ImportWizardProps) {
   const [step, setStep] = useState<Step>('upload');
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -39,15 +31,14 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
   const importExecute = useImportExecute();
   const { data: jobData } = useImportJob(step === 'importing' ? jobId : null);
 
-  // Transition to done when job completes or fails
   useEffect(() => {
     if (step === 'importing' && jobData && (jobData.status === 'completed' || jobData.status === 'failed')) {
       setStep('done');
+      queryClient.invalidateQueries({ queryKey: importKeys.jobList(type) });
     }
-  }, [step, jobData]);
+  }, [step, jobData, queryClient, type]);
 
   const reset = () => {
-    // Clean up job polling query cache (#5)
     queryClient.removeQueries({ queryKey: importKeys.jobs() });
     setStep('upload');
     setPreview(null);
@@ -56,27 +47,16 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    // Prevent closing during import (#4)
-    if (!nextOpen && step === 'importing') return;
-    if (!nextOpen) reset();
-    onOpenChange(nextOpen);
-  };
-
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Reset input so re-selecting the same file triggers onChange (#2)
     if (fileInputRef.current) fileInputRef.current.value = '';
-
     setError(null);
 
     if (!file.name.endsWith('.csv')) {
       setError('Please select a CSV file.');
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       setError('File is too large. Maximum size is 5MB.');
       return;
@@ -84,7 +64,7 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
 
     const csvContent = await file.text();
     importPreview.mutate(
-      { type: 'time-log', csvContent },
+      { type, csvContent },
       {
         onSuccess: (data) => {
           setPreview(data);
@@ -100,7 +80,7 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
   const handleExecute = () => {
     if (!preview?.previewToken) return;
     importExecute.mutate(
-      { type: 'time-log', previewToken: preview.previewToken },
+      { type, previewToken: preview.previewToken },
       {
         onSuccess: (data) => {
           setJobId(data.jobId);
@@ -113,32 +93,26 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
     );
   };
 
-  const handleDone = () => {
-    queryClient.invalidateQueries({ queryKey: timeLogsKeys.all });
-    handleOpenChange(false);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="max-w-2xl"
-        // Prevent closing during import via overlay click or Escape (#4)
-        onInteractOutside={step === 'importing' ? (e) => e.preventDefault() : undefined}
-        onEscapeKeyDown={step === 'importing' ? (e) => e.preventDefault() : undefined}
-      >
-        <DialogHeader>
-          <DialogTitle>Import Time Logs</DialogTitle>
-          <DialogDescription>
-            Upload a CSV file to bulk import time log entries.
-          </DialogDescription>
-        </DialogHeader>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">Upload CSV</CardTitle>
+        <CardDescription>
+          {step === 'upload' && 'Select a CSV file to import time log entries.'}
+          {step === 'preview' && 'Review the rows below, then confirm the import.'}
+          {step === 'importing' && 'Your import is being processed...'}
+          {step === 'done' && (jobData?.status === 'completed' ? 'Import complete.' : 'Import failed.')}
+        </CardDescription>
+      </CardHeader>
 
+      <CardContent>
         {step === 'upload' && (
           <UploadStep
             fileInputRef={fileInputRef}
             onFileSelect={handleFileSelect}
             isPending={importPreview.isPending}
             error={error}
+            type={type}
           />
         )}
 
@@ -152,9 +126,7 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
           />
         )}
 
-        {step === 'importing' && (
-          <ImportingStep />
-        )}
+        {step === 'importing' && <ImportingStep />}
 
         {step === 'done' && jobData && (
           <DoneStep
@@ -162,11 +134,11 @@ export function ImportCsvDialog({ open, onOpenChange }: ImportCsvDialogProps) {
             imported={jobData.imported}
             totalRows={jobData.totalRows}
             errorCount={jobData.errors.length}
-            onDone={handleDone}
+            onReset={reset}
           />
         )}
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -175,18 +147,20 @@ function UploadStep({
   onFileSelect,
   isPending,
   error,
+  type,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   isPending: boolean;
   error: string | null;
+  type: string;
 }) {
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
-      await downloadTemplate('time-log');
+      await downloadTemplate(type);
     } finally {
       setDownloading(false);
     }
@@ -228,7 +202,7 @@ function UploadStep({
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <DialogFooter>
+      <div>
         <button
           type="button"
           onClick={handleDownload}
@@ -238,7 +212,7 @@ function UploadStep({
           <Download className="mr-1.5 h-4 w-4" />
           {downloading ? 'Downloading...' : 'Download CSV template'}
         </button>
-      </DialogFooter>
+      </div>
     </div>
   );
 }
@@ -270,27 +244,19 @@ function PreviewStep({
             {errorCount} {errorCount === 1 ? 'error' : 'errors'}
           </span>
         )}
-        <span className="text-muted-foreground">
-          {preview.totalRows} total
-        </span>
+        <span className="text-muted-foreground">{preview.totalRows} total</span>
       </div>
-      <ImportPreviewTable
-        validRows={preview.validRows}
-        errors={preview.errors}
-      />
+      <ImportPreviewTable validRows={preview.validRows} errors={preview.errors} />
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      <DialogFooter>
+      <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={onBack} disabled={isPending}>
           Back
         </Button>
-        <Button
-          onClick={onExecute}
-          disabled={isPending || validCount === 0}
-        >
+        <Button onClick={onExecute} disabled={isPending || validCount === 0}>
           {isPending ? (
             <>
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -300,7 +266,7 @@ function PreviewStep({
             `Import ${validCount} ${validCount === 1 ? 'row' : 'rows'}`
           )}
         </Button>
-      </DialogFooter>
+      </div>
     </div>
   );
 }
@@ -312,7 +278,7 @@ function ImportingStep() {
       <div className="text-center">
         <p className="font-medium">Importing time logs...</p>
         <p className="text-sm text-muted-foreground">
-          This may take a moment. Please don't close this dialog.
+          This may take a moment. Please don't close this page.
         </p>
       </div>
     </div>
@@ -324,13 +290,13 @@ function DoneStep({
   imported,
   totalRows,
   errorCount,
-  onDone,
+  onReset,
 }: {
   status: string;
   imported: number;
   totalRows: number;
   errorCount: number;
-  onDone: () => void;
+  onReset: () => void;
 }) {
   const isSuccess = status === 'completed';
 
@@ -358,9 +324,12 @@ function DoneStep({
           )}
         </div>
       </div>
-      <DialogFooter>
-        <Button onClick={onDone}>Done</Button>
-      </DialogFooter>
+      <div className="flex justify-center gap-3">
+        <Button variant="outline" asChild>
+          <Link to="/time-logs">View Time Logs</Link>
+        </Button>
+        <Button onClick={onReset}>Import Another</Button>
+      </div>
     </div>
   );
 }

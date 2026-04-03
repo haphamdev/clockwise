@@ -20,6 +20,7 @@ import { UserPreferencesPage } from '@/pages/user-preferences-page';
 import { ProjectsPage } from '@/pages/projects-page';
 import { ProjectDetailPage } from '@/pages/project-detail-page';
 import { TimeLogsPage } from '@/pages/time-logs-page';
+import { ImportPage } from '@/pages/import-page';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -54,6 +55,7 @@ export default function App() {
               >
                 <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
                 <Route path="/time-logs" element={<TimeLogsPage />} />
+                <Route path="/import" element={<ImportPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
                 <Route path="/reports" element={<PlaceholderPage title="Reports" />} />

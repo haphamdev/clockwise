@@ -6,6 +6,7 @@ import { UserNav } from '@/components/layout/user-nav';
 const navLinks = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Time Logs', href: '/time-logs' },
+  { label: 'Import', href: '/import' },
   { label: 'Projects', href: '/projects' },
   { label: 'Reports', href: '/reports' },
 ];

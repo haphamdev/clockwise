@@ -39,7 +39,7 @@ export function ImportPreviewTable({ validRows, errors }: ImportPreviewTableProp
   }
 
   return (
-    <div className="max-h-64 overflow-auto rounded-md border">
+    <div className="max-h-[32rem] overflow-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
