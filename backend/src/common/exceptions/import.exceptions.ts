@@ -53,3 +53,13 @@ export class ImportPreviewExpiredException extends AppException {
     );
   }
 }
+
+export class ImportAdminOnlyException extends AppException {
+  constructor(type: string) {
+    super(
+      ErrorCode.IMPORT.ADMIN_ONLY,
+      `Import type "${type}" requires admin access`,
+      HttpStatus.FORBIDDEN,
+    );
+  }
+}

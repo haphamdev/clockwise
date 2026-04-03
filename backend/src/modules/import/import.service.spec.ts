@@ -75,6 +75,59 @@ describe('ImportService', () => {
     service.registerProcessor(processor);
   });
 
+  describe('admin-only guard', () => {
+    let adminProcessor: jest.Mocked<ImportProcessor>;
+
+    beforeEach(() => {
+      adminProcessor = {
+        type: 'team',
+        adminOnly: true,
+        parseAndValidate: jest.fn(),
+        execute: jest.fn(),
+      };
+      service.registerProcessor(adminProcessor);
+    });
+
+    it('should throw 403 on preview when non-admin uses admin-only type', async () => {
+      await expect(
+        service.preview('team', 'csv content', makeCtx({ isAdmin: false })),
+      ).rejects.toThrow('requires admin access');
+    });
+
+    it('should allow admin to preview admin-only type', async () => {
+      adminProcessor.parseAndValidate.mockResolvedValue({
+        validRows: [], executableRows: [], errors: [], totalRows: 0,
+      });
+      await expect(
+        service.preview('team', 'csv content', makeCtx({ isAdmin: true })),
+      ).resolves.toBeDefined();
+    });
+
+    it('should throw 403 on execute when non-admin uses admin-only type', async () => {
+      const redisClient = await queue.client;
+      redisClient.getdel.mockResolvedValue(JSON.stringify({
+        type: 'team',
+        executableRows: [{ rowNumber: 1, data: {} }],
+        userId: 'user-1',
+        orgId: 'org-1',
+        isAdmin: false,
+      }));
+
+      await expect(
+        service.execute('team', 'token', makeCtx({ isAdmin: false })),
+      ).rejects.toThrow('requires admin access');
+    });
+
+    it('should not block non-admin-only types', async () => {
+      processor.parseAndValidate.mockResolvedValue({
+        validRows: [], executableRows: [], errors: [], totalRows: 0,
+      });
+      await expect(
+        service.preview('time-log', 'csv content', makeCtx({ isAdmin: false })),
+      ).resolves.toBeDefined();
+    });
+  });
+
   describe('execute', () => {
     beforeEach(async () => {
       const redisClient = await queue.client;

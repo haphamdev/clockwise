@@ -15,6 +15,7 @@ import {
   ImportJobNotFoundException,
   ImportNoValidRowsException,
   ImportPreviewExpiredException,
+  ImportAdminOnlyException,
 } from '../../common/exceptions/import.exceptions';
 import {
   IMPORT_QUEUE,
@@ -75,6 +76,9 @@ export class ImportService {
     ctx: ImportCallerContext,
   ): Promise<ImportPreviewResponse> {
     const processor = this.getProcessor(type);
+    if (processor.adminOnly && !ctx.isAdmin) {
+      throw new ImportAdminOnlyException(type);
+    }
     const result = await processor.parseAndValidate(csvContent, ctx);
 
     let previewToken: string | undefined;
@@ -103,7 +107,10 @@ export class ImportService {
       throw new ImportPreviewExpiredException();
     }
 
-    this.getProcessor(type);
+    const processor = this.getProcessor(type);
+    if (processor.adminOnly && !ctx.isAdmin) {
+      throw new ImportAdminOnlyException(type);
+    }
 
     if (cached.executableRows.length === 0) {
       throw new ImportNoValidRowsException();

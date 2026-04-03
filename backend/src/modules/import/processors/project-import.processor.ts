@@ -17,6 +17,7 @@ const VALID_STATUSES = ['active', 'archived'];
 @Injectable()
 export class ProjectImportProcessor implements ImportProcessor {
   readonly type = 'project';
+  readonly adminOnly = true;
 
   constructor(
     private readonly projectsService: ProjectsService,

@@ -33,6 +33,7 @@ export interface ImportCallerContext {
 
 export interface ImportProcessor {
   readonly type: string;
+  readonly adminOnly?: boolean;
   parseAndValidate(
     csvContent: string,
     ctx: ImportCallerContext,
