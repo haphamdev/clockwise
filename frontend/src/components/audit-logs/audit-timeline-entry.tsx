@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { formatAuditAction } from '@/lib/audit-logs/format-audit-action';
 import { computeMetadataDiff } from '@/lib/audit-logs/compute-metadata-diff';
 import { TimeDisplay } from '@/components/ui/time-display';
@@ -27,7 +28,12 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
       <div className="relative mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2 border-primary bg-background" />
 
       <div className="min-w-0 flex-1">
-        <p className="text-sm">{description}</p>
+        <p className="text-sm">
+          {description}
+          {entry.metadata.source === 'import' && (
+            <Badge variant="outline" className="ml-1.5 py-0">Imported</Badge>
+          )}
+        </p>
         <p className="text-xs text-muted-foreground">
           {entry.performedBy.name} &middot; <TimeDisplay value={entry.createdAt} mode="datetime" />
         </p>

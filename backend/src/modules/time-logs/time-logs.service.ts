@@ -124,7 +124,7 @@ export class TimeLogsService {
           hours: dto.hours,
           tasks: [task.label],
         },
-        source: 'csv_import',
+        source: 'import',
         ...(targetUserId !== performedBy && { onBehalfOf: targetUserId }),
       },
     });
