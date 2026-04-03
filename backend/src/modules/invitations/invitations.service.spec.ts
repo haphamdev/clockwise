@@ -1,4 +1,5 @@
 import { ConfigService } from '@nestjs/config';
+import { Queue } from 'bullmq';
 import { ErrorCode } from '../../common/exceptions/error-codes';
 import { InvitationsService } from './invitations.service';
 import { InvitationsRepository } from './invitations.repository';
@@ -7,6 +8,7 @@ import { TeamsService } from '../teams/teams.service';
 import { OrgService } from '../org/org.service';
 import { MailService } from '../mail/mail.service';
 import { InvitationEntity } from './entities/invitation.entity';
+import { InvitationEmailJobData } from './invitation-email.constants';
 
 function makeInvitation(overrides?: Partial<InvitationEntity>): InvitationEntity {
   return {
@@ -34,6 +36,7 @@ describe('InvitationsService', () => {
   let orgService: jest.Mocked<OrgService>;
   let mailService: jest.Mocked<MailService>;
   let configService: jest.Mocked<ConfigService>;
+  let emailQueue: jest.Mocked<Queue<InvitationEmailJobData>>;
 
   beforeEach(() => {
     repo = {
@@ -70,6 +73,10 @@ describe('InvitationsService', () => {
       get: jest.fn().mockReturnValue('http://localhost:5173'),
     } as unknown as jest.Mocked<ConfigService>;
 
+    emailQueue = {
+      add: jest.fn(),
+    } as unknown as jest.Mocked<Queue<InvitationEmailJobData>>;
+
     service = new InvitationsService(
       repo,
       usersService,
@@ -77,6 +84,7 @@ describe('InvitationsService', () => {
       orgService,
       mailService,
       configService,
+      emailQueue,
     );
   });
 
@@ -86,7 +94,7 @@ describe('InvitationsService', () => {
       teamAssignments: [{ teamId: 'team-1', role: 'member' as const }],
     };
 
-    it('should create invitation, pending user, and send email', async () => {
+    it('should create invitation, pending user, and queue email', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       repo.findActiveByEmail.mockResolvedValue(null);
       teamsService.validateTeamExists.mockResolvedValue(undefined);
@@ -94,14 +102,17 @@ describe('InvitationsService', () => {
       repo.create.mockResolvedValue(invitation);
 
       const res = await service.create('org-1', 'admin-1', createData);
-      expect(res.status).toBe('sent');
-      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'sent');
-      expect(usersService.createPendingUser).toHaveBeenCalledWith('org-1', 'new@example.com', 'admin-1');
-      expect(mailService.sendInvitationEmail).toHaveBeenCalledWith(
-        'new@example.com',
-        expect.stringContaining('/invite/'),
-        'Acme Corp',
+      expect(res.status).toBe('initiated');
+      expect(repo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ status: 'initiated', email: 'new@example.com', orgId: 'org-1' }),
       );
+      expect(usersService.createPendingUser).toHaveBeenCalledWith('org-1', 'new@example.com', 'admin-1');
+      expect(emailQueue.add).toHaveBeenCalledWith(
+        'send-invitation-email',
+        { invitationId: 'inv-1' },
+        expect.objectContaining({ removeOnComplete: { age: 3600 }, removeOnFail: { age: 7200 } }),
+      );
+      expect(mailService.sendInvitationEmail).not.toHaveBeenCalled();
     });
 
     it('should not create pending user if one already exists (re-invite after revoke)', async () => {
@@ -177,19 +188,6 @@ describe('InvitationsService', () => {
       expect(usersService.createPendingUser).not.toHaveBeenCalled();
     });
 
-    it('should set status to failed when email send fails', async () => {
-      usersService.findByEmail.mockResolvedValue(null);
-      repo.findActiveByEmail.mockResolvedValue(null);
-      teamsService.validateTeamExists.mockResolvedValue(undefined);
-      repo.create.mockResolvedValue(makeInvitation({ status: 'initiated' }));
-      mailService.sendInvitationEmail.mockRejectedValue(new Error('SMTP error'));
-
-      await expect(service.create('org-1', 'admin-1', createData)).rejects.toThrow(
-        expect.objectContaining({ code: ErrorCode.INVITATION.EMAIL_SEND_FAILED }),
-      );
-      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'failed');
-    });
-
     it('should throw INVALID_TEAM_ASSIGNMENT for bad team', async () => {
       usersService.findByEmail.mockResolvedValue(null);
       repo.findActiveByEmail.mockResolvedValue(null);
@@ -262,20 +260,26 @@ describe('InvitationsService', () => {
   });
 
   describe('resend', () => {
-    it('should resend with new token and expiry', async () => {
+    it('should resend with new token, set initiated atomically, and queue email', async () => {
       repo.findById.mockResolvedValue(makeInvitation());
-      const updated = makeInvitation({ token: 'new-token' });
+      const updated = makeInvitation({ token: 'new-token', status: 'initiated' });
       repo.updateTokenAndExpiry.mockResolvedValue(updated);
 
       const res = await service.resend('inv-1', 'org-1');
       expect(res.token).toBe('new-token');
-      expect(res.status).toBe('sent');
-      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'sent');
-      expect(mailService.sendInvitationEmail).toHaveBeenCalledWith(
-        'new@example.com',
-        expect.stringContaining('/invite/'),
-        'Acme Corp',
+      expect(res.status).toBe('initiated');
+      expect(repo.updateTokenAndExpiry).toHaveBeenCalledWith(
+        'inv-1',
+        expect.any(String),
+        expect.any(Date),
+        'initiated',
       );
+      expect(emailQueue.add).toHaveBeenCalledWith(
+        'send-invitation-email',
+        { invitationId: 'inv-1' },
+        expect.objectContaining({ removeOnComplete: { age: 3600 }, removeOnFail: { age: 7200 } }),
+      );
+      expect(mailService.sendInvitationEmail).not.toHaveBeenCalled();
     });
 
     it('should throw ALREADY_ACCEPTED', async () => {
@@ -283,6 +287,72 @@ describe('InvitationsService', () => {
 
       await expect(service.resend('inv-1', 'org-1')).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.INVITATION.ALREADY_ACCEPTED }),
+      );
+    });
+
+    it('should throw ALREADY_REVOKED', async () => {
+      repo.findById.mockResolvedValue(makeInvitation({ status: 'revoked' }));
+
+      await expect(service.resend('inv-1', 'org-1')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.ALREADY_REVOKED }),
+      );
+    });
+  });
+
+  describe('updateTeamAssignments', () => {
+    const newAssignments = [{ teamId: 'team-2', role: 'manager' as const }];
+
+    it('should update team assignments for non-expired invitation', async () => {
+      repo.findById.mockResolvedValue(makeInvitation());
+      teamsService.validateTeamExists.mockResolvedValue(undefined);
+      const updated = makeInvitation({ teamAssignments: [{ teamId: 'team-2', teamName: 'Design', role: 'manager' }] });
+      repo.updateTeamAssignments.mockResolvedValue(updated);
+
+      const res = await service.updateTeamAssignments('inv-1', 'org-1', newAssignments);
+      expect(res.teamAssignments[0].teamId).toBe('team-2');
+      expect(emailQueue.add).not.toHaveBeenCalled();
+    });
+
+    it('should renew token, set initiated atomically, and queue email for expired invitation', async () => {
+      repo.findById.mockResolvedValue(
+        makeInvitation({ expiresAt: new Date(Date.now() - 1000) }),
+      );
+      teamsService.validateTeamExists.mockResolvedValue(undefined);
+      const updated = makeInvitation({ status: 'initiated' });
+      repo.updateTeamAssignments.mockResolvedValue(updated);
+
+      const res = await service.updateTeamAssignments('inv-1', 'org-1', newAssignments);
+      expect(res.status).toBe('initiated');
+      expect(repo.updateTeamAssignments).toHaveBeenCalledWith(
+        'inv-1',
+        newAssignments,
+        expect.objectContaining({
+          token: expect.any(String),
+          expiresAt: expect.any(Date),
+          status: 'initiated',
+        }),
+      );
+      expect(emailQueue.add).toHaveBeenCalledWith(
+        'send-invitation-email',
+        { invitationId: 'inv-1' },
+        expect.objectContaining({ removeOnComplete: { age: 3600 }, removeOnFail: { age: 7200 } }),
+      );
+      expect(mailService.sendInvitationEmail).not.toHaveBeenCalled();
+    });
+
+    it('should throw ALREADY_ACCEPTED', async () => {
+      repo.findById.mockResolvedValue(makeInvitation({ status: 'accepted' }));
+
+      await expect(service.updateTeamAssignments('inv-1', 'org-1', newAssignments)).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.ALREADY_ACCEPTED }),
+      );
+    });
+
+    it('should throw ALREADY_REVOKED', async () => {
+      repo.findById.mockResolvedValue(makeInvitation({ status: 'revoked' }));
+
+      await expect(service.updateTeamAssignments('inv-1', 'org-1', newAssignments)).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.ALREADY_REVOKED }),
       );
     });
   });

@@ -134,6 +134,22 @@ export class InvitationsRepository {
   }
 
   /**
+   * Conditional status update (CAS). Only updates if current status matches expectedStatus.
+   * Returns true if the row was updated, false if the status had already changed.
+   */
+  async updateStatusIf(
+    id: string,
+    expectedStatus: InvitationEntity['status'],
+    newStatus: InvitationEntity['status'],
+  ): Promise<boolean> {
+    const result = await this.prisma.invitation.updateMany({
+      where: { id, status: expectedStatus },
+      data: { status: newStatus },
+    });
+    return result.count > 0;
+  }
+
+  /**
    * Marks invitation as accepted and creates TeamMember rows from team assignments.
    * Runs in a transaction to ensure atomicity.
    */
@@ -186,7 +202,7 @@ export class InvitationsRepository {
   async updateTeamAssignments(
     invitationId: string,
     teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
-    resend?: { token: string; expiresAt: Date },
+    resend?: { token: string; expiresAt: Date; status: InvitationEntity['status'] },
   ): Promise<InvitationEntity> {
     const invitation = await this.prisma.$transaction(async (tx) => {
       await tx.invitationTeamAssignment.deleteMany({ where: { invitationId } });
@@ -202,7 +218,7 @@ export class InvitationsRepository {
       if (resend) {
         await tx.invitation.update({
           where: { id: invitationId },
-          data: { token: resend.token, expiresAt: resend.expiresAt },
+          data: { token: resend.token, expiresAt: resend.expiresAt, status: resend.status },
         });
       }
 
@@ -218,10 +234,15 @@ export class InvitationsRepository {
     return this.toEntity(invitation as InvitationWithRelations);
   }
 
-  async updateTokenAndExpiry(id: string, token: string, expiresAt: Date): Promise<InvitationEntity> {
+  async updateTokenAndExpiry(
+    id: string,
+    token: string,
+    expiresAt: Date,
+    status?: InvitationEntity['status'],
+  ): Promise<InvitationEntity> {
     const invitation = await this.prisma.invitation.update({
       where: { id },
-      data: { token, expiresAt },
+      data: { token, expiresAt, ...(status && { status }) },
       include: INVITATION_INCLUDE,
     });
 

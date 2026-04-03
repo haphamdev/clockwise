@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import {
   InvitationNotFoundException,
   InvitationAlreadyAcceptedException,
@@ -9,7 +11,6 @@ import {
   InvitationEmailAlreadyInvitedException,
   InvitationEmailAlreadyRegisteredException,
   InvitationInvalidTeamAssignmentException,
-  InvitationEmailSendFailedException,
 } from '../../common/exceptions/invitation.exceptions';
 import { InvitationsRepository } from './invitations.repository';
 import { UsersService } from '../users/users.service';
@@ -17,6 +18,7 @@ import { TeamsService } from '../teams/teams.service';
 import { OrgService } from '../org/org.service';
 import { MailService } from '../mail/mail.service';
 import { InvitationEntity } from './entities/invitation.entity';
+import { INVITATION_EMAIL_QUEUE, InvitationEmailJobData } from './invitation-email.constants';
 
 const INVITE_EXPIRY_DAYS = 7;
 
@@ -29,6 +31,7 @@ export class InvitationsService {
     private readonly orgService: OrgService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    @InjectQueue(INVITATION_EMAIL_QUEUE) private readonly emailQueue: Queue<InvitationEmailJobData>,
   ) {}
 
   async create(
@@ -73,15 +76,9 @@ export class InvitationsService {
       teamAssignments: data.teamAssignments,
     });
 
-    try {
-      await this.sendInvitationEmail(orgId, invitation);
-    } catch {
-      await this.invitationsRepository.updateStatus(invitation.id, 'failed');
-      throw new InvitationEmailSendFailedException();
-    }
+    await this.queueInvitationEmail(invitation.id);
 
-    await this.invitationsRepository.updateStatus(invitation.id, 'sent');
-    return { ...invitation, status: 'sent' as const };
+    return invitation;
   }
 
   async findAll(
@@ -123,18 +120,12 @@ export class InvitationsService {
       invitationId,
       token,
       expiresAt,
+      'initiated',
     );
 
-    try {
-      await this.sendInvitationEmail(orgId, updated);
-    } catch {
-      await this.invitationsRepository.updateStatus(invitationId, 'failed');
-      throw new InvitationEmailSendFailedException();
-    }
+    await this.queueInvitationEmail(invitationId);
 
-    await this.invitationsRepository.updateStatus(invitationId, 'sent');
-
-    return { ...updated, status: 'sent' as const };
+    return updated;
   }
 
   async updateTeamAssignments(
@@ -163,18 +154,12 @@ export class InvitationsService {
       const updated = await this.invitationsRepository.updateTeamAssignments(
         invitationId,
         teamAssignments,
-        { token, expiresAt },
+        { token, expiresAt, status: 'initiated' },
       );
 
-      try {
-        await this.sendInvitationEmail(orgId, updated);
-      } catch {
-        await this.invitationsRepository.updateStatus(invitationId, 'failed');
-        throw new InvitationEmailSendFailedException();
-      }
+      await this.queueInvitationEmail(invitationId);
 
-      await this.invitationsRepository.updateStatus(invitationId, 'sent');
-      return { ...updated, status: 'sent' as const };
+      return updated;
     }
 
     return this.invitationsRepository.updateTeamAssignments(invitationId, teamAssignments);
@@ -253,10 +238,18 @@ export class InvitationsService {
     }
   }
 
-  private async sendInvitationEmail(orgId: string, invitation: InvitationEntity): Promise<void> {
+  async sendInvitationEmail(orgId: string, invitation: InvitationEntity): Promise<void> {
     const orgSettings = await this.orgService.getSettings(orgId);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
     const inviteUrl = `${frontendUrl}/invite/${invitation.token}`;
     await this.mailService.sendInvitationEmail(invitation.email, inviteUrl, orgSettings.orgName);
+  }
+
+  private async queueInvitationEmail(invitationId: string): Promise<void> {
+    await this.emailQueue.add('send-invitation-email', { invitationId }, {
+      attempts: 1,
+      removeOnComplete: { age: 3600 },
+      removeOnFail: { age: 7200 },
+    });
   }
 }

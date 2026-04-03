@@ -67,7 +67,7 @@ export function getInvitationsColumns(
     {
       accessorKey: 'createdAt',
       header: 'Invited At',
-      cell: ({ row }) => <TimeDisplay value={row.original.createdAt} mode='datetime' />,
+      cell: ({ row }) => <TimeDisplay value={row.original.createdAt} mode="datetime" />,
     },
     {
       id: 'actions',
