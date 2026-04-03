@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/ui/page-header';
@@ -65,10 +66,18 @@ export function InvitationsPage() {
         title="Invitations"
         description="Manage invitations."
         actions={
-          <Button onClick={() => setInviteOpen(true)}>
-            <Mail className="mr-1.5 h-4 w-4" />
-            Invite User
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/import?type=invitation">
+                <Upload className="mr-1.5 h-4 w-4" />
+                Import CSV
+              </Link>
+            </Button>
+            <Button onClick={() => setInviteOpen(true)}>
+              <Mail className="mr-1.5 h-4 w-4" />
+              Invite User
+            </Button>
+          </div>
         }
       />
 

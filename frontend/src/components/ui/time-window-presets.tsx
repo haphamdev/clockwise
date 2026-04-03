@@ -28,14 +28,13 @@ interface TimeWindowPresetsProps {
   onChange: (window: TimeWindow) => void;
 }
 
-function isActivePreset(preset: TimeWindowPreset, value: TimeWindow, today: Date) {
-  const resolved = resolvePreset(preset, today);
-  return resolved.dateFrom === value.dateFrom && resolved.dateTo === value.dateTo;
+function isActivePreset(preset: TimeWindowPreset, value: TimeWindow) {
+  return value.preset === preset;
 }
 
 export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
   const today = new Date();
-  const detected = isPresetMatch(value, today) ? null : detectRolling(value, today);
+  const detected = isPresetMatch(value) ? null : detectRolling(value, today);
   const [rollingN, setRollingN] = useState(detected ? String(detected.n) : '7');
   const [rollingUnit, setRollingUnit] = useState<RollingUnit>(detected?.unit ?? 'days');
 
@@ -57,7 +56,7 @@ export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
         {ALL_PRESETS.map((preset) => (
           <Button
             key={preset}
-            variant={isActivePreset(preset, value, today) ? 'secondary' : 'ghost'}
+            variant={isActivePreset(preset, value) ? 'secondary' : 'ghost'}
             size="sm"
             className="justify-start text-xs"
             onClick={() => handlePresetClick(preset)}

@@ -18,6 +18,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('today', today)).toEqual({
       dateFrom: '2025-03-19',
       dateTo: '2025-03-19',
+      preset: 'today',
     });
   });
 
@@ -25,6 +26,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('yesterday', today)).toEqual({
       dateFrom: '2025-03-18',
       dateTo: '2025-03-18',
+      preset: 'yesterday',
     });
   });
 
@@ -32,6 +34,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('this-week', today)).toEqual({
       dateFrom: '2025-03-17', // Monday
       dateTo: '2025-03-19',
+      preset: 'this-week',
     });
   });
 
@@ -39,6 +42,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('last-week', today)).toEqual({
       dateFrom: '2025-03-10', // Monday
       dateTo: '2025-03-16', // Sunday
+      preset: 'last-week',
     });
   });
 
@@ -46,6 +50,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('this-month', today)).toEqual({
       dateFrom: '2025-03-01',
       dateTo: '2025-03-19',
+      preset: 'this-month',
     });
   });
 
@@ -53,6 +58,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('last-month', today)).toEqual({
       dateFrom: '2025-02-01',
       dateTo: '2025-02-28',
+      preset: 'last-month',
     });
   });
 
@@ -60,6 +66,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('this-quarter', today)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-03-19',
+      preset: 'this-quarter',
     });
   });
 
@@ -67,6 +74,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('last-quarter', today)).toEqual({
       dateFrom: '2024-10-01',
       dateTo: '2024-12-31',
+      preset: 'last-quarter',
     });
   });
 
@@ -75,6 +83,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('last-week', monday)).toEqual({
       dateFrom: '2025-03-10',
       dateTo: '2025-03-16',
+      preset: 'last-week',
     });
   });
 
@@ -83,6 +92,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('this-week', monday)).toEqual({
       dateFrom: '2025-03-17',
       dateTo: '2025-03-17',
+      preset: 'this-week',
     });
   });
 
@@ -91,6 +101,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('last-quarter', apr1)).toEqual({
       dateFrom: '2025-01-01',
       dateTo: '2025-03-31',
+      preset: 'last-quarter',
     });
   });
 
@@ -99,6 +110,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('last-quarter', aug15)).toEqual({
       dateFrom: '2025-04-01',
       dateTo: '2025-06-30',
+      preset: 'last-quarter',
     });
   });
 
@@ -107,6 +119,7 @@ describe('resolvePreset', () => {
     expect(resolvePreset('this-month', mar1)).toEqual({
       dateFrom: '2025-03-01',
       dateTo: '2025-03-01',
+      preset: 'this-month',
     });
   });
 });
@@ -155,65 +168,64 @@ describe('defaultTimeWindow', () => {
 describe('formatTimeWindowLabel', () => {
   it('detects "Today" preset', () => {
     const w = resolvePreset('today', today);
-    expect(formatTimeWindowLabel(w, today)).toBe('Today');
+    expect(formatTimeWindowLabel(w)).toBe('Today');
   });
 
   it('detects "This week" preset', () => {
     const w = resolvePreset('this-week', today);
-    expect(formatTimeWindowLabel(w, today)).toBe('This week');
+    expect(formatTimeWindowLabel(w)).toBe('This week');
   });
 
   it('detects "Last quarter" preset', () => {
     const w = resolvePreset('last-quarter', today);
-    expect(formatTimeWindowLabel(w, today)).toBe('Last quarter');
+    expect(formatTimeWindowLabel(w)).toBe('Last quarter');
   });
 
   it('formats single-day non-preset range', () => {
     expect(
-      formatTimeWindowLabel({ dateFrom: '2025-01-15', dateTo: '2025-01-15' }, today),
+      formatTimeWindowLabel({ dateFrom: '2025-01-15', dateTo: '2025-01-15' }),
     ).toBe('Jan 15, 2025');
   });
 
   it('formats same-year range', () => {
     expect(
-      formatTimeWindowLabel({ dateFrom: '2025-02-01', dateTo: '2025-03-15' }, today),
+      formatTimeWindowLabel({ dateFrom: '2025-02-01', dateTo: '2025-03-15' }),
     ).toBe('Feb 1 – Mar 15, 2025');
   });
 
   it('formats cross-year range', () => {
     expect(
-      formatTimeWindowLabel({ dateFrom: '2024-12-01', dateTo: '2025-01-15' }, today),
+      formatTimeWindowLabel({ dateFrom: '2024-12-01', dateTo: '2025-01-15' }),
     ).toBe('Dec 1, 2024 – Jan 15, 2025');
   });
 
   it('formats default 30-day window as date range (not a preset)', () => {
     const w = defaultTimeWindow(today);
-    const label = formatTimeWindowLabel(w, today);
+    const label = formatTimeWindowLabel(w);
     // Last 30 days doesn't match any preset → falls back to range format
     expect(label).toBe('Feb 17 – Mar 19, 2025');
   });
 
-  it('this-month on the 1st shows "Today" (earlier preset wins)', () => {
+  it('this-month on the 1st shows "This month" (preset tag disambiguates)', () => {
     const mar1 = new Date(2025, 2, 1);
     const w = resolvePreset('this-month', mar1);
-    // today and this-month resolve to same range; "today" is first in list
-    expect(formatTimeWindowLabel(w, mar1)).toBe('Today');
+    expect(formatTimeWindowLabel(w)).toBe('This month');
   });
 });
 
 describe('isPresetMatch', () => {
   it('returns true for a matching preset', () => {
     const w = resolvePreset('this-week', today);
-    expect(isPresetMatch(w, today)).toBe(true);
+    expect(isPresetMatch(w)).toBe(true);
   });
 
   it('returns false for a custom range', () => {
-    expect(isPresetMatch({ dateFrom: '2025-02-01', dateTo: '2025-03-15' }, today)).toBe(false);
+    expect(isPresetMatch({ dateFrom: '2025-02-01', dateTo: '2025-03-15' })).toBe(false);
   });
 
   it('returns false for a rolling window that is not a preset', () => {
     const w = resolveRolling(7, 'days', today);
-    expect(isPresetMatch(w, today)).toBe(false);
+    expect(isPresetMatch(w)).toBe(false);
   });
 });
 

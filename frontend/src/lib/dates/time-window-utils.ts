@@ -16,6 +16,7 @@ import {
 export interface TimeWindow {
   dateFrom: string; // YYYY-MM-DD
   dateTo: string; // YYYY-MM-DD
+  preset?: TimeWindowPreset;
 }
 
 export type TimeWindowPreset =
@@ -50,36 +51,39 @@ export function resolvePreset(
 ): TimeWindow {
   switch (preset) {
     case 'today':
-      return { dateFrom: formatDateISO(today), dateTo: formatDateISO(today) };
+      return { dateFrom: formatDateISO(today), dateTo: formatDateISO(today), preset };
     case 'yesterday': {
       const d = subDays(today, 1);
-      return { dateFrom: formatDateISO(d), dateTo: formatDateISO(d) };
+      return { dateFrom: formatDateISO(d), dateTo: formatDateISO(d), preset };
     }
     case 'this-week':
-      return { dateFrom: formatDateISO(startOfWeek(today, weekOpts)), dateTo: formatDateISO(today) };
+      return { dateFrom: formatDateISO(startOfWeek(today, weekOpts)), dateTo: formatDateISO(today), preset };
     case 'last-week': {
       const prev = subWeeks(today, 1);
       return {
         dateFrom: formatDateISO(startOfWeek(prev, weekOpts)),
         dateTo: formatDateISO(endOfWeek(prev, weekOpts)),
+        preset,
       };
     }
     case 'this-month':
-      return { dateFrom: formatDateISO(startOfMonth(today)), dateTo: formatDateISO(today) };
+      return { dateFrom: formatDateISO(startOfMonth(today)), dateTo: formatDateISO(today), preset };
     case 'last-month': {
       const prev = subMonths(today, 1);
       return {
         dateFrom: formatDateISO(startOfMonth(prev)),
         dateTo: formatDateISO(endOfMonth(prev)),
+        preset,
       };
     }
     case 'this-quarter':
-      return { dateFrom: formatDateISO(startOfQuarter(today)), dateTo: formatDateISO(today) };
+      return { dateFrom: formatDateISO(startOfQuarter(today)), dateTo: formatDateISO(today), preset };
     case 'last-quarter': {
       const prev = subQuarters(today, 1);
       return {
         dateFrom: formatDateISO(startOfQuarter(prev)),
         dateTo: formatDateISO(endOfQuarter(prev)),
+        preset,
       };
     }
   }
@@ -113,11 +117,8 @@ export function resolveRolling(
   return { dateFrom: formatDateISO(sub(today, n)), dateTo: formatDateISO(today) };
 }
 
-export function isPresetMatch(window: TimeWindow, today = new Date()): boolean {
-  return ALL_PRESETS.some((preset) => {
-    const resolved = resolvePreset(preset, today);
-    return resolved.dateFrom === window.dateFrom && resolved.dateTo === window.dateTo;
-  });
+export function isPresetMatch(window: TimeWindow): boolean {
+  return window.preset !== undefined;
 }
 
 export function detectRolling(
@@ -155,15 +156,9 @@ export function defaultTimeWindow(today = new Date()): TimeWindow {
   return resolveRolling(30, 'days', today);
 }
 
-export function formatTimeWindowLabel(
-  window: TimeWindow,
-  today = new Date(),
-): string {
-  for (const preset of ALL_PRESETS) {
-    const resolved = resolvePreset(preset, today);
-    if (resolved.dateFrom === window.dateFrom && resolved.dateTo === window.dateTo) {
-      return PRESET_LABELS[preset];
-    }
+export function formatTimeWindowLabel(window: TimeWindow): string {
+  if (window.preset) {
+    return PRESET_LABELS[window.preset];
   }
 
   const from = parseDateISO(window.dateFrom);

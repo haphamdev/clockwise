@@ -10,6 +10,7 @@ import {
   isPresetMatch,
   detectRolling,
   type TimeWindow,
+  type TimeWindowPreset,
 } from '@/lib/dates/time-window-utils';
 
 interface TimeWindowPickerProps {
@@ -26,21 +27,31 @@ export function TimeWindowPicker({
   className,
 }: TimeWindowPickerProps) {
   const [open, setOpen] = useState(false);
+  const [activePreset, setActivePreset] = useState<TimeWindowPreset | null>(
+    value.preset ?? null,
+  );
 
   const handleChange = (window: TimeWindow) => {
+    setActivePreset(window.preset ?? null);
     onChange(window);
     setOpen(false);
   };
 
+  const enriched: TimeWindow = activePreset
+    ? { ...value, preset: activePreset }
+    : value;
+
   const defaultTab =
-    isPresetMatch(value) || detectRolling(value) !== null ? 'presets' : 'custom';
+    isPresetMatch(enriched) || detectRolling(enriched) !== null
+      ? 'presets'
+      : 'custom';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button variant="outline" className={className}>
           <CalendarDays className="mr-1.5 h-4 w-4" />
-          {formatTimeWindowLabel(value)}
+          {formatTimeWindowLabel(enriched)}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="min-w-[36rem] w-auto p-0">
@@ -50,11 +61,11 @@ export function TimeWindowPicker({
             <TabsTrigger value="custom" className="flex-1">Custom Range</TabsTrigger>
           </TabsList>
           <TabsContent value="presets" className="mt-0">
-            <TimeWindowPresets value={value} onChange={handleChange} />
+            <TimeWindowPresets value={enriched} onChange={handleChange} />
           </TabsContent>
           <TabsContent value="custom" className="mt-0">
             <TimeWindowCustom
-              value={value}
+              value={enriched}
               onChange={handleChange}
               allowFutureDates={allowFutureDates}
             />
