@@ -29,8 +29,8 @@ function makeTimeLog(overrides?: Partial<TimeLogEntity>): TimeLogEntity {
 function makeTimeLogListItem(overrides?: Partial<TimeLogListItem>): TimeLogListItem {
   return {
     ...makeTimeLog(),
-    user: { id: 'user-1', name: 'Test User' },
-    project: { id: 'project-1', name: 'Test Project' },
+    user: { id: 'user-1', name: 'Test User', email: 'test@example.com', status: 'active' },
+    project: { id: 'project-1', name: 'Test Project', description: null, status: 'active' },
     tasks: [{ id: 'task-1', label: 'JIRA-123', description: null }],
     ...overrides,
   };
