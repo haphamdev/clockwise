@@ -6,8 +6,10 @@ import { ImportController } from './import.controller';
 import { ImportJobProcessor } from './import-job.processor';
 import { ImportJobRepository } from './import-job.repository';
 import { TimeLogImportProcessor } from './processors/time-log-import.processor';
+import { TeamImportProcessor } from './processors/team-import.processor';
 import { ProjectsModule } from '../projects/projects.module';
 import { UsersModule } from '../users/users.module';
+import { TeamsModule } from '../teams/teams.module';
 import { TimeLogsModule } from '../time-logs/time-logs.module';
 
 @Module({
@@ -15,19 +17,22 @@ import { TimeLogsModule } from '../time-logs/time-logs.module';
     BullModule.registerQueue({ name: IMPORT_QUEUE }),
     ProjectsModule,
     UsersModule,
+    TeamsModule,
     TimeLogsModule,
   ],
   controllers: [ImportController],
-  providers: [ImportService, ImportJobProcessor, ImportJobRepository, TimeLogImportProcessor],
+  providers: [ImportService, ImportJobProcessor, ImportJobRepository, TimeLogImportProcessor, TeamImportProcessor],
   exports: [ImportService],
 })
 export class ImportModule implements OnModuleInit {
   constructor(
     private readonly importService: ImportService,
     private readonly timeLogImportProcessor: TimeLogImportProcessor,
+    private readonly teamImportProcessor: TeamImportProcessor,
   ) {}
 
   onModuleInit(): void {
     this.importService.registerProcessor(this.timeLogImportProcessor);
+    this.importService.registerProcessor(this.teamImportProcessor);
   }
 }

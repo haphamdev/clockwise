@@ -224,6 +224,34 @@ export class TeamsService {
     ]);
   }
 
+  async findByNameInOrg(name: string, orgId: string): Promise<TeamEntity | null> {
+    return this.teamsRepository.findByNameInOrg(name, orgId);
+  }
+
+  async createForImport(
+    orgId: string,
+    data: { name: string; description?: string; members: Array<{ userId: string; role: 'manager' | 'member' }> },
+    performedBy: string,
+  ): Promise<TeamEntity> {
+    const team = await this.teamsRepository.createWithMembers(
+      { orgId, name: data.name, description: data.description },
+      data.members,
+    );
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'team',
+      entityId: team.id,
+      action: 'created',
+      performedBy,
+      metadata: {
+        after: { name: team.name, description: team.description },
+        members: data.members,
+        source: 'import',
+      },
+    });
+    return team;
+  }
+
   /**
    * Lightweight check that a team exists, belongs to the org, and is not archived.
    * Used by InvitationsService to validate team assignments without loading members.

@@ -1,0 +1,36 @@
+info:
+  name: preview-team-import
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: http://localhost:3000/api/v1/import/preview
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "type": "team",
+        "csvContent": "name,description,members,managers\nEngineering,The eng team,\"alice@example.com, bob@example.com\",carol@example.com\nDesign,The design team,,dave@example.com"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.totalRows
+      operator: isNumber
+    - expression: res.body.validRows
+      operator: isArray
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

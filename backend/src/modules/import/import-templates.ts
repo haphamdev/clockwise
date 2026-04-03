@@ -12,4 +12,12 @@ export const CSV_TEMPLATES: Record<string, CsvTemplate> = {
       '',
     ].join('\n'),
   },
+  'team': {
+    filename: 'team-import-template.csv',
+    content: [
+      'name,description,members,managers',
+      'Engineering,The engineering team,"alice@example.com, bob@example.com",carol@example.com',
+      '',
+    ].join('\n'),
+  },
 };

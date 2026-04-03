@@ -89,6 +89,35 @@ export class TeamsRepository {
     return team ? this.toEntity(team) : null;
   }
 
+  async findByNameInOrg(name: string, orgId: string): Promise<TeamEntity | null> {
+    const team = await this.prisma.team.findFirst({
+      where: { orgId, name: { equals: name, mode: 'insensitive' } },
+    });
+    return team ? this.toEntity(team) : null;
+  }
+
+  async createWithMembers(
+    data: { orgId: string; name: string; description?: string },
+    members: Array<{ userId: string; role: 'manager' | 'member' }>,
+  ): Promise<TeamEntity> {
+    try {
+      const team = await this.prisma.team.create({
+        data: {
+          ...data,
+          members: {
+            create: members.map((m) => ({ userId: m.userId, role: m.role })),
+          },
+        },
+      });
+      return this.toEntity(team);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new TeamAlreadyExistsException();
+      }
+      throw error;
+    }
+  }
+
   async create(data: { orgId: string; name: string; description?: string }): Promise<TeamEntity> {
     try {
       const team = await this.prisma.team.create({ data });

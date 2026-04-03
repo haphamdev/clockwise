@@ -7,6 +7,7 @@ import {
   ImportResult,
   ImportCallerContext,
 } from '../interfaces/import-processor.interface';
+import { parseCsv, validateHeaders } from '../utils/csv-parser';
 import { ProjectsService } from '../../projects/projects.service';
 import { UsersService } from '../../users/users.service';
 import { TimeLogsService } from '../../time-logs/time-logs.service';
@@ -33,7 +34,7 @@ export class TimeLogImportProcessor implements ImportProcessor {
       return { validRows: [], executableRows: [], errors: [], totalRows: 0 };
     }
 
-    const headerResult = validateHeaders(rows[0]);
+    const headerResult = validateHeaders(rows[0], EXPECTED_HEADERS);
     if ('error' in headerResult) {
       return { validRows: [], executableRows: [], errors: [headerResult.error], totalRows: 0 };
     }
@@ -273,91 +274,3 @@ export class TimeLogImportProcessor implements ImportProcessor {
   }
 }
 
-/** Parse CSV content handling quoted fields with commas, escaped quotes, and newlines per RFC 4180. */
-function parseCsv(content: string): string[][] {
-  const rows: string[][] = [];
-  let current = '';
-  let inQuotes = false;
-  let fields: string[] = [];
-  let i = 0;
-
-  while (i < content.length) {
-    const ch = content[i];
-
-    if (inQuotes) {
-      if (ch === '"') {
-        if (i + 1 < content.length && content[i + 1] === '"') {
-          current += '"';
-          i += 2;
-        } else {
-          inQuotes = false;
-          i++;
-        }
-      } else {
-        current += ch;
-        i++;
-      }
-    } else {
-      if (ch === '"') {
-        inQuotes = true;
-        i++;
-      } else if (ch === ',') {
-        fields.push(current);
-        current = '';
-        i++;
-      } else if (ch === '\r' || ch === '\n') {
-        fields.push(current);
-        current = '';
-        rows.push(fields);
-        fields = [];
-        if (ch === '\r' && i + 1 < content.length && content[i + 1] === '\n') {
-          i += 2;
-        } else {
-          i++;
-        }
-      } else {
-        current += ch;
-        i++;
-      }
-    }
-  }
-
-  // Push last field/row if content doesn't end with newline
-  if (fields.length > 0 || current.length > 0) {
-    fields.push(current);
-    rows.push(fields);
-  }
-
-  // Filter out completely empty trailing rows
-  while (rows.length > 0) {
-    const last = rows[rows.length - 1];
-    if (last.length === 1 && last[0].trim() === '') {
-      rows.pop();
-    } else {
-      break;
-    }
-  }
-
-  return rows;
-}
-
-function validateHeaders(
-  headerRow: string[],
-): { columnMap: Map<string, number> } | { error: ImportValidationError } {
-  const normalized = headerRow.map((h) => h.trim().toLowerCase());
-  const missing = EXPECTED_HEADERS.filter((h) => !normalized.includes(h));
-  if (missing.length > 0) {
-    return {
-      error: {
-        row: 1,
-        field: '',
-        message: `CSV headers must include: ${EXPECTED_HEADERS.join(', ')}. Missing: ${missing.join(', ')}`,
-      },
-    };
-  }
-  const columnMap = new Map<string, number>();
-  for (const header of EXPECTED_HEADERS) {
-    columnMap.set(header, normalized.indexOf(header));
-  }
-  return { columnMap };
-}
