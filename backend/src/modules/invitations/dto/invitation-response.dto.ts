@@ -21,13 +21,13 @@ export class InvitationResponseDto {
   @ApiProperty()
   invitedByName: string;
 
-  @ApiProperty({ enum: ['pending', 'accepted', 'revoked'] })
+  @ApiProperty({ enum: ['initiated', 'sending', 'sent', 'accepted', 'revoked', 'failed'] })
   status: string;
 
   @ApiProperty()
   expiresAt: Date;
 
-  @ApiProperty({ description: 'True if status is pending but expiresAt is in the past' })
+  @ApiProperty({ description: 'True if status is sent but expiresAt is in the past' })
   isExpired: boolean;
 
   @ApiProperty()

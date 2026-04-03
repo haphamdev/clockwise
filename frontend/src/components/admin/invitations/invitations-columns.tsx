@@ -44,15 +44,19 @@ export function getInvitationsColumns(
       cell: ({ row }) => {
         const inv = row.original;
         const statusLabel =
-          inv.status === 'pending'
+          inv.status === 'sent'
             ? inv.isExpired
               ? 'expired'
-              : 'pending'
-            : inv.status === 'accepted'
-              ? 'accepted'
-              : inv.status === 'failed'
-                ? 'failed'
-                : 'revoked';
+              : 'sent'
+            : inv.status === 'initiated'
+              ? 'initiated'
+              : inv.status === 'sending'
+                ? 'sending'
+                : inv.status === 'accepted'
+                  ? 'accepted'
+                  : inv.status === 'failed'
+                    ? 'failed'
+                    : 'revoked';
         return <StatusBadge status={statusLabel} />;
       },
     },
@@ -62,8 +66,8 @@ export function getInvitationsColumns(
     },
     {
       accessorKey: 'createdAt',
-      header: 'Date',
-      cell: ({ row }) => <TimeDisplay value={row.original.createdAt} />,
+      header: 'Invited At',
+      cell: ({ row }) => <TimeDisplay value={row.original.createdAt} mode='datetime' />,
     },
     {
       id: 'actions',
@@ -91,7 +95,21 @@ export function getInvitationsColumns(
             </DropdownMenu>
           );
         }
-        if (inv.status !== 'pending') return null;
+        if (inv.status === 'initiated' || inv.status === 'sending') {
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        }
+        if (inv.status !== 'sent') return null;
         if (inv.isExpired) {
           return (
             <DropdownMenu>

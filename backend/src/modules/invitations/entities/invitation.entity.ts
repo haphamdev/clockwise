@@ -12,7 +12,7 @@ export interface InvitationEntity {
   invitedByName: string;
   token: string;
   expiresAt: Date;
-  status: 'pending' | 'accepted' | 'revoked' | 'failed';
+  status: 'initiated' | 'sending' | 'sent' | 'accepted' | 'revoked' | 'failed';
   createdAt: Date;
   teamAssignments: InvitationTeamAssignmentEntity[];
 }

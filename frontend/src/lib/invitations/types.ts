@@ -1,6 +1,6 @@
 import type { PaginationParams } from '@/lib/types';
 
-export type InvitationStatus = 'pending' | 'accepted' | 'revoked' | 'failed';
+export type InvitationStatus = 'initiated' | 'sending' | 'sent' | 'accepted' | 'revoked' | 'failed';
 
 export interface InvitationTeamAssignment {
   teamId: string;

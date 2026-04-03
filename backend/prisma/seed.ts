@@ -326,7 +326,7 @@ const REVOKED_INVITATIONS = [
   { email: 'taylor.jones@clockwise.test', daysAgo: 25 },
 ];
 
-// Expired invitations — status is still 'pending' but expiresAt is in the past
+// Expired invitations — status is 'sent' but expiresAt is in the past
 const EXPIRED_INVITATIONS = [
   { email: 'nina.kowalski@clockwise.test', invitedDaysAgo: 20, expiredDaysAgo: 13 },
   { email: 'lucas.dubois@clockwise.test', invitedDaysAgo: 15, expiredDaysAgo: 8 },
@@ -640,7 +640,7 @@ async function seedTestData(adminUserId: string) {
     }
   }
 
-  // Pending invitations — for pending users (valid tokens, future expiry)
+  // Sent invitations — for pending users (valid tokens, future expiry)
   for (const u of USERS.filter((u) => u.status === 'pending')) {
     invCounter++;
     const invId = uid('80000000', invCounter);
@@ -652,9 +652,9 @@ async function seedTestData(adminUserId: string) {
         orgId: DEFAULT_ORG_ID,
         email: u.email,
         invitedBy: adminUserId,
-        token: `pending-token-${u.index}-${randomToken().slice(0, 16)}`,
+        token: `sent-token-${u.index}-${randomToken().slice(0, 16)}`,
         expiresAt: daysAgo(-7), // expires 7 days from now (in the future)
-        status: 'pending',
+        status: 'sent',
         createdAt: daysAgo(u.joinedDaysAgo),
       },
     });
@@ -718,7 +718,7 @@ async function seedTestData(adminUserId: string) {
     });
   }
 
-  // Expired invitations — pending but expiresAt in the past
+  // Expired invitations — sent but expiresAt in the past
   for (let i = 0; i < EXPIRED_INVITATIONS.length; i++) {
     invCounter++;
     const ei = EXPIRED_INVITATIONS[i];
@@ -733,7 +733,7 @@ async function seedTestData(adminUserId: string) {
         invitedBy: adminUserId,
         token: `expired-token-${i}-${randomToken().slice(0, 16)}`,
         expiresAt: daysAgo(ei.expiredDaysAgo),
-        status: 'pending',
+        status: 'sent',
         createdAt: daysAgo(ei.invitedDaysAgo),
       },
     });

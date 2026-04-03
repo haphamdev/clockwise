@@ -17,7 +17,7 @@ function makeInvitation(overrides?: Partial<InvitationEntity>): InvitationEntity
     invitedByName: 'Admin',
     token: 'abc123',
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    status: 'pending',
+    status: 'sent',
     createdAt: new Date(),
     teamAssignments: [
       { teamId: 'team-1', teamName: 'Engineering', role: 'member' },
@@ -41,11 +41,12 @@ describe('InvitationsService', () => {
       findAll: jest.fn(),
       findById: jest.fn(),
       findByToken: jest.fn(),
-      findPendingByEmail: jest.fn(),
-      findPendingByEmailAnyOrg: jest.fn(),
+      findActiveByEmail: jest.fn(),
+      findActiveByEmailAnyOrg: jest.fn(),
       updateStatus: jest.fn(),
       acceptInvitation: jest.fn(),
       updateTokenAndExpiry: jest.fn(),
+      updateTeamAssignments: jest.fn(),
     } as unknown as jest.Mocked<InvitationsRepository>;
 
     usersService = {
@@ -87,13 +88,14 @@ describe('InvitationsService', () => {
 
     it('should create invitation, pending user, and send email', async () => {
       usersService.findByEmail.mockResolvedValue(null);
-      repo.findPendingByEmail.mockResolvedValue(null);
+      repo.findActiveByEmail.mockResolvedValue(null);
       teamsService.validateTeamExists.mockResolvedValue(undefined);
-      const invitation = makeInvitation();
+      const invitation = makeInvitation({ status: 'initiated' });
       repo.create.mockResolvedValue(invitation);
 
       const res = await service.create('org-1', 'admin-1', createData);
-      expect(res).toEqual(invitation);
+      expect(res.status).toBe('sent');
+      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'sent');
       expect(usersService.createPendingUser).toHaveBeenCalledWith('org-1', 'new@example.com', 'admin-1');
       expect(mailService.sendInvitationEmail).toHaveBeenCalledWith(
         'new@example.com',
@@ -115,7 +117,7 @@ describe('InvitationsService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      repo.findPendingByEmail.mockResolvedValue(null);
+      repo.findActiveByEmail.mockResolvedValue(null);
       teamsService.validateTeamExists.mockResolvedValue(undefined);
       repo.create.mockResolvedValue(makeInvitation());
 
@@ -142,9 +144,9 @@ describe('InvitationsService', () => {
       );
     });
 
-    it('should throw EMAIL_ALREADY_INVITED for pending invitation', async () => {
+    it('should throw EMAIL_ALREADY_INVITED for active invitation', async () => {
       usersService.findByEmail.mockResolvedValue(null);
-      repo.findPendingByEmail.mockResolvedValue(makeInvitation());
+      repo.findActiveByEmail.mockResolvedValue(makeInvitation());
 
       await expect(service.create('org-1', 'admin-1', createData)).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.INVITATION.EMAIL_ALREADY_INVITED }),
@@ -165,8 +167,8 @@ describe('InvitationsService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      // No active (non-expired) pending invitation found
-      repo.findPendingByEmail.mockResolvedValue(null);
+      // No active (non-expired) invitation found
+      repo.findActiveByEmail.mockResolvedValue(null);
       teamsService.validateTeamExists.mockResolvedValue(undefined);
       repo.create.mockResolvedValue(makeInvitation());
 
@@ -175,9 +177,22 @@ describe('InvitationsService', () => {
       expect(usersService.createPendingUser).not.toHaveBeenCalled();
     });
 
+    it('should set status to failed when email send fails', async () => {
+      usersService.findByEmail.mockResolvedValue(null);
+      repo.findActiveByEmail.mockResolvedValue(null);
+      teamsService.validateTeamExists.mockResolvedValue(undefined);
+      repo.create.mockResolvedValue(makeInvitation({ status: 'initiated' }));
+      mailService.sendInvitationEmail.mockRejectedValue(new Error('SMTP error'));
+
+      await expect(service.create('org-1', 'admin-1', createData)).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.EMAIL_SEND_FAILED }),
+      );
+      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'failed');
+    });
+
     it('should throw INVALID_TEAM_ASSIGNMENT for bad team', async () => {
       usersService.findByEmail.mockResolvedValue(null);
-      repo.findPendingByEmail.mockResolvedValue(null);
+      repo.findActiveByEmail.mockResolvedValue(null);
       teamsService.validateTeamExists.mockRejectedValue(new Error('not found'));
 
       await expect(service.create('org-1', 'admin-1', createData)).rejects.toThrow(
@@ -197,7 +212,7 @@ describe('InvitationsService', () => {
   });
 
   describe('revoke', () => {
-    it('should revoke a pending invitation', async () => {
+    it('should revoke a sent invitation', async () => {
       repo.findById.mockResolvedValue(makeInvitation());
       repo.updateStatus.mockResolvedValue(undefined);
 
@@ -221,6 +236,22 @@ describe('InvitationsService', () => {
       );
     });
 
+    it('should revoke an initiated invitation', async () => {
+      repo.findById.mockResolvedValue(makeInvitation({ status: 'initiated' }));
+      repo.updateStatus.mockResolvedValue(undefined);
+
+      await service.revoke('inv-1', 'org-1');
+      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'revoked');
+    });
+
+    it('should revoke a failed invitation', async () => {
+      repo.findById.mockResolvedValue(makeInvitation({ status: 'failed' }));
+      repo.updateStatus.mockResolvedValue(undefined);
+
+      await service.revoke('inv-1', 'org-1');
+      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'revoked');
+    });
+
     it('should throw NOT_FOUND for wrong org', async () => {
       repo.findById.mockResolvedValue(makeInvitation({ orgId: 'other-org' }));
 
@@ -238,6 +269,8 @@ describe('InvitationsService', () => {
 
       const res = await service.resend('inv-1', 'org-1');
       expect(res.token).toBe('new-token');
+      expect(res.status).toBe('sent');
+      expect(repo.updateStatus).toHaveBeenCalledWith('inv-1', 'sent');
       expect(mailService.sendInvitationEmail).toHaveBeenCalledWith(
         'new@example.com',
         expect.stringContaining('/invite/'),
@@ -288,19 +321,43 @@ describe('InvitationsService', () => {
         expect.objectContaining({ code: ErrorCode.INVITATION.ALREADY_REVOKED }),
       );
     });
+
+    it('should throw NOT_FOUND for initiated invitation', async () => {
+      repo.findByToken.mockResolvedValue(makeInvitation({ status: 'initiated' }));
+
+      await expect(service.validateToken('abc123')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.NOT_FOUND }),
+      );
+    });
+
+    it('should throw NOT_FOUND for sending invitation', async () => {
+      repo.findByToken.mockResolvedValue(makeInvitation({ status: 'sending' }));
+
+      await expect(service.validateToken('abc123')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.NOT_FOUND }),
+      );
+    });
+
+    it('should throw NOT_FOUND for failed invitation', async () => {
+      repo.findByToken.mockResolvedValue(makeInvitation({ status: 'failed' }));
+
+      await expect(service.validateToken('abc123')).rejects.toThrow(
+        expect.objectContaining({ code: ErrorCode.INVITATION.NOT_FOUND }),
+      );
+    });
   });
 
   describe('acceptByEmail', () => {
     it('should accept invitation and create team memberships', async () => {
-      repo.findPendingByEmailAnyOrg.mockResolvedValue(makeInvitation());
+      repo.findActiveByEmailAnyOrg.mockResolvedValue(makeInvitation());
       repo.acceptInvitation.mockResolvedValue(undefined);
 
       await service.acceptByEmail('new@example.com', 'user-1');
       expect(repo.acceptInvitation).toHaveBeenCalledWith('inv-1', 'user-1');
     });
 
-    it('should do nothing when no pending invitation', async () => {
-      repo.findPendingByEmailAnyOrg.mockResolvedValue(null);
+    it('should do nothing when no active invitation', async () => {
+      repo.findActiveByEmailAnyOrg.mockResolvedValue(null);
 
       await service.acceptByEmail('unknown@example.com', 'user-1');
       expect(repo.acceptInvitation).not.toHaveBeenCalled();

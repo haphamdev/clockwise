@@ -18,8 +18,8 @@ export class ListInvitationsQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiProperty({ required: false, enum: ['pending', 'accepted', 'revoked'] })
+  @ApiProperty({ required: false, enum: ['initiated', 'sending', 'sent', 'accepted', 'revoked', 'failed'] })
   @IsOptional()
-  @IsIn(['pending', 'accepted', 'revoked'])
-  status?: 'pending' | 'accepted' | 'revoked';
+  @IsIn(['initiated', 'sending', 'sent', 'accepted', 'revoked', 'failed'])
+  status?: 'initiated' | 'sending' | 'sent' | 'accepted' | 'revoked' | 'failed';
 }

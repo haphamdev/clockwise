@@ -28,7 +28,7 @@ function makeInvitation(overrides?: Partial<InvitationEntity>): InvitationEntity
     invitedByName: 'Admin',
     token: 'abc123',
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    status: 'pending',
+    status: 'sent',
     createdAt: new Date(),
     teamAssignments: [
       { teamId: 'team-1', teamName: 'Engineering', role: 'member' },
@@ -100,11 +100,11 @@ describe('InvitationsController', () => {
     it('should pass status filter', async () => {
       service.findAll.mockResolvedValue({ data: [], total: 0 });
 
-      await controller.list(makeUser(), { page: 1, limit: 20, status: 'pending' });
+      await controller.list(makeUser(), { page: 1, limit: 20, status: 'sent' });
       expect(service.findAll).toHaveBeenCalledWith('org-1', {
         page: 1,
         limit: 20,
-        status: 'pending',
+        status: 'sent',
       });
     });
   });

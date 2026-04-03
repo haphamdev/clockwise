@@ -26,10 +26,13 @@ enum ProjectStatus {
 }
 
 enum InvitationStatus {
-  pending
+  initiated
+  sending
+  sent
   accepted
   revoked
   failed
+  pending // @deprecated — migrated to 'sent', kept because PG cannot drop enum values
 }
 
 enum TimeLogStatus {
@@ -207,7 +210,7 @@ model Invitation {
   invitedBy String           @map("invited_by")
   token     String           @unique @db.VarChar(255)
   expiresAt DateTime         @map("expires_at")
-  status    InvitationStatus @default(pending)
+  status    InvitationStatus @default(initiated)
   createdAt DateTime         @default(now()) @map("created_at")
 
   org             Organization              @relation(fields: [orgId], references: [id])
