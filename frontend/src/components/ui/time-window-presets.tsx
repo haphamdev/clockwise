@@ -13,8 +13,11 @@ import {
 import {
   resolvePreset,
   resolveRolling,
+  detectRolling,
+  isPresetMatch,
   ALL_PRESETS,
   PRESET_LABELS,
+  ROLLING_MAX,
   type TimeWindow,
   type TimeWindowPreset,
   type RollingUnit,
@@ -31,9 +34,10 @@ function isActivePreset(preset: TimeWindowPreset, value: TimeWindow, today: Date
 }
 
 export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
-  const [rollingN, setRollingN] = useState('7');
-  const [rollingUnit, setRollingUnit] = useState<RollingUnit>('days');
   const today = new Date();
+  const detected = isPresetMatch(value, today) ? null : detectRolling(value, today);
+  const [rollingN, setRollingN] = useState(detected ? String(detected.n) : '7');
+  const [rollingUnit, setRollingUnit] = useState<RollingUnit>(detected?.unit ?? 'days');
 
   const handlePresetClick = (preset: TimeWindowPreset) => {
     onChange(resolvePreset(preset, today));
@@ -42,7 +46,9 @@ export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
   const handleRollingApply = () => {
     const n = parseInt(rollingN, 10);
     if (!n || n <= 0) return;
-    onChange(resolveRolling(n, rollingUnit, today));
+    const clamped = Math.min(n, ROLLING_MAX[rollingUnit]);
+    setRollingN(String(clamped));
+    onChange(resolveRolling(clamped, rollingUnit, today));
   };
 
   return (
@@ -72,8 +78,11 @@ export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
             inputMode="numeric"
             value={rollingN}
             onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, '');
+              const v = e.target.value.replace(/\D/g, '').slice(0, 3);
               setRollingN(v);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleRollingApply();
             }}
             className="w-16 h-8 text-sm"
           />

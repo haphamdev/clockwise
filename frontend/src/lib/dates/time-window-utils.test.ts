@@ -6,6 +6,8 @@ import {
   formatTimeWindowLabel,
   formatDateISO,
   parseDateISO,
+  isPresetMatch,
+  detectRolling,
 } from './time-window-utils';
 
 // Pin "today" to Wednesday 2025-03-19 for deterministic tests
@@ -196,6 +198,53 @@ describe('formatTimeWindowLabel', () => {
     const w = resolvePreset('this-month', mar1);
     // today and this-month resolve to same range; "today" is first in list
     expect(formatTimeWindowLabel(w, mar1)).toBe('Today');
+  });
+});
+
+describe('isPresetMatch', () => {
+  it('returns true for a matching preset', () => {
+    const w = resolvePreset('this-week', today);
+    expect(isPresetMatch(w, today)).toBe(true);
+  });
+
+  it('returns false for a custom range', () => {
+    expect(isPresetMatch({ dateFrom: '2025-02-01', dateTo: '2025-03-15' }, today)).toBe(false);
+  });
+
+  it('returns false for a rolling window that is not a preset', () => {
+    const w = resolveRolling(7, 'days', today);
+    expect(isPresetMatch(w, today)).toBe(false);
+  });
+});
+
+describe('detectRolling', () => {
+  it('detects days', () => {
+    const w = resolveRolling(10, 'days', today);
+    expect(detectRolling(w, today)).toEqual({ n: 10, unit: 'days' });
+  });
+
+  it('detects weeks (14 days → 2 weeks)', () => {
+    const w = resolveRolling(2, 'weeks', today);
+    expect(detectRolling(w, today)).toEqual({ n: 2, unit: 'weeks' });
+  });
+
+  it('detects months', () => {
+    const w = resolveRolling(3, 'months', today);
+    expect(detectRolling(w, today)).toEqual({ n: 3, unit: 'months' });
+  });
+
+  it('prefers months over days when both could match', () => {
+    // 1 month back from Mar 19 = Feb 19 (28 days, divisible by 7)
+    const w = resolveRolling(1, 'months', today);
+    expect(detectRolling(w, today)).toEqual({ n: 1, unit: 'months' });
+  });
+
+  it('returns null when dateTo is not today', () => {
+    expect(detectRolling({ dateFrom: '2025-01-01', dateTo: '2025-02-15' }, today)).toBeNull();
+  });
+
+  it('returns null for same-day range (0 diff)', () => {
+    expect(detectRolling({ dateFrom: '2025-03-19', dateTo: '2025-03-19' }, today)).toBeNull();
   });
 });
 

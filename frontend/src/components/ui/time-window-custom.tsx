@@ -41,6 +41,8 @@ export function TimeWindowCustom({
       <Calendar
         mode="range"
         selected={selected}
+        // No-op: bypass Calendar's built-in range selection in favor of
+        // manual onDayClick two-click logic (first click = start, second = end)
         onSelect={() => {}}
         onDayClick={handleDayClick}
         numberOfMonths={2}
