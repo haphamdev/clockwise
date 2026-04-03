@@ -11,8 +11,20 @@ import { useImportJob } from '@/lib/import/use-import-job';
 import { downloadTemplate } from '@/lib/import/import-api';
 import { importKeys } from '@/lib/import/import-keys';
 import { IMPORT_TYPE_CONFIG } from '@/lib/import/import-type-config';
+import { projectsKeys } from '@/lib/projects/projects-keys';
+import { teamsKeys } from '@/lib/teams/teams-keys';
+import { timeLogsKeys } from '@/lib/time-logs/time-logs-keys';
+import { invitationsKeys } from '@/lib/invitations/invitations-keys';
+import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
 import { useQueryClient } from '@tanstack/react-query';
 import type { ImportType, ImportPreviewResponse } from '@/lib/import/types';
+
+const IMPORT_INVALIDATION_KEYS: Record<ImportType, readonly (readonly string[])[]> = {
+  'time-log': [timeLogsKeys.all, auditLogsKeys.all],
+  team: [teamsKeys.all, auditLogsKeys.all],
+  project: [projectsKeys.all, auditLogsKeys.all],
+  invitation: [invitationsKeys.all, auditLogsKeys.all],
+};
 
 type Step = 'upload' | 'preview' | 'importing' | 'done';
 
@@ -31,12 +43,17 @@ export function ImportWizard({ type }: ImportWizardProps) {
   const queryClient = useQueryClient();
   const importPreview = useImportPreview();
   const importExecute = useImportExecute();
-  const { data: jobData } = useImportJob(step === 'importing' ? jobId : null);
+  const { data: jobData } = useImportJob(jobId);
 
   useEffect(() => {
     if (step === 'importing' && jobData && (jobData.status === 'completed' || jobData.status === 'failed')) {
       setStep('done');
       queryClient.invalidateQueries({ queryKey: importKeys.jobList(type) });
+      if (jobData.status === 'completed') {
+        for (const key of IMPORT_INVALIDATION_KEYS[type]) {
+          queryClient.invalidateQueries({ queryKey: key });
+        }
+      }
     }
   }, [step, jobData, queryClient, type]);
 

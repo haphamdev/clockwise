@@ -12,13 +12,15 @@ export function ImportPage() {
   const { user } = useAuth();
   const isAdmin = user?.isAdmin ?? false;
 
-  const rawType = searchParams.get('type') || 'time-log';
-  const type: ImportType =
-    isValidImportType(rawType) && (!IMPORT_TYPE_CONFIG[rawType].adminOnly || isAdmin)
+  const rawType = searchParams.get('type');
+  const resolvedType: ImportType | null =
+    rawType && isValidImportType(rawType) && (!IMPORT_TYPE_CONFIG[rawType].adminOnly || isAdmin)
       ? rawType
-      : 'time-log';
+      : isAdmin
+        ? null
+        : 'time-log';
 
-  const config = IMPORT_TYPE_CONFIG[type];
+  const config = resolvedType ? IMPORT_TYPE_CONFIG[resolvedType] : null;
 
   const handleTypeChange = (newType: ImportType) => {
     setSearchParams({ type: newType });
@@ -26,10 +28,13 @@ export function ImportPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title={config.pageTitle} description={config.pageDescription} />
-      {isAdmin && <ImportTypeSelector value={type} onChange={handleTypeChange} />}
-      <ImportWizard key={type} type={type} />
-      <ImportHistory type={type} />
+      <PageHeader
+        title={config?.pageTitle ?? 'Import'}
+        description={config?.pageDescription ?? 'Select an import type to get started.'}
+      />
+      {isAdmin && <ImportTypeSelector value={resolvedType} onChange={handleTypeChange} />}
+      {resolvedType && <ImportWizard key={resolvedType} type={resolvedType} />}
+      <ImportHistory type={resolvedType ?? undefined} />
     </div>
   );
 }
