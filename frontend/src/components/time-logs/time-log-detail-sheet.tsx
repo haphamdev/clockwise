@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { TaskDisplay } from '@/components/ui/task-display';
 import { TimeDisplay } from '@/components/ui/time-display';
 import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
 import {
@@ -46,9 +46,7 @@ export function TimeLogDetailSheet({ timeLog, open, onOpenChange }: TimeLogDetai
           <DetailRow label="Tasks">
             <div className="flex flex-wrap gap-1">
               {timeLog.tasks.map((t) => (
-                <Badge key={t.id} variant="secondary" className="text-xs">
-                  {t.label}
-                </Badge>
+                <TaskDisplay key={t.id} task={t} variant="inline" />
               ))}
             </div>
           </DetailRow>
