@@ -5,7 +5,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TimeWindowPresets } from '@/components/ui/time-window-presets';
 import { TimeWindowCustom } from '@/components/ui/time-window-custom';
-import { formatTimeWindowLabel, type TimeWindow } from '@/lib/dates/time-window-utils';
+import {
+  formatTimeWindowLabel,
+  isPresetMatch,
+  detectRolling,
+  type TimeWindow,
+} from '@/lib/dates/time-window-utils';
 
 interface TimeWindowPickerProps {
   value: TimeWindow;
@@ -27,6 +32,9 @@ export function TimeWindowPicker({
     setOpen(false);
   };
 
+  const defaultTab =
+    isPresetMatch(value) || detectRolling(value) !== null ? 'presets' : 'custom';
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -35,8 +43,8 @@ export function TimeWindowPicker({
           {formatTimeWindowLabel(value)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto p-0">
-        <Tabs defaultValue="presets">
+      <PopoverContent align="start" className="min-w-[36rem] w-auto p-0">
+        <Tabs defaultValue={defaultTab} key={defaultTab}>
           <TabsList className="w-full">
             <TabsTrigger value="presets" className="flex-1">Presets</TabsTrigger>
             <TabsTrigger value="custom" className="flex-1">Custom Range</TabsTrigger>
