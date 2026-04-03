@@ -7,7 +7,7 @@ import {
   ImportResult,
   ImportCallerContext,
 } from '../interfaces/import-processor.interface';
-import { parseCsv, validateHeaders } from '../utils/csv-parser';
+import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-parser';
 import { TeamsService } from '../../teams/teams.service';
 import { UsersService } from '../../users/users.service';
 
@@ -189,8 +189,8 @@ export class TeamImportProcessor implements ImportProcessor {
     }
 
     // Resolve members
-    const memberEmails = this.parseCommaSeparated(data.members);
-    const managerEmails = this.parseCommaSeparated(data.managers);
+    const memberEmails = parseCommaSeparated(data.members);
+    const managerEmails = parseCommaSeparated(data.managers);
 
     const resolvedMembers: Array<{ userId: string; role: 'manager' | 'member' }> = [];
 
@@ -232,11 +232,6 @@ export class TeamImportProcessor implements ImportProcessor {
     seenNames.add(nameLower);
 
     return { errors, warnings, resolvedMembers };
-  }
-
-  private parseCommaSeparated(value: string): string[] {
-    if (!value) return [];
-    return value.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
   }
 
   private async resolveUser(

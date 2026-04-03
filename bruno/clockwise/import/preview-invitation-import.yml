@@ -1,0 +1,36 @@
+info:
+  name: preview-invitation-import
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: http://localhost:3000/api/v1/import/preview
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "type": "invitation",
+        "csvContent": "email,teams,manager_teams\nalice@example.com,Engineering,Engineering"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.totalRows
+      operator: isNumber
+    - expression: res.body.validRows
+      operator: isArray
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

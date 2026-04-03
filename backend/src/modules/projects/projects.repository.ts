@@ -155,6 +155,13 @@ export class ProjectsRepository {
     return project ? this.toEntity(project) : null;
   }
 
+  async findByNameInOrg(name: string, orgId: string): Promise<ProjectEntity | null> {
+    const project = await this.prisma.project.findFirst({
+      where: { orgId, name: { equals: name, mode: 'insensitive' } },
+    });
+    return project ? this.toEntity(project) : null;
+  }
+
   async findById(id: string): Promise<ProjectWithTeams | null> {
     const project = await this.prisma.project.findUnique({
       where: { id },
@@ -177,6 +184,47 @@ export class ProjectsRepository {
       const project = await this.prisma.project.create({
         data: {
           ...data,
+          projectTeams: {
+            create: teamIds.map((teamId) => ({ teamId })),
+          },
+        },
+        include: projectTeamInclude,
+      });
+      return this.toEntityWithTeams(project);
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        throw new ProjectAlreadyExistsException();
+      }
+      throw error;
+    }
+  }
+
+  async createWithTeamsAndSettings(
+    data: {
+      orgId: string;
+      name: string;
+      description?: string;
+      status?: 'active' | 'archived';
+      settings?: { dailyHourLimit?: number | null; weeklyHourLimit?: number | null };
+    },
+    teamIds: string[],
+  ): Promise<ProjectWithTeams> {
+    const settings: Record<string, unknown> = {};
+    if (data.settings?.dailyHourLimit !== undefined) {
+      settings.dailyHourLimit = data.settings.dailyHourLimit;
+    }
+    if (data.settings?.weeklyHourLimit !== undefined) {
+      settings.weeklyHourLimit = data.settings.weeklyHourLimit;
+    }
+
+    try {
+      const project = await this.prisma.project.create({
+        data: {
+          orgId: data.orgId,
+          name: data.name,
+          description: data.description,
+          status: data.status ?? 'active',
+          ...(Object.keys(settings).length > 0 && { settings: settings as Prisma.InputJsonValue }),
           projectTeams: {
             create: teamIds.map((teamId) => ({ teamId })),
           },

@@ -89,3 +89,9 @@ export function validateHeaders(
   }
   return { columnMap };
 }
+
+/** Split a comma-separated string into trimmed, non-empty values. */
+export function parseCommaSeparated(value: string): string[] {
+  if (!value) return [];
+  return value.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+}
