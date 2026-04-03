@@ -72,20 +72,34 @@ export function validateHeaders(
   headerRow: string[],
   expectedHeaders: string[],
 ): { columnMap: Map<string, number> } | { error: ImportValidationError } {
+  return validateHeadersWithOptional(headerRow, expectedHeaders, []);
+}
+
+export function validateHeadersWithOptional(
+  headerRow: string[],
+  requiredHeaders: string[],
+  optionalHeaders: string[],
+): { columnMap: Map<string, number> } | { error: ImportValidationError } {
   const normalized = headerRow.map((h) => h.trim().toLowerCase());
-  const missing = expectedHeaders.filter((h) => !normalized.includes(h));
+  const missing = requiredHeaders.filter((h) => !normalized.includes(h));
   if (missing.length > 0) {
     return {
       error: {
         row: 1,
         field: '',
-        message: `CSV headers must include: ${expectedHeaders.join(', ')}. Missing: ${missing.join(', ')}`,
+        message: `CSV headers must include: ${requiredHeaders.join(', ')}. Missing: ${missing.join(', ')}`,
       },
     };
   }
   const columnMap = new Map<string, number>();
-  for (const header of expectedHeaders) {
+  for (const header of requiredHeaders) {
     columnMap.set(header, normalized.indexOf(header));
+  }
+  for (const header of optionalHeaders) {
+    const idx = normalized.indexOf(header);
+    if (idx !== -1) {
+      columnMap.set(header, idx);
+    }
   }
   return { columnMap };
 }

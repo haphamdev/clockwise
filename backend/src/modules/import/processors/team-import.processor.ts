@@ -7,11 +7,13 @@ import {
   ImportResult,
   ImportCallerContext,
 } from '../interfaces/import-processor.interface';
-import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-parser';
+import { parseCsv, validateHeadersWithOptional, parseCommaSeparated } from '../utils/csv-parser';
 import { TeamsService } from '../../teams/teams.service';
 import { UsersService } from '../../users/users.service';
 
-const EXPECTED_HEADERS = ['name', 'description', 'members', 'managers'];
+const REQUIRED_HEADERS = ['name', 'description'];
+const OPTIONAL_HEADERS = ['members', 'managers'];
+const ALL_HEADERS = [...REQUIRED_HEADERS, ...OPTIONAL_HEADERS];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ValidateRowResult {
@@ -39,7 +41,7 @@ export class TeamImportProcessor implements ImportProcessor {
       return { validRows: [], executableRows: [], errors: [], totalRows: 0 };
     }
 
-    const headerResult = validateHeaders(rows[0], EXPECTED_HEADERS);
+    const headerResult = validateHeadersWithOptional(rows[0], REQUIRED_HEADERS, OPTIONAL_HEADERS);
     if ('error' in headerResult) {
       return { validRows: [], executableRows: [], errors: [headerResult.error], totalRows: 0 };
     }
@@ -72,9 +74,13 @@ export class TeamImportProcessor implements ImportProcessor {
       }
 
       const data: Record<string, string> = {};
-      for (const header of EXPECTED_HEADERS) {
-        const idx = columnMap.get(header)!;
-        data[header] = (fields[idx] ?? '').trim();
+      for (const header of ALL_HEADERS) {
+        if (columnMap.has(header)) {
+          const idx = columnMap.get(header)!;
+          data[header] = (fields[idx] ?? '').trim();
+        } else {
+          data[header] = '';
+        }
       }
 
       const result = await this.validateRow(
@@ -82,7 +88,7 @@ export class TeamImportProcessor implements ImportProcessor {
       );
 
       const cleanData: Record<string, string> = {};
-      for (const key of EXPECTED_HEADERS) {
+      for (const key of ALL_HEADERS) {
         cleanData[key] = data[key] ?? '';
       }
 
@@ -105,7 +111,7 @@ export class TeamImportProcessor implements ImportProcessor {
 
     const validRows = executableRows.map((r) => {
       const cleanData: Record<string, string> = {};
-      for (const key of EXPECTED_HEADERS) {
+      for (const key of ALL_HEADERS) {
         cleanData[key] = r.data[key] ?? '';
       }
       return { rowNumber: r.rowNumber, data: cleanData };
@@ -222,12 +228,6 @@ export class TeamImportProcessor implements ImportProcessor {
           resolvedMembers.push({ userId: user.id, role: 'member' });
         }
       }
-    }
-
-    const managerCount = resolvedMembers.filter((m) => m.role === 'manager').length;
-    if (managerCount === 0) {
-      errors.push({ row: rowNumber, field: 'managers', message: 'At least one valid manager is required' });
-      return { errors, warnings };
     }
 
     seenNames.add(nameLower);

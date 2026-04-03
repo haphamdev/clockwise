@@ -71,16 +71,32 @@ describe('TeamImportProcessor — parseAndValidate', () => {
   });
 
   describe('header validation', () => {
-    it('should reject CSV with missing headers', async () => {
-      const csv = 'name,description\nTest,Desc';
+    it('should reject CSV with missing required headers', async () => {
+      const csv = 'name,members\nTest,bob@test.com';
       const result = await processor.parseAndValidate(csv, ctx);
 
       expect(result.validRows).toHaveLength(0);
       expect(result.errors).toHaveLength(1);
       expect(result.errors[0]).toMatchObject({
         row: 1,
-        message: expect.stringContaining('Missing: members, managers'),
+        message: expect.stringContaining('Missing: description'),
       });
+    });
+
+    it('should accept CSV with only required headers (no members/managers columns)', async () => {
+      const csv = 'name,description\nTeam A,A team';
+      const result = await processor.parseAndValidate(csv, ctx);
+
+      expect(result.validRows).toHaveLength(1);
+      expect(result.errors).toHaveLength(0);
+      expect(result.validRows[0].data).toEqual({
+        name: 'Team A',
+        description: 'A team',
+        members: '',
+        managers: '',
+      });
+      const members = JSON.parse(result.executableRows[0].data._resolved_members);
+      expect(members).toEqual([]);
     });
   });
 
