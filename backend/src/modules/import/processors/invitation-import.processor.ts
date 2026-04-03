@@ -24,6 +24,7 @@ interface ValidateRowResult {
 @Injectable()
 export class InvitationImportProcessor implements ImportProcessor {
   readonly type = 'invitation';
+  readonly adminOnly = true;
 
   constructor(
     private readonly invitationsService: InvitationsService,

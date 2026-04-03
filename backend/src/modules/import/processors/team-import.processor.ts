@@ -23,6 +23,7 @@ interface ValidateRowResult {
 @Injectable()
 export class TeamImportProcessor implements ImportProcessor {
   readonly type = 'team';
+  readonly adminOnly = true;
 
   constructor(
     private readonly teamsService: TeamsService,
