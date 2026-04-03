@@ -49,8 +49,26 @@ export function usePaginationParams(options: UsePaginationParamsOptions = {}) {
     [setSearchParams],
   );
 
+  const setParams = useCallback(
+    (entries: Record<string, string>) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        for (const [key, value] of Object.entries(entries)) {
+          if (value) {
+            next.set(key, value);
+          } else {
+            next.delete(key);
+          }
+        }
+        next.delete('page');
+        return next;
+      });
+    },
+    [setSearchParams],
+  );
+
   return useMemo(
-    () => ({ page, limit, setPage, getParam, setParam }),
-    [page, limit, setPage, getParam, setParam],
+    () => ({ page, limit, setPage, getParam, setParam, setParams }),
+    [page, limit, setPage, getParam, setParam, setParams],
   );
 }
