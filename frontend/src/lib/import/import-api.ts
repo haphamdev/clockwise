@@ -5,6 +5,7 @@ import type {
   ImportExecutePayload,
   ImportExecuteResponse,
   ImportJobResponse,
+  ImportJobListResponse,
 } from './types';
 
 export function previewImport(payload: ImportPreviewPayload) {
@@ -23,6 +24,14 @@ export function executeImport(payload: ImportExecutePayload) {
 
 export function fetchImportJob(jobId: string) {
   return apiClient<ImportJobResponse>(`/import/jobs/${jobId}`);
+}
+
+export function fetchImportJobs(params: { page?: number; limit?: number; type?: string }) {
+  const search = new URLSearchParams();
+  if (params.page) search.set('page', String(params.page));
+  if (params.limit) search.set('limit', String(params.limit));
+  if (params.type) search.set('type', params.type);
+  return apiClient<ImportJobListResponse>(`/import/jobs?${search.toString()}`);
 }
 
 export async function downloadTemplate(type: string) {

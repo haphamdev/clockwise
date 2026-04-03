@@ -42,3 +42,21 @@ export interface ImportJobResponse {
   errors: ImportValidationError[];
   completedAt?: string;
 }
+
+export interface ImportJobListItem {
+  id: string;
+  type: string;
+  status: ImportJobStatus;
+  totalRows: number;
+  imported: number;
+  errorCount: number;
+  createdAt: string;
+  completedAt: string | null;
+}
+
+export interface ImportJobListResponse {
+  data: ImportJobListItem[];
+  total: number;
+  page: number;
+  limit: number;
+}
