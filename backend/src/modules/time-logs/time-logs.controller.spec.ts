@@ -30,8 +30,8 @@ function makeTimeLogListItem(overrides?: Partial<TimeLogListItem>): TimeLogListI
     status: 'active',
     createdAt: new Date(),
     updatedAt: new Date(),
-    user: { id: 'user-1', name: 'Test User' },
-    project: { id: 'project-1', name: 'Test Project' },
+    user: { id: 'user-1', name: 'Test User', email: 'test@example.com', status: 'active' },
+    project: { id: 'project-1', name: 'Test Project', description: null, status: 'active' },
     tasks: [{ id: 'task-1', label: 'JIRA-123', description: null }],
     ...overrides,
   };
@@ -131,8 +131,8 @@ describe('TimeLogsController', () => {
       expect(result.data).toHaveLength(1);
       const dto = result.data[0];
       expect(dto.id).toBe('tl-1');
-      expect(dto.user).toEqual({ id: 'user-1', name: 'Test User' });
-      expect(dto.project).toEqual({ id: 'project-1', name: 'Test Project' });
+      expect(dto.user).toEqual({ id: 'user-1', name: 'Test User', email: 'test@example.com', status: 'active' });
+      expect(dto.project).toEqual({ id: 'project-1', name: 'Test Project', description: null, status: 'active' });
       expect(dto.tasks).toHaveLength(1);
       // Should not leak internal fields
       expect(dto).not.toHaveProperty('userId');
