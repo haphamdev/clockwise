@@ -1,0 +1,11 @@
+name,description,status,teams,daily_hour_limit,weekly_hour_limit
+Internal Tools,Shared developer tooling and utilities,active,"Engineering, DevOps",,
+,Missing project name,active,"Engineering",,
+Design System,Shared component library and design tokens,active,"Design, Engineering",8,40
+Bug Bounty Program,Security vulnerability tracking,invalid_status,"QA",,
+Competitor Analysis,Market research and competitor tracking,active,"",,
+Recruiting Pipeline,Candidate tracking and hiring workflow,active,"HR, Nonexistent Team",,
+Internal Tools,Duplicate of row 1,active,"Engineering",,
+Annual Report,Year-end financial and performance report,active,"Marketing, Sales",25,
+Knowledge Base,Internal documentation wiki,active,"Product, Customer Support",,168
+Office Renovation,Physical office redesign project,archived,"HR",8,40

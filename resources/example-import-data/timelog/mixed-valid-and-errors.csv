@@ -1,26 +1,26 @@
 date,project_name,task,hours,notes,user_email
-2026-03-16,Mobile App Redesign,UI wireframes,3.5,Valid - Engineering member,marcus.johnson@clockwise.test
-2026-03-16,Nonexistent Project,Research,2,ERROR: project does not exist,james.obrien@clockwise.test
-2026-03-16,API Platform v2,Schema design,4,,sofia.chen@clockwise.test
-2026-03-17,Mobile App Redesign,Prototyping,-1,ERROR: negative hours,marcus.johnson@clockwise.test
-2026-03-17,Customer Dashboard,User interviews,3,Valid - Product team member,raj.kapoor@clockwise.test
-2026-03-17,Design System,,2.5,ERROR: missing task label,priya.patel@clockwise.test
-2026-03-17,API Platform v2,Endpoint implementation,5.5,Valid - Engineering member,liam.schmidt@clockwise.test
-03/18/2026,Marketing Website,Content writing,4,ERROR: wrong date format,isabella.rivera@clockwise.test
-2026-03-18,Automated Test Suite,Framework setup,7,Valid - QA manager,yuki.tanaka@clockwise.test
-2026-03-18,Mobile App Redesign,Icon design,abc,ERROR: non-numeric hours,amara.okafor@clockwise.test
-2026-03-18,Marketing Website,SEO audit,3,,nobody@clockwise.test
-2026-03-19,Customer Dashboard,Chart components,5.5,Valid - QA team member,aisha.hassan@clockwise.test
-2026-03-19,API Platform v2,Code review,0,ERROR: zero hours,carlos.mendoza@clockwise.test
-2026-03-19,Marketing Website,Banner design,2,ERROR: not on Marketing team,marcus.johnson@clockwise.test
-2026-03-19,Design System,Button variants,4.5,Valid - Design team member,amara.okafor@clockwise.test
-2027-09-01,Mobile App Redesign,Future planning,3,ERROR: future date,james.obrien@clockwise.test
-2026-03-20,API Platform v2,Rate limiting,3,Valid - Engineering member,james.obrien@clockwise.test
-2026-03-20,Mobile App Redesign,Accessibility audit,2,,david.kim@clockwise.test
-2026-03-20,Customer Dashboard,Filter widgets,4,Valid - Product team member,aisha.hassan@clockwise.test
-2026-03-20,Automated Test Suite,CI pipeline,30,ERROR: exceeds 24-hour max,yuki.tanaka@clockwise.test
-2026-03-21,Design System,Typography scale,3,Valid - Design team member,isabella.rivera@clockwise.test
-,API Platform v2,Standup,1,ERROR: empty date,sofia.chen@clockwise.test
-2026-03-21,Mobile App Redesign,Animation prototyping,3,Valid - Engineering member,marcus.johnson@clockwise.test
-2026-03-21,Mobile App Redesign,Animation prototyping,2,ERROR: intra-CSV duplicate,marcus.johnson@clockwise.test
-2026-03-21,API Platform v2,Error handling,3.5,Valid - Engineering member,liam.schmidt@clockwise.test
+2024-04-15,Mobile App Redesign,UI wireframes,3.5,Valid row,alice.chen@clockwise.test
+2024-04-15,Nonexistent Project,Research,2,ERROR: project does not exist,bob.martinez@clockwise.test
+2024-04-15,API Platform v2,Schema design,4,Valid row,carol.white@clockwise.test
+2024-04-16,Mobile App Redesign,Prototyping,-1,ERROR: negative hours,david.kim@clockwise.test
+2024-04-16,Customer Dashboard,User interviews,3,Valid row,carlos.diaz@clockwise.test
+2024-04-16,Cloud Migration,,2.5,ERROR: missing task label,kevin.yang@clockwise.test
+2024-04-16,API Platform v2,Endpoint implementation,5.5,Valid row,frank.lee@clockwise.test
+04/17/2024,Marketing Website,Content writing,4,ERROR: wrong date format MM/DD/YYYY,noah.green@clockwise.test
+2024-04-17,Automated Test Suite,Framework setup,7,Valid row,george.fox@clockwise.test
+2024-04-17,Mobile App Redesign,Icon design,abc,ERROR: non-numeric hours,irene.costa@clockwise.test
+2024-04-17,Support Portal,Chat widget,3,Valid row,diana.ross@clockwise.test
+2024-04-18,Customer Dashboard,Chart components,5.5,Valid row,oscar.ruiz@clockwise.test
+2024-04-18,API Platform v2,Code review,0,ERROR: hours below 0.01 minimum,eva.johnson@clockwise.test
+2024-04-18,Data Pipeline,Ingestion service,2,ERROR: user not found,nobody@clockwise.test
+2024-04-18,Employee Onboarding,Training modules,4.5,Valid row,sofia.mendez@clockwise.test
+2027-09-01,Mobile App Redesign,Future planning,3,ERROR: future date,alice.chen@clockwise.test
+2024-04-19,API Platform v2,Rate limiting,3,Valid row,henry.zhao@clockwise.test
+2024-04-19,Cloud Migration,Terraform scripts,2,Valid row,marcus.hall@clockwise.test
+2024-04-19,Q1 Sales Campaign,Email sequences,4,Valid row,sam.wilson@clockwise.test
+2024-04-19,Automated Test Suite,E2E test coverage,30,ERROR: exceeds 24-hour max,george.fox@clockwise.test
+2024-04-20,Data Pipeline,Transform logic,3,Valid row,priya.sharma@clockwise.test
+,API Platform v2,Standup,1,ERROR: empty date,bob.martinez@clockwise.test
+2024-04-20,Mobile App Redesign,Animation prototyping,3,Valid row,jack.rivera@clockwise.test
+2024-04-20,Mobile App Redesign,Animation prototyping,2,ERROR: duplicate of row above (same user/date/project/task),jack.rivera@clockwise.test
+2024-04-20,Marketing Website,Landing page,3.5,Valid row,olivia.scott@clockwise.test

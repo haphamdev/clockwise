@@ -1,0 +1,11 @@
+name,description,status,teams,daily_hour_limit,weekly_hour_limit
+Mobile App Redesign,Complete redesign of the mobile application,active,"Engineering, Design",8,40
+API Platform v2,Next generation REST API platform,active,"Engineering, DevOps",10,50
+Customer Dashboard,Analytics dashboard for customer insights,active,"Product, Design, Data Science",,
+Marketing Website,Company marketing site redesign,active,"Marketing, Design",,40
+Automated Test Suite,End-to-end test automation framework,active,"QA, Engineering",8,
+Employee Onboarding,Streamlined onboarding process and tooling,active,"HR, Product",,
+Cloud Migration,Migrate legacy services to cloud infrastructure,active,"DevOps, Engineering",12,60
+Support Portal,Self-service customer support portal,active,"Customer Support, Product, Engineering",,40
+Data Pipeline,Real-time data ingestion and processing pipeline,active,"Data Science, DevOps",10,50
+Q1 Sales Campaign,First quarter sales outreach campaign,active,"Sales, Marketing",,

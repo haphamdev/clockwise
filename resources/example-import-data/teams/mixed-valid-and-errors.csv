@@ -1,0 +1,9 @@
+name,description,members,managers
+Analytics,Business intelligence and reporting,"oscar.ruiz@clockwise.test, priya.sharma@clockwise.test",carlos.diaz@clockwise.test
+,Missing team name,"alice.chen@clockwise.test",bob.martinez@clockwise.test
+Partnerships,Strategic partnerships and alliances,"tina.brooks@clockwise.test",sam.wilson@clockwise.test
+Analytics,Duplicate of row 1 above,"frank.lee@clockwise.test",kevin.yang@clockwise.test
+Infrastructure,Cloud infrastructure management,"nonexistent@clockwise.test, david.kim@clockwise.test",marcus.hall@clockwise.test
+Training,Employee training and development,"not-an-email, vera.stone@clockwise.test",sofia.mendez@clockwise.test
+Engineering,Already exists from seed data,"carol.white@clockwise.test",alice.chen@clockwise.test
+Compliance,Regulatory compliance and auditing,"tyler.james@clockwise.test, rachel.nguyen@clockwise.test",noah.green@clockwise.test

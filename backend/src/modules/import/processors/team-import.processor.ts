@@ -10,6 +10,7 @@ import {
 import { parseCsv, validateHeadersWithOptional, parseCommaSeparated } from '../utils/csv-parser';
 import { TeamsService } from '../../teams/teams.service';
 import { UsersService } from '../../users/users.service';
+import { delay } from '@/common/utils/delay';
 
 const REQUIRED_HEADERS = ['name', 'description'];
 const OPTIONAL_HEADERS = ['members', 'managers'];
@@ -59,6 +60,7 @@ export class TeamImportProcessor implements ImportProcessor {
     let dataRowCount = 0;
 
     for (let i = 0; i < dataRows.length; i++) {
+      await delay(1000);
       const rowNumber = i + 2;
       const fields = dataRows[i];
 
@@ -84,7 +86,12 @@ export class TeamImportProcessor implements ImportProcessor {
       }
 
       const result = await this.validateRow(
-        data, rowNumber, ctx, teamNameCache, userCache, seenNames,
+        data,
+        rowNumber,
+        ctx,
+        teamNameCache,
+        userCache,
+        seenNames,
       );
 
       const cleanData: Record<string, string> = {};
@@ -120,17 +127,16 @@ export class TeamImportProcessor implements ImportProcessor {
     return { validRows, executableRows, errors, totalRows: dataRowCount };
   }
 
-  async execute(
-    validRows: ImportRow[],
-    ctx: ImportCallerContext,
-  ): Promise<ImportResult> {
+  async execute(validRows: ImportRow[], ctx: ImportCallerContext): Promise<ImportResult> {
     let imported = 0;
     const errors: ImportValidationError[] = [];
 
     for (const row of validRows) {
+      await delay(1000);
       try {
-        const members: Array<{ userId: string; role: 'manager' | 'member' }> =
-          JSON.parse(row.data._resolved_members);
+        const members: Array<{ userId: string; role: 'manager' | 'member' }> = JSON.parse(
+          row.data._resolved_members,
+        );
 
         await this.teamsService.createForImport(
           ctx.orgId,
@@ -169,7 +175,11 @@ export class TeamImportProcessor implements ImportProcessor {
       return { errors, warnings };
     }
     if (data.name.length > 255) {
-      errors.push({ row: rowNumber, field: 'name', message: 'Name must be 255 characters or less' });
+      errors.push({
+        row: rowNumber,
+        field: 'name',
+        message: 'Name must be 255 characters or less',
+      });
       return { errors, warnings };
     }
 
@@ -185,13 +195,21 @@ export class TeamImportProcessor implements ImportProcessor {
     const cached = teamNameCache.get(nameLower)!;
     if (cached.exists) {
       const suffix = cached.isArchived ? ' (archived)' : '';
-      errors.push({ row: rowNumber, field: 'name', message: `Team "${data.name}" already exists${suffix}` });
+      errors.push({
+        row: rowNumber,
+        field: 'name',
+        message: `Team "${data.name}" already exists${suffix}`,
+      });
       return { errors, warnings };
     }
 
     // Duplicate: intra-CSV
     if (seenNames.has(nameLower)) {
-      errors.push({ row: rowNumber, field: 'name', message: `Duplicate team name "${data.name}" in CSV` });
+      errors.push({
+        row: rowNumber,
+        field: 'name',
+        message: `Duplicate team name "${data.name}" in CSV`,
+      });
       return { errors, warnings };
     }
 
@@ -203,12 +221,20 @@ export class TeamImportProcessor implements ImportProcessor {
 
     for (const email of managerEmails) {
       if (!EMAIL_REGEX.test(email)) {
-        warnings.push({ row: rowNumber, field: 'managers', message: `"${email}" is not a valid email, skipped` });
+        warnings.push({
+          row: rowNumber,
+          field: 'managers',
+          message: `"${email}" is not a valid email, skipped`,
+        });
         continue;
       }
       const user = await this.resolveUser(email, ctx.orgId, userCache);
       if (!user) {
-        warnings.push({ row: rowNumber, field: 'managers', message: `User "${email}" not found, skipped` });
+        warnings.push({
+          row: rowNumber,
+          field: 'managers',
+          message: `User "${email}" not found, skipped`,
+        });
       } else {
         resolvedMembers.push({ userId: user.id, role: 'manager' });
       }
@@ -216,12 +242,20 @@ export class TeamImportProcessor implements ImportProcessor {
 
     for (const email of memberEmails) {
       if (!EMAIL_REGEX.test(email)) {
-        warnings.push({ row: rowNumber, field: 'members', message: `"${email}" is not a valid email, skipped` });
+        warnings.push({
+          row: rowNumber,
+          field: 'members',
+          message: `"${email}" is not a valid email, skipped`,
+        });
         continue;
       }
       const user = await this.resolveUser(email, ctx.orgId, userCache);
       if (!user) {
-        warnings.push({ row: rowNumber, field: 'members', message: `User "${email}" not found, skipped` });
+        warnings.push({
+          row: rowNumber,
+          field: 'members',
+          message: `User "${email}" not found, skipped`,
+        });
       } else {
         // Don't add if already in managers list
         if (!resolvedMembers.some((m) => m.userId === user.id)) {
