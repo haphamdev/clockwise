@@ -52,18 +52,33 @@ export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
 
   return (
     <div className="p-3 space-y-3">
-      <div className="grid grid-cols-2 gap-1.5">
-        {ALL_PRESETS.map((preset) => (
-          <Button
-            key={preset}
-            variant={isActivePreset(preset, value) ? 'secondary' : 'ghost'}
-            size="sm"
-            className="justify-start text-xs"
-            onClick={() => handlePresetClick(preset)}
-          >
-            {PRESET_LABELS[preset]}
-          </Button>
-        ))}
+      <div className="flex justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          {ALL_PRESETS.filter((_, i) => i % 2 === 0).map((preset) => (
+            <Button
+              key={preset}
+              variant={isActivePreset(preset, value) ? 'secondary' : 'ghost'}
+              size="sm"
+              className="justify-start text-xs"
+              onClick={() => handlePresetClick(preset)}
+            >
+              {PRESET_LABELS[preset]}
+            </Button>
+          ))}
+        </div>
+        <div className="flex flex-col gap-1">
+          {ALL_PRESETS.filter((_, i) => i % 2 === 1).map((preset) => (
+            <Button
+              key={preset}
+              variant={isActivePreset(preset, value) ? 'secondary' : 'ghost'}
+              size="sm"
+              className="justify-start text-xs"
+              onClick={() => handlePresetClick(preset)}
+            >
+              {PRESET_LABELS[preset]}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <Separator />
