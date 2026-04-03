@@ -238,6 +238,41 @@ export class InvitationsService {
     }
   }
 
+  async findActiveByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
+    return this.invitationsRepository.findActiveByEmail(orgId, email);
+  }
+
+  /** Create an invitation from an import row.
+   *  Active-user, duplicate-invitation, and team-existence checks are
+   *  pre-validated by the import processor — intentionally skipped here. */
+  async createForImport(
+    orgId: string,
+    invitedBy: string,
+    data: {
+      email: string;
+      teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>;
+    },
+  ): Promise<InvitationEntity> {
+    const existingUser = await this.usersService.findByEmail(data.email);
+    if (!existingUser) {
+      await this.usersService.createPendingUser(orgId, data.email, invitedBy);
+    }
+
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
+
+    return this.invitationsRepository.create({
+      orgId,
+      email: data.email,
+      invitedBy,
+      token,
+      expiresAt,
+      status: 'initiated',
+      teamAssignments: data.teamAssignments,
+    });
+  }
+
   async sendInvitationEmail(orgId: string, invitation: InvitationEntity): Promise<void> {
     const orgSettings = await this.orgService.getSettings(orgId);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
@@ -245,7 +280,8 @@ export class InvitationsService {
     await this.mailService.sendInvitationEmail(invitation.email, inviteUrl, orgSettings.orgName);
   }
 
-  private async queueInvitationEmail(invitationId: string): Promise<void> {
+  /** Public so import processors can queue emails after creating invitations. */
+  async queueInvitationEmail(invitationId: string): Promise<void> {
     await this.emailQueue.add('send-invitation-email', { invitationId }, {
       attempts: 1,
       removeOnComplete: { age: 3600 },

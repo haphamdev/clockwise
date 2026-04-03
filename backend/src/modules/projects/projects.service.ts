@@ -350,6 +350,53 @@ export class ProjectsService {
     return this.projectsRepository.findActiveByNameInOrg(name, orgId);
   }
 
+  async findByNameInOrg(name: string, orgId: string): Promise<ProjectEntity | null> {
+    return this.projectsRepository.findByNameInOrg(name, orgId);
+  }
+
+  /** Create a project from an import row. Team existence is pre-validated by the import processor. */
+  async createForImport(
+    orgId: string,
+    data: {
+      name: string;
+      description?: string;
+      status?: 'active' | 'archived';
+      teamIds: string[];
+      settings?: { dailyHourLimit?: number | null; weeklyHourLimit?: number | null };
+    },
+    performedBy: string,
+  ): Promise<ProjectWithTeams> {
+    const project = await this.projectsRepository.createWithTeamsAndSettings(
+      {
+        orgId,
+        name: data.name,
+        description: data.description,
+        status: data.status,
+        settings: data.settings,
+      },
+      data.teamIds,
+    );
+
+    await this.auditLogService.log({
+      orgId,
+      entityType: 'project',
+      entityId: project.id,
+      action: 'created',
+      performedBy,
+      metadata: {
+        after: {
+          name: project.name,
+          description: project.description,
+          status: project.status,
+          teams: project.teams.map((t) => ({ teamId: t.teamId, teamName: t.teamName })),
+        },
+        source: 'import',
+      },
+    });
+
+    return project;
+  }
+
   async isUserLinkedToProject(projectId: string, userId: string): Promise<boolean> {
     return this.projectsRepository.isUserLinkedToProject(projectId, userId);
   }

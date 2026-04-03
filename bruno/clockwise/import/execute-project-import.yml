@@ -1,0 +1,36 @@
+info:
+  name: execute-project-import
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: http://localhost:3000/api/v1/import/execute
+  auth: bearer
+  body:
+    type: json
+    json: |
+      {
+        "type": "project",
+        "previewToken": "{{previewToken}}"
+      }
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "201"
+    - expression: res.body.jobId
+      operator: isString
+    - expression: res.body.totalRows
+      operator: isNumber
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
