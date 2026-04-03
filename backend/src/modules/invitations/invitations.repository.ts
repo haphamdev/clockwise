@@ -36,6 +36,7 @@ export class InvitationsRepository {
     invitedBy: string;
     token: string;
     expiresAt: Date;
+    status: InvitationEntity['status'];
     teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>;
   }): Promise<InvitationEntity> {
     const invitation = await this.prisma.invitation.create({
@@ -45,6 +46,7 @@ export class InvitationsRepository {
         invitedBy: data.invitedBy,
         token: data.token,
         expiresAt: data.expiresAt,
+        status: data.status,
         teamAssignments: {
           create: data.teamAssignments.map((ta) => ({
             teamId: ta.teamId,
@@ -64,7 +66,7 @@ export class InvitationsRepository {
   ): Promise<{ data: InvitationEntity[]; total: number }> {
     const where = {
       orgId,
-      ...(options.status && { status: options.status as 'pending' | 'accepted' | 'revoked' | 'failed' }),
+      ...(options.status && { status: options.status as InvitationEntity['status'] }),
     };
 
     const [invitations, total] = await Promise.all([
@@ -102,9 +104,9 @@ export class InvitationsRepository {
     return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
   }
 
-  async findPendingByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
+  async findActiveByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { orgId, email, status: { in: ['pending', 'failed'] }, expiresAt: { gt: new Date() } },
+      where: { orgId, email, status: { in: ['initiated', 'sending', 'sent', 'failed'] }, expiresAt: { gt: new Date() } },
       include: INVITATION_INCLUDE,
     });
 
@@ -112,19 +114,19 @@ export class InvitationsRepository {
   }
 
   /**
-   * Finds a pending, non-expired invitation by email without org scoping.
+   * Finds an active, non-expired invitation by email without org scoping.
    * Used during OAuth callback where only the email is known.
    */
-  async findPendingByEmailAnyOrg(email: string): Promise<InvitationEntity | null> {
+  async findActiveByEmailAnyOrg(email: string): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { email, status: { in: ['pending', 'failed'] }, expiresAt: { gt: new Date() } },
+      where: { email, status: { in: ['initiated', 'sending', 'sent', 'failed'] }, expiresAt: { gt: new Date() } },
       include: INVITATION_INCLUDE,
     });
 
     return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
   }
 
-  async updateStatus(id: string, status: 'accepted' | 'revoked' | 'pending' | 'failed'): Promise<void> {
+  async updateStatus(id: string, status: InvitationEntity['status']): Promise<void> {
     await this.prisma.invitation.update({
       where: { id },
       data: { status },

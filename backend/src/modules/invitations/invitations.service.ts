@@ -44,11 +44,11 @@ export class InvitationsService {
       throw new InvitationEmailAlreadyRegisteredException();
     }
 
-    const pendingInvitation = await this.invitationsRepository.findPendingByEmail(
+    const activeInvitation = await this.invitationsRepository.findActiveByEmail(
       orgId,
       data.email,
     );
-    if (pendingInvitation) {
+    if (activeInvitation) {
       throw new InvitationEmailAlreadyInvitedException();
     }
 
@@ -69,6 +69,7 @@ export class InvitationsService {
       invitedBy,
       token,
       expiresAt,
+      status: 'initiated',
       teamAssignments: data.teamAssignments,
     });
 
@@ -79,7 +80,8 @@ export class InvitationsService {
       throw new InvitationEmailSendFailedException();
     }
 
-    return invitation;
+    await this.invitationsRepository.updateStatus(invitation.id, 'sent');
+    return { ...invitation, status: 'sent' as const };
   }
 
   async findAll(
@@ -98,6 +100,7 @@ export class InvitationsService {
     if (invitation.status === 'revoked') {
       throw new InvitationAlreadyRevokedException();
     }
+    // Allow revoking: sent, initiated, sending, failed
 
     await this.invitationsRepository.updateStatus(invitationId, 'revoked');
   }
@@ -129,9 +132,9 @@ export class InvitationsService {
       throw new InvitationEmailSendFailedException();
     }
 
-    await this.invitationsRepository.updateStatus(invitationId, 'pending');
+    await this.invitationsRepository.updateStatus(invitationId, 'sent');
 
-    return updated;
+    return { ...updated, status: 'sent' as const };
   }
 
   async updateTeamAssignments(
@@ -163,8 +166,15 @@ export class InvitationsService {
         { token, expiresAt },
       );
 
-      await this.sendInvitationEmail(orgId, updated);
-      return updated;
+      try {
+        await this.sendInvitationEmail(orgId, updated);
+      } catch {
+        await this.invitationsRepository.updateStatus(invitationId, 'failed');
+        throw new InvitationEmailSendFailedException();
+      }
+
+      await this.invitationsRepository.updateStatus(invitationId, 'sent');
+      return { ...updated, status: 'sent' as const };
     }
 
     return this.invitationsRepository.updateTeamAssignments(invitationId, teamAssignments);
@@ -181,6 +191,9 @@ export class InvitationsService {
     }
     if (invitation.status === 'accepted') {
       throw new InvitationAlreadyAcceptedException();
+    }
+    if (invitation.status === 'initiated' || invitation.status === 'sending' || invitation.status === 'failed') {
+      throw new InvitationNotFoundException();
     }
     if (new Date() > invitation.expiresAt) {
       throw new InvitationExpiredException();
@@ -203,7 +216,7 @@ export class InvitationsService {
    * Uses email-based lookup since orgId is not available during the OAuth callback.
    */
   async acceptByEmail(email: string, userId: string): Promise<void> {
-    const invitation = await this.invitationsRepository.findPendingByEmailAnyOrg(email);
+    const invitation = await this.invitationsRepository.findActiveByEmailAnyOrg(email);
     if (!invitation) {
       return;
     }

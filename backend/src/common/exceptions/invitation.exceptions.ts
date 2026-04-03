@@ -38,7 +38,7 @@ export class InvitationEmailAlreadyInvitedException extends AppException {
   constructor() {
     super(
       ErrorCode.INVITATION.EMAIL_ALREADY_INVITED,
-      'A pending invitation already exists for this email',
+      'An active invitation already exists for this email',
       HttpStatus.CONFLICT,
     );
   }

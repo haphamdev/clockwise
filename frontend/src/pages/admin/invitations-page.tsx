@@ -63,7 +63,7 @@ export function InvitationsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Invitations"
-        description="Manage pending invitations."
+        description="Manage invitations."
         actions={
           <Button onClick={() => setInviteOpen(true)}>
             <Mail className="mr-1.5 h-4 w-4" />
@@ -81,9 +81,12 @@ export function InvitationsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="sent">Sent</SelectItem>
+              <SelectItem value="initiated">Initiated</SelectItem>
+              <SelectItem value="sending">Sending</SelectItem>
               <SelectItem value="accepted">Accepted</SelectItem>
               <SelectItem value="revoked">Revoked</SelectItem>
+              <SelectItem value="failed">Failed</SelectItem>
             </SelectContent>
           </Select>
         </div>
