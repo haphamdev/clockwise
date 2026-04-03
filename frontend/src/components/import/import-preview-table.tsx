@@ -7,14 +7,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { ImportRow, ImportValidationError } from '@/lib/import/types';
+import { ImportCellValue } from './import-cell-value';
+import { IMPORT_TYPE_CONFIG } from '@/lib/import/import-type-config';
+import type { ImportType, ImportRow, ImportValidationError } from '@/lib/import/types';
 
 interface ImportPreviewTableProps {
+  type: ImportType;
   validRows: ImportRow[];
   errors: ImportValidationError[];
 }
 
-export function ImportPreviewTable({ validRows, errors }: ImportPreviewTableProps) {
+export function ImportPreviewTable({ type, validRows, errors }: ImportPreviewTableProps) {
+  const config = IMPORT_TYPE_CONFIG[type];
+
   const errorsByRow = new Map<number, ImportValidationError[]>();
   for (const err of errors) {
     const list = errorsByRow.get(err.row) || [];
@@ -30,7 +35,6 @@ export function ImportPreviewTable({ validRows, errors }: ImportPreviewTableProp
 
   const validRowMap = new Map(validRows.map((r) => [r.rowNumber, r]));
 
-  // Build error row data from the first error's data field (all errors for a row share the same data)
   const errorDataMap = new Map<number, Record<string, string>>();
   for (const err of errors) {
     if (err.data && !errorDataMap.has(err.row)) {
@@ -45,10 +49,9 @@ export function ImportPreviewTable({ validRows, errors }: ImportPreviewTableProp
           <TableRow>
             <TableHead className="w-14">Row</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Project</TableHead>
-            <TableHead>Task</TableHead>
-            <TableHead>Hours</TableHead>
+            {config.columns.map((col) => (
+              <TableHead key={col.dataKey}>{col.header}</TableHead>
+            ))}
             <TableHead>Details</TableHead>
           </TableRow>
         </TableHeader>
@@ -74,10 +77,11 @@ export function ImportPreviewTable({ validRows, errors }: ImportPreviewTableProp
                     <Badge variant="destructive">Invalid</Badge>
                   )}
                 </TableCell>
-                <TableCell>{rowData?.date ?? '-'}</TableCell>
-                <TableCell>{rowData?.project_name ?? '-'}</TableCell>
-                <TableCell>{rowData?.task ?? '-'}</TableCell>
-                <TableCell>{rowData?.hours ?? '-'}</TableCell>
+                {config.columns.map((col) => (
+                  <TableCell key={col.dataKey}>
+                    <ImportCellValue value={rowData?.[col.dataKey]} isList={col.isList} />
+                  </TableCell>
+                ))}
                 <TableCell>
                   {rowErrors ? (
                     <ul className="list-disc pl-4 text-xs text-destructive">
@@ -86,7 +90,7 @@ export function ImportPreviewTable({ validRows, errors }: ImportPreviewTableProp
                       ))}
                     </ul>
                   ) : (
-                    rowData?.notes || '-'
+                    (config.detailsKey && rowData?.[config.detailsKey]) || '-'
                   )}
                 </TableCell>
               </TableRow>

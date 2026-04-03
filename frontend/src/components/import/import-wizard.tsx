@@ -10,16 +10,18 @@ import { useImportExecute } from '@/lib/import/use-import-execute';
 import { useImportJob } from '@/lib/import/use-import-job';
 import { downloadTemplate } from '@/lib/import/import-api';
 import { importKeys } from '@/lib/import/import-keys';
+import { IMPORT_TYPE_CONFIG } from '@/lib/import/import-type-config';
 import { useQueryClient } from '@tanstack/react-query';
-import type { ImportPreviewResponse } from '@/lib/import/types';
+import type { ImportType, ImportPreviewResponse } from '@/lib/import/types';
 
 type Step = 'upload' | 'preview' | 'importing' | 'done';
 
 interface ImportWizardProps {
-  type: string;
+  type: ImportType;
 }
 
 export function ImportWizard({ type }: ImportWizardProps) {
+  const config = IMPORT_TYPE_CONFIG[type];
   const [step, setStep] = useState<Step>('upload');
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -98,7 +100,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
       <CardHeader>
         <CardTitle className="text-lg">Upload CSV</CardTitle>
         <CardDescription>
-          {step === 'upload' && 'Select a CSV file to import time log entries.'}
+          {step === 'upload' && config.uploadDescription}
           {step === 'preview' && 'Review the rows below, then confirm the import.'}
           {step === 'importing' && 'Your import is being processed...'}
           {step === 'done' && (jobData?.status === 'completed' ? 'Import complete.' : 'Import failed.')}
@@ -118,6 +120,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
 
         {step === 'preview' && preview && (
           <PreviewStep
+            type={type}
             preview={preview}
             onExecute={handleExecute}
             onBack={reset}
@@ -126,7 +129,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
           />
         )}
 
-        {step === 'importing' && <ImportingStep />}
+        {step === 'importing' && <ImportingStep importingText={config.importingText} />}
 
         {step === 'done' && jobData && (
           <DoneStep
@@ -135,6 +138,8 @@ export function ImportWizard({ type }: ImportWizardProps) {
             totalRows={jobData.totalRows}
             errorCount={jobData.errors.length}
             onReset={reset}
+            doneLink={config.doneLink}
+            doneLinkLabel={config.doneLinkLabel}
           />
         )}
       </CardContent>
@@ -218,12 +223,14 @@ function UploadStep({
 }
 
 function PreviewStep({
+  type,
   preview,
   onExecute,
   onBack,
   isPending,
   error,
 }: {
+  type: ImportType;
   preview: ImportPreviewResponse;
   onExecute: () => void;
   onBack: () => void;
@@ -246,7 +253,7 @@ function PreviewStep({
         )}
         <span className="text-muted-foreground">{preview.totalRows} total</span>
       </div>
-      <ImportPreviewTable validRows={preview.validRows} errors={preview.errors} />
+      <ImportPreviewTable type={type} validRows={preview.validRows} errors={preview.errors} />
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -271,12 +278,12 @@ function PreviewStep({
   );
 }
 
-function ImportingStep() {
+function ImportingStep({ importingText }: { importingText: string }) {
   return (
     <div className="flex flex-col items-center gap-4 py-8">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
       <div className="text-center">
-        <p className="font-medium">Importing time logs...</p>
+        <p className="font-medium">{importingText}</p>
         <p className="text-sm text-muted-foreground">
           This may take a moment. Please don't close this page.
         </p>
@@ -291,12 +298,16 @@ function DoneStep({
   totalRows,
   errorCount,
   onReset,
+  doneLink,
+  doneLinkLabel,
 }: {
   status: string;
   imported: number;
   totalRows: number;
   errorCount: number;
   onReset: () => void;
+  doneLink: string;
+  doneLinkLabel: string;
 }) {
   const isSuccess = status === 'completed';
 
@@ -326,7 +337,7 @@ function DoneStep({
       </div>
       <div className="flex justify-center gap-3">
         <Button variant="outline" asChild>
-          <Link to="/time-logs">View Time Logs</Link>
+          <Link to={doneLink}>{doneLinkLabel}</Link>
         </Button>
         <Button onClick={onReset}>Import Another</Button>
       </div>
