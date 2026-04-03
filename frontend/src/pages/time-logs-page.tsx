@@ -15,6 +15,7 @@ import { ArchiveTimeLogDialog } from '@/components/time-logs/archive-time-log-di
 import { useTimeLogs } from '@/lib/time-logs/use-time-logs';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
+import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
 import type { TimeLog } from '@/lib/time-logs/types';
 
 function parseIds(value: string): string[] {
@@ -23,15 +24,16 @@ function parseIds(value: string): string[] {
 
 export function TimeLogsPage() {
   const { user } = useAuth();
-  const { page, limit, setPage, getParam, setParam } = usePaginationParams();
+  const { page, limit, setPage, getParam, setParam, setParams } = usePaginationParams();
 
   const isAdmin = user?.isAdmin ?? false;
   const isManager = user?.teams.some((t) => t.role === 'manager') ?? false;
   const showUserFilter = isAdmin || isManager;
   const showTeamFilter = isAdmin || isManager;
 
-  const dateFrom = getParam('dateFrom');
-  const dateTo = getParam('dateTo');
+  const defaults = useMemo(() => defaultTimeWindow(), []);
+  const dateFrom = getParam('dateFrom') || defaults.dateFrom;
+  const dateTo = getParam('dateTo') || defaults.dateTo;
   const projectIds = useMemo(() => parseIds(getParam('projectIds')), [getParam]);
   const userIds = useMemo(() => parseIds(getParam('userIds')), [getParam]);
   const teamIds = useMemo(() => parseIds(getParam('teamIds')), [getParam]);
@@ -42,11 +44,16 @@ export function TimeLogsPage() {
     [setParam],
   );
 
+  const handleTimeWindowChange = useCallback(
+    (w: TimeWindow) => setParams({ dateFrom: w.dateFrom, dateTo: w.dateTo }),
+    [setParams],
+  );
+
   const { data, isLoading } = useTimeLogs({
     page,
     limit,
-    dateFrom: dateFrom || undefined,
-    dateTo: dateTo || undefined,
+    dateFrom,
+    dateTo,
     projectIds: projectIds.length ? projectIds : undefined,
     userIds: userIds.length ? userIds : undefined,
     teamIds: teamIds.length ? teamIds : undefined,
@@ -105,8 +112,7 @@ export function TimeLogsPage() {
         includeArchived={includeArchived}
         showUserFilter={showUserFilter}
         showTeamFilter={showTeamFilter}
-        onDateFromChange={(v) => setParam('dateFrom', v)}
-        onDateToChange={(v) => setParam('dateTo', v)}
+        onTimeWindowChange={handleTimeWindowChange}
         onProjectIdsChange={(v) => setArrayParam('projectIds', v)}
         onUserIdsChange={(v) => setArrayParam('userIds', v)}
         onTeamIdsChange={(v) => setArrayParam('teamIds', v)}

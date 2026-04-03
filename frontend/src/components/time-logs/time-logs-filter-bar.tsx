@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Combobox } from '@/components/ui/combobox';
 import { FilterBar } from '@/components/ui/filter-bar';
+import { TimeWindowPicker } from '@/components/ui/time-window-picker';
 import { useProjects } from '@/lib/projects/use-projects';
 import { useTeams } from '@/lib/teams/use-teams';
 import { useUsers } from '@/lib/users/use-users';
 import type { ComboboxOption } from '@/components/ui/combobox';
+import type { TimeWindow } from '@/lib/dates/time-window-utils';
 
 interface TimeLogsFilterBarProps {
   dateFrom: string;
@@ -18,8 +19,7 @@ interface TimeLogsFilterBarProps {
   includeArchived: boolean;
   showUserFilter: boolean;
   showTeamFilter: boolean;
-  onDateFromChange: (value: string) => void;
-  onDateToChange: (value: string) => void;
+  onTimeWindowChange: (window: TimeWindow) => void;
   onProjectIdsChange: (value: string[]) => void;
   onUserIdsChange: (value: string[]) => void;
   onTeamIdsChange: (value: string[]) => void;
@@ -35,8 +35,7 @@ export function TimeLogsFilterBar({
   includeArchived,
   showUserFilter,
   showTeamFilter,
-  onDateFromChange,
-  onDateToChange,
+  onTimeWindowChange,
   onProjectIdsChange,
   onUserIdsChange,
   onTeamIdsChange,
@@ -85,25 +84,14 @@ export function TimeLogsFilterBar({
 
   return (
     <FilterBar>
-      <div className="space-y-1">
-        <Label className="text-xs">From</Label>
-        <Input
-          type="date"
-          value={dateFrom}
-          onChange={(e) => onDateFromChange(e.target.value)}
-          className="w-[150px]"
+      <div className="flex flex-col gap-1">
+        <Label className="text-xs">Date range</Label>
+        <TimeWindowPicker
+          value={{ dateFrom, dateTo }}
+          onChange={onTimeWindowChange}
         />
       </div>
-      <div className="space-y-1">
-        <Label className="text-xs">To</Label>
-        <Input
-          type="date"
-          value={dateTo}
-          onChange={(e) => onDateToChange(e.target.value)}
-          className="w-[150px]"
-        />
-      </div>
-      <div className="space-y-1">
+      <div className="flex flex-col gap-1">
         <Label className="text-xs">Projects</Label>
         <Combobox
           multiple
@@ -117,7 +105,7 @@ export function TimeLogsFilterBar({
         />
       </div>
       {showTeamFilter && (
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs">Teams</Label>
           <Combobox
             multiple
@@ -132,7 +120,7 @@ export function TimeLogsFilterBar({
         </div>
       )}
       {showUserFilter && (
-        <div className="space-y-1">
+        <div className="flex flex-col gap-1">
           <Label className="text-xs">Users</Label>
           <Combobox
             multiple
