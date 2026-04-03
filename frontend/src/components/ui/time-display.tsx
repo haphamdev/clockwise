@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { format, formatDistanceToNow, differenceInDays } from 'date-fns';
+import { format, formatDistanceToNow, differenceInDays, isToday, isYesterday } from 'date-fns';
 import {
   Tooltip,
   TooltipContent,
@@ -10,11 +10,12 @@ import { useEffectiveFormats } from '@/lib/user-preferences/use-effective-format
 import { DATE_TOKENS, TIME_TOKENS, toDate } from '@/lib/org/format-date';
 import type { DateFormat, TimeFormat } from '@/lib/org/types';
 
-type TimeDisplayMode = 'date' | 'datetime' | 'relative';
+type TimeDisplayMode = 'date' | 'datetime';
 
 interface TimeDisplayProps {
   value: string | Date | null | undefined;
   mode?: TimeDisplayMode;
+  absolute?: boolean;
   fallback?: string;
   className?: string;
 }
@@ -48,11 +49,16 @@ function computeDisplay(
   mode: TimeDisplayMode,
   dateFormat: DateFormat,
   timeFormat: TimeFormat,
+  absolute: boolean,
 ): { text: string; isRelative: boolean } {
   const daysDiff = Math.abs(differenceInDays(new Date(), date));
-  const showRelative = mode === 'relative' || daysDiff < 7;
+  const showRelative = !absolute && daysDiff < 7;
 
   if (showRelative) {
+    if (mode === 'date') {
+      if (isToday(date)) return { text: 'Today', isRelative: true };
+      if (isYesterday(date)) return { text: 'Yesterday', isRelative: true };
+    }
     return { text: formatDistanceToNow(date, { addSuffix: true }), isRelative: true };
   }
 
@@ -79,19 +85,20 @@ function computeTooltip(
 export function TimeDisplay({
   value,
   mode = 'date',
+  absolute = false,
   fallback,
   className,
 }: TimeDisplayProps) {
   const { dateFormat, timeFormat } = useEffectiveFormats();
 
   const date = useMemo(() => (value ? toDate(value) : null), [value]);
-  useRelativeTime(date, true);
+  useRelativeTime(date, !absolute);
 
   if (!date) {
     return fallback ? <span className={className}>{fallback}</span> : null;
   }
 
-  const { text, isRelative } = computeDisplay(date, mode, dateFormat, timeFormat);
+  const { text, isRelative } = computeDisplay(date, mode, dateFormat, timeFormat, absolute);
 
   if (!isRelative) {
     return <span className={className}>{text}</span>;
