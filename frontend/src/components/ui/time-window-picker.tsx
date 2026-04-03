@@ -7,11 +7,11 @@ import { TimeWindowPresets } from '@/components/ui/time-window-presets';
 import { TimeWindowCustom } from '@/components/ui/time-window-custom';
 import {
   formatTimeWindowLabel,
-  isPresetMatch,
-  detectRolling,
   type TimeWindow,
   type TimeWindowPreset,
 } from '@/lib/dates/time-window-utils';
+
+type Tab = 'presets' | 'custom';
 
 interface TimeWindowPickerProps {
   value: TimeWindow;
@@ -30,9 +30,18 @@ export function TimeWindowPicker({
   const [activePreset, setActivePreset] = useState<TimeWindowPreset | null>(
     value.preset ?? null,
   );
+  const [lastTab, setLastTab] = useState<Tab>(value.preset ? 'presets' : 'custom');
 
-  const handleChange = (window: TimeWindow) => {
+  const handlePresetChange = (window: TimeWindow) => {
     setActivePreset(window.preset ?? null);
+    setLastTab('presets');
+    onChange(window);
+    setOpen(false);
+  };
+
+  const handleCustomChange = (window: TimeWindow) => {
+    setActivePreset(null);
+    setLastTab('custom');
     onChange(window);
     setOpen(false);
   };
@@ -40,11 +49,6 @@ export function TimeWindowPicker({
   const enriched: TimeWindow = activePreset
     ? { ...value, preset: activePreset }
     : value;
-
-  const defaultTab =
-    isPresetMatch(enriched) || detectRolling(enriched) !== null
-      ? 'presets'
-      : 'custom';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -54,19 +58,19 @@ export function TimeWindowPicker({
           {formatTimeWindowLabel(enriched)}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="min-w-[36rem] w-auto p-0">
-        <Tabs defaultValue={defaultTab} key={defaultTab}>
+      <PopoverContent align="start" className="w-auto p-0">
+        <Tabs defaultValue={lastTab} key={lastTab}>
           <TabsList className="w-full">
             <TabsTrigger value="presets" className="flex-1">Presets</TabsTrigger>
             <TabsTrigger value="custom" className="flex-1">Custom Range</TabsTrigger>
           </TabsList>
           <TabsContent value="presets" className="mt-0">
-            <TimeWindowPresets value={enriched} onChange={handleChange} />
+            <TimeWindowPresets value={enriched} onChange={handlePresetChange} />
           </TabsContent>
           <TabsContent value="custom" className="mt-0">
             <TimeWindowCustom
               value={enriched}
-              onChange={handleChange}
+              onChange={handleCustomChange}
               allowFutureDates={allowFutureDates}
             />
           </TabsContent>

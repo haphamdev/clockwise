@@ -37,7 +37,7 @@ export function TimeWindowCustom({
   };
 
   return (
-    <div className="p-3">
+    <div className="flex justify-end p-3">
       <Calendar
         mode="range"
         selected={selected}
@@ -51,6 +51,8 @@ export function TimeWindowCustom({
         classNames={{
           weekdays: 'flex gap-1',
           week: 'mt-2 flex w-full gap-1',
+          day: 'flex-1',
+          month: 'min-w-[10rem]',
         }}
       />
     </div>
