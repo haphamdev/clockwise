@@ -26,7 +26,7 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
     {
       accessorKey: 'date',
       header: 'Date',
-      cell: ({ row }) => <TimeDisplay value={row.original.date} mode="date" />,
+      cell: ({ row }) => <TimeDisplay value={row.original.date} mode="date" absolute />,
     },
     {
       accessorKey: 'project',

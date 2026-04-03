@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ColumnDef } from '@tanstack/react-table';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   ArrowUpDown,
   Inbox,
@@ -10,6 +11,7 @@ import {
 import { MemoryRouter } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { AuthContext } from '@/lib/auth/auth-context';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -58,6 +60,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster } from '@/components/ui/sonner';
 import { StatusBadge, STATUS_VALUES, type Status } from '@/components/ui/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TaskDisplay } from '@/components/ui/task-display';
+import { TimeDisplay } from '@/components/ui/time-display';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Tooltip,
@@ -123,14 +127,47 @@ const tableColumns: ColumnDef<Person>[] = [
   { accessorKey: 'hours', header: 'Hours' },
 ];
 
+const storyQueryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false, enabled: false } },
+});
+
+const stubAuth = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: () => {},
+  logout: async () => {},
+  handleOAuthCallback: async () => {},
+};
+
+const sampleTasks = [
+  { id: '1', label: 'FE-102', description: 'Implement login page redesign' },
+  { id: '2', label: 'FE-103', description: null },
+  { id: '3', label: 'BE-47', description: 'Add rate limiting to auth endpoints' },
+] as const;
+
+function daysAgo(n: number): Date {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d;
+}
+
+function hoursAgo(n: number): Date {
+  return new Date(Date.now() - n * 60 * 60 * 1000);
+}
+
 const meta: Meta = {
   title: 'Overview/Kitchen Sink',
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <Story />
-        <Toaster />
-      </MemoryRouter>
+      <QueryClientProvider client={storyQueryClient}>
+        <AuthContext.Provider value={stubAuth}>
+          <MemoryRouter>
+            <Story />
+            <Toaster />
+          </MemoryRouter>
+        </AuthContext.Provider>
+      </QueryClientProvider>
     ),
   ],
 };
@@ -206,6 +243,65 @@ export const Default: StoryObj = {
             {STATUS_VALUES.map((s) => (
               <StatusBadge key={s} status={s} />
             ))}
+          </div>
+        </Section>
+
+        <Section title="TaskDisplay">
+          <div className="space-y-md">
+            <div className="space-y-sm">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">badge (default)</p>
+              <div className="flex flex-wrap items-center gap-md">
+                {sampleTasks.map((t) => (
+                  <TaskDisplay key={t.id} task={t} />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-sm">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">inline</p>
+              <div className="flex flex-wrap items-center gap-md">
+                {sampleTasks.map((t) => (
+                  <TaskDisplay key={t.id} task={t} variant="inline" />
+                ))}
+              </div>
+            </div>
+            <div className="space-y-sm">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">block</p>
+              <div className="grid grid-cols-3 gap-md">
+                {sampleTasks.map((t) => (
+                  <TaskDisplay key={t.id} task={t} variant="block" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        <Section title="TimeDisplay">
+          <div className="space-y-md">
+            <div className="space-y-sm">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">mode=&quot;date&quot; (relative)</p>
+              <div className="flex flex-wrap items-center gap-lg">
+                <span className="text-sm"><span className="text-muted-foreground mr-2">3h ago:</span><TimeDisplay value={hoursAgo(3)} mode="date" /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">Yesterday:</span><TimeDisplay value={daysAgo(1)} mode="date" /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">3 days:</span><TimeDisplay value={daysAgo(3)} mode="date" /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">30 days:</span><TimeDisplay value={daysAgo(30)} mode="date" /></span>
+              </div>
+            </div>
+            <div className="space-y-sm">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">mode=&quot;date&quot; absolute</p>
+              <div className="flex flex-wrap items-center gap-lg">
+                <span className="text-sm"><span className="text-muted-foreground mr-2">Today:</span><TimeDisplay value={new Date()} mode="date" absolute /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">Yesterday:</span><TimeDisplay value={daysAgo(1)} mode="date" absolute /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">30 days:</span><TimeDisplay value={daysAgo(30)} mode="date" absolute /></span>
+              </div>
+            </div>
+            <div className="space-y-sm">
+              <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">mode=&quot;datetime&quot;</p>
+              <div className="flex flex-wrap items-center gap-lg">
+                <span className="text-sm"><span className="text-muted-foreground mr-2">3h ago:</span><TimeDisplay value={hoursAgo(3)} mode="datetime" /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">30 days:</span><TimeDisplay value={daysAgo(30)} mode="datetime" /></span>
+                <span className="text-sm"><span className="text-muted-foreground mr-2">Absolute:</span><TimeDisplay value={hoursAgo(3)} mode="datetime" absolute /></span>
+              </div>
+            </div>
           </div>
         </Section>
 
