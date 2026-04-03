@@ -10,7 +10,6 @@ import {
 import { parseCsv, validateHeadersWithOptional, parseCommaSeparated } from '../utils/csv-parser';
 import { TeamsService } from '../../teams/teams.service';
 import { UsersService } from '../../users/users.service';
-import { delay } from '@/common/utils/delay';
 
 const REQUIRED_HEADERS = ['name', 'description'];
 const OPTIONAL_HEADERS = ['members', 'managers'];
@@ -60,7 +59,6 @@ export class TeamImportProcessor implements ImportProcessor {
     let dataRowCount = 0;
 
     for (let i = 0; i < dataRows.length; i++) {
-      await delay(1000);
       const rowNumber = i + 2;
       const fields = dataRows[i];
 
@@ -132,7 +130,6 @@ export class TeamImportProcessor implements ImportProcessor {
     const errors: ImportValidationError[] = [];
 
     for (const row of validRows) {
-      await delay(1000);
       try {
         const members: Array<{ userId: string; role: 'manager' | 'member' }> = JSON.parse(
           row.data._resolved_members,
