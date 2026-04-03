@@ -1,8 +1,8 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { Loader2, MoreHorizontal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { TaskDisplay } from '@/components/ui/task-display';
 import { TimeDisplay } from '@/components/ui/time-display';
 import {
   DropdownMenu,
@@ -41,9 +41,7 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.tasks.map((t) => (
-            <Badge key={t.id} variant="secondary" className="text-xs">
-              {t.label}
-            </Badge>
+            <TaskDisplay key={t.id} task={t} />
           ))}
         </div>
       ),
