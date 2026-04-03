@@ -58,17 +58,34 @@ describe('TeamImportProcessor — member resolution & execute', () => {
       expect(result.errors[0]).toMatchObject({ field: 'managers', message: expect.stringContaining('bad@test.com') });
     });
 
-    it('should error if no valid managers', async () => {
+    it('should allow row with no valid managers (creates team with no members)', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
       const csv = 'name,description,members,managers\nTeam A,,alice@test.com,bad@test.com';
       const result = await processor.parseAndValidate(csv, ctx);
 
-      expect(result.validRows).toHaveLength(0);
-      expect(result.errors).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ field: 'managers', message: expect.stringContaining('At least one valid manager') }),
-        ]),
-      );
+      expect(result.validRows).toHaveLength(1);
+      const members = JSON.parse(result.executableRows[0].data._resolved_members);
+      expect(members).toEqual([]);
+    });
+
+    it('should allow CSV with members/managers columns present but all cells empty', async () => {
+      const csv = 'name,description,members,managers\nTeam A,A team,,';
+      const result = await processor.parseAndValidate(csv, ctx);
+
+      expect(result.validRows).toHaveLength(1);
+      expect(result.errors).toHaveLength(0);
+      const members = JSON.parse(result.executableRows[0].data._resolved_members);
+      expect(members).toEqual([]);
+    });
+
+    it('should allow CSV with no members/managers headers at all', async () => {
+      const csv = 'name,description\nTeam A,A team';
+      const result = await processor.parseAndValidate(csv, ctx);
+
+      expect(result.validRows).toHaveLength(1);
+      expect(result.errors).toHaveLength(0);
+      const members = JSON.parse(result.executableRows[0].data._resolved_members);
+      expect(members).toEqual([]);
     });
 
     it('should reject invalid email format with specific message', async () => {
