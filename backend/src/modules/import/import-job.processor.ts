@@ -21,19 +21,17 @@ export class ImportJobProcessor extends WorkerHost {
     const result = await processor.execute(executableRows, { userId, orgId, isAdmin });
 
     const completedAt = new Date();
-    if (importJobId) {
-      try {
-        await this.importService.updateJobRecord(importJobId, {
-          status: ImportJobStatus.completed,
-          imported: result.imported,
-          errorCount: result.errors.length,
-          completedAt,
-        });
-      } catch (error) {
-        this.logger.error(
-          `Failed to update import job ${importJobId} to completed: ${error.message}`,
-        );
-      }
+    try {
+      await this.importService.updateJobRecord(importJobId, {
+        status: ImportJobStatus.completed,
+        imported: result.imported,
+        errorCount: result.errors.length,
+        completedAt,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to update import job ${importJobId} to completed: ${error.message}`,
+      );
     }
 
     return {
@@ -53,17 +51,15 @@ export class ImportJobProcessor extends WorkerHost {
     );
 
     const { importJobId } = job.data;
-    if (importJobId) {
-      try {
-        await this.importService.updateJobRecord(importJobId, {
-          status: ImportJobStatus.failed,
-          completedAt: new Date(),
-        });
-      } catch (updateError) {
-        this.logger.error(
-          `Failed to update import job ${importJobId} to failed: ${updateError.message}`,
-        );
-      }
+    try {
+      await this.importService.updateJobRecord(importJobId, {
+        status: ImportJobStatus.failed,
+        completedAt: new Date(),
+      });
+    } catch (updateError) {
+      this.logger.error(
+        `Failed to update import job ${importJobId} to failed: ${updateError.message}`,
+      );
     }
   }
 }

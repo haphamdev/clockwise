@@ -97,6 +97,15 @@ export class ImportService {
     return { ...response, previewToken };
   }
 
+  /**
+   * Row data flows entirely through Redis (preview cache → BullMQ job payload)
+   * and never touches Postgres. The DB record stores only metadata (status, counts).
+   *
+   * Trade-off: simpler schema and auto-cleanup, but row data is lost if Redis
+   * restarts before the worker processes the job. Acceptable for a single-tenant
+   * app with infrequent imports. If durability becomes important, store rows as
+   * JSONB on the ImportJob table and pass only the job ID through the queue.
+   */
   async execute(
     type: string,
     previewToken: string,
