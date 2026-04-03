@@ -41,6 +41,8 @@ describe('InvitationEmailProcessor', () => {
     } as unknown as jest.Mocked<InvitationsRepository>;
 
     processor = new InvitationEmailProcessor(service, repo);
+    jest.spyOn(processor['logger'], 'error').mockImplementation();
+    jest.spyOn(processor['logger'], 'warn').mockImplementation();
   });
 
   describe('process', () => {
