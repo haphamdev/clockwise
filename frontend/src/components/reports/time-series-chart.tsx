@@ -10,10 +10,17 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import type { TooltipProps } from 'recharts';
-import { formatPeriodLabel } from '@/lib/reports/granularity-utils';
+import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
+import type { LegendPayload } from 'recharts/types/component/DefaultLegendContent';
 import type { ReportGranularity, TimeSeriesBucket } from '@/lib/reports/types';
 import type { ChartMode } from './chart-mode-toggle';
+import {
+  collectSeriesKeys,
+  buildChartRows,
+  buildAvgRows,
+  mergeChartData,
+  computeYMax,
+} from '@/lib/reports/chart-utils';
 
 const CHART_COLORS = Array.from({ length: 10 }, (_, i) => `var(--chart-${i + 1})`);
 
@@ -26,56 +33,6 @@ interface TimeSeriesChartProps {
   showAverage?: boolean;
 }
 
-/** Generate all period start dates between dateFrom and dateTo for a given granularity. */
-function generatePeriodStarts(dateFrom: string, dateTo: string, granularity: ReportGranularity): string[] {
-  const starts: string[] = [];
-  const end = new Date(dateTo + 'T00:00:00Z');
-  const d = new Date(dateFrom + 'T00:00:00Z');
-
-  // Align start to granularity boundary
-  switch (granularity) {
-    case 'week': {
-      // Align to Monday
-      const dow = d.getUTCDay();
-      const diff = dow === 0 ? -6 : 1 - dow;
-      d.setUTCDate(d.getUTCDate() + diff);
-      break;
-    }
-    case 'month':
-      d.setUTCDate(1);
-      break;
-    case 'quarter':
-      d.setUTCMonth(Math.floor(d.getUTCMonth() / 3) * 3);
-      d.setUTCDate(1);
-      break;
-  }
-
-  while (d <= end) {
-    starts.push(d.toISOString().slice(0, 10));
-    switch (granularity) {
-      case 'day':
-        d.setUTCDate(d.getUTCDate() + 1);
-        break;
-      case 'week':
-        d.setUTCDate(d.getUTCDate() + 7);
-        break;
-      case 'month':
-        d.setUTCMonth(d.getUTCMonth() + 1);
-        break;
-      case 'quarter':
-        d.setUTCMonth(d.getUTCMonth() + 3);
-        break;
-    }
-  }
-
-  return starts;
-}
-
-interface ChartRow {
-  label: string;
-  [key: string]: string | number;
-}
-
 export function TimeSeriesChart({
   buckets,
   dateFrom,
@@ -86,8 +43,8 @@ export function TimeSeriesChart({
 }: TimeSeriesChartProps) {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
 
-  const handleLegendClick = useCallback((entry: { dataKey?: string }) => {
-    const id = entry.dataKey as string;
+  const handleLegendClick = useCallback((entry: LegendPayload) => {
+    const id = String(entry.dataKey ?? '');
     if (!id) return;
     setHiddenIds((prev) => {
       const next = new Set(prev);
@@ -97,113 +54,43 @@ export function TimeSeriesChart({
     });
   }, []);
 
-  // Collect all unique series keys across all buckets
-  const seriesKeys = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const b of buckets) {
-      for (const s of b.series) {
-        if (!map.has(s.id)) map.set(s.id, s.label);
-      }
-    }
-    return Array.from(map, ([id, label]) => ({ id, label }));
-  }, [buckets]);
+  const seriesKeys = useMemo(() => collectSeriesKeys(buckets), [buckets]);
 
-  // Fill missing periods and transform into flat rows for recharts
-  const { rows, avgRows } = useMemo(() => {
-    const bucketMap = new Map(buckets.map((b) => [b.periodStart, b]));
-    const allPeriods = generatePeriodStarts(dateFrom, dateTo, granularity);
+  const rows = useMemo(
+    () => buildChartRows(buckets, dateFrom, dateTo, granularity),
+    [buckets, dateFrom, dateTo, granularity],
+  );
 
-    const rows: ChartRow[] = allPeriods.map((periodStart) => {
-      const row: ChartRow = { label: formatPeriodLabel(periodStart, granularity) };
-      const bucket = bucketMap.get(periodStart);
-      if (bucket) {
-        for (const s of bucket.series) {
-          row[s.id] = s.value;
-        }
-      }
-      return row;
-    });
+  const avgRows = useMemo(
+    () => (showAverage ? buildAvgRows(rows, seriesKeys) : rows),
+    [rows, seriesKeys, showAverage],
+  );
 
-    // Cumulative average: total so far / number of periods so far
-    if (!showAverage || rows.length < 2) return { rows, avgRows: rows };
-
-    const cumSums = new Map<string, number>();
-    let totalCumSum = 0;
-    const avgRows: ChartRow[] = rows.map((row, i) => {
-      const avg: ChartRow = { label: row.label };
-      const count = i + 1;
-      let periodTotal = 0;
-      for (const sk of seriesKeys) {
-        const prev = cumSums.get(sk.id) ?? 0;
-        const v = rows[i][sk.id];
-        const val = typeof v === 'number' ? v : 0;
-        const sum = prev + val;
-        cumSums.set(sk.id, sum);
-        avg[`${sk.id}_avg`] = Math.round((sum / count) * 100) / 100;
-        periodTotal += val;
-      }
-      totalCumSum += periodTotal;
-      avg._total_avg = Math.round((totalCumSum / count) * 100) / 100;
-      return avg;
-    });
-    return { rows, avgRows };
-  }, [buckets, dateFrom, dateTo, granularity, seriesKeys, showAverage]);
-
-  // Merge rows and avg rows; recompute _total_avg based on visible series
   const data = useMemo(
-    () =>
-      rows.map((row, i) => {
-        const merged: ChartRow = { ...row, ...(avgRows !== rows ? avgRows[i] : {}) };
-        if (avgRows !== rows) {
-          let visibleTotal = 0;
-          for (const sk of seriesKeys) {
-            if (!hiddenIds.has(sk.id)) {
-              const v = merged[`${sk.id}_avg`];
-              if (typeof v === 'number') visibleTotal += v;
-            }
-          }
-          merged._total_avg = Math.round(visibleTotal * 100) / 100;
-        }
-        return merged;
-      }),
+    () => mergeChartData(rows, avgRows, seriesKeys, hiddenIds),
     [rows, avgRows, seriesKeys, hiddenIds],
   );
 
-  // Fixed Y axis max based on full dataset, accounting for chart mode
-  // Stacked: max is sum of all series per period; Grouped: max is single highest value
-  const yMax = useMemo(() => {
-    let max = 0;
-    for (const row of rows) {
-      let stackedTotal = 0;
-      for (const sk of seriesKeys) {
-        const v = row[sk.id];
-        const val = typeof v === 'number' ? v : 0;
-        stackedTotal += val;
-        if (mode === 'grouped' && val > max) max = val;
-      }
-      if (mode === 'stacked' && stackedTotal > max) max = stackedTotal;
-    }
-    return Math.ceil(max);
-  }, [rows, seriesKeys, mode]);
-
-  const hasAvg = showAverage && avgRows !== rows;
+  const yMax = useMemo(
+    () => computeYMax(rows, seriesKeys, mode),
+    [rows, seriesKeys, mode],
+  );
 
   const renderTooltip = useMemo(() => {
-    return function ChartTooltip({ active, payload, label: tooltipLabel }: TooltipProps<number, string>) {
+    return function ChartTooltip({ active, payload, label: tooltipLabel }: TooltipContentProps) {
       if (!active || !payload?.length) return null;
 
-      // Collect bar values and avg values from payload
       const barValues = new Map<string, number>();
       const avgValues = new Map<string, number>();
       let totalAvg: number | undefined;
       for (const entry of payload) {
         const key = entry.dataKey as string;
         if (key === '_total_avg') {
-          totalAvg = entry.value ?? 0;
+          totalAvg = Number(entry.value ?? 0);
         } else if (key.endsWith('_avg')) {
-          avgValues.set(key.replace('_avg', ''), entry.value ?? 0);
+          avgValues.set(key.replace('_avg', ''), Number(entry.value ?? 0));
         } else {
-          barValues.set(key, entry.value ?? 0);
+          barValues.set(key, Number(entry.value ?? 0));
         }
       }
 
@@ -217,7 +104,10 @@ export function TimeSeriesChart({
           total += value;
           const avg = !isStacked ? avgValues.get(sk.id) : undefined;
           return (
-            <p key={sk.id} style={{ color: CHART_COLORS[i % CHART_COLORS.length], margin: '2px 0' }}>
+            <p
+              key={sk.id}
+              style={{ color: CHART_COLORS[i % CHART_COLORS.length], margin: '2px 0' }}
+            >
               {sk.label}: {value}h
               {avg !== undefined && <span style={{ opacity: 0.7 }}> (avg. {avg}h)</span>}
             </p>
@@ -237,7 +127,14 @@ export function TimeSeriesChart({
           <p style={{ marginBottom: 4, fontWeight: 500 }}>{tooltipLabel}</p>
           {lines}
           {isStacked && (
-            <p style={{ color: 'var(--text)', margin: '4px 0 0', borderTop: '1px solid var(--border-muted)', paddingTop: 4 }}>
+            <p
+              style={{
+                color: 'var(--text)',
+                margin: '4px 0 0',
+                borderTop: '1px solid var(--border-muted)',
+                paddingTop: 4,
+              }}
+            >
               Total: {Math.round(total * 100) / 100}h
               {totalAvg !== undefined && <span style={{ opacity: 0.7 }}> (avg. {totalAvg}h)</span>}
             </p>
@@ -245,7 +142,7 @@ export function TimeSeriesChart({
         </div>
       );
     };
-  }, [seriesKeys, hasAvg, mode, hiddenIds]);
+  }, [seriesKeys, mode, hiddenIds]);
 
   if (seriesKeys.length === 0) {
     return (
@@ -281,10 +178,10 @@ export function TimeSeriesChart({
           iconType="square"
           iconSize={10}
           onClick={handleLegendClick}
-          formatter={(value: string, entry: { dataKey?: string }) => {
-            const id = entry.dataKey as string;
+          formatter={(_value: unknown, entry: LegendPayload) => {
+            const id = String(entry.dataKey ?? '');
             const hidden = hiddenIds.has(id);
-            return <span style={{ opacity: hidden ? 0.35 : 1 }}>{value}</span>;
+            return <span style={{ opacity: hidden ? 0.35 : 1 }}>{String(entry.value ?? '')}</span>;
           }}
         />
         {seriesKeys.map((sk, i) => (
