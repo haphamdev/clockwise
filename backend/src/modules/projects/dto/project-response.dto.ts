@@ -36,6 +36,9 @@ export class ProjectResponseDto {
   @ApiProperty()
   teamCount: number;
 
+  @ApiProperty({ type: [String] })
+  teamIds: string[];
+
   @ApiProperty()
   createdAt: Date;
 

@@ -8,6 +8,7 @@ export interface Project {
   description: string | null;
   status: ProjectStatus;
   teamCount: number;
+  teamIds: string[];
   createdAt: string;
   updatedAt: string;
 }

@@ -21,6 +21,7 @@ import { ProjectsPage } from '@/pages/projects-page';
 import { ProjectDetailPage } from '@/pages/project-detail-page';
 import { TimeLogsPage } from '@/pages/time-logs-page';
 import { ImportPage } from '@/pages/import-page';
+import { ReportsPage } from '@/pages/reports-page';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -58,7 +59,7 @@ export default function App() {
                 <Route path="/import" element={<ImportPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                <Route path="/reports" element={<PlaceholderPage title="Reports" />} />
+                <Route path="/reports" element={<ReportsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/settings" element={<UserPreferencesPage />} />
 

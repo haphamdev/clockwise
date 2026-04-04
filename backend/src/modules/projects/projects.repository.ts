@@ -57,6 +57,7 @@ export class ProjectsRepository {
         where,
         include: {
           _count: { select: { projectTeams: { where: { isDeleted: false } } } },
+          projectTeams: { where: { isDeleted: false }, select: { teamId: true } },
         },
         orderBy: { name: 'asc' },
         skip: (options.page - 1) * options.limit,
@@ -96,6 +97,7 @@ export class ProjectsRepository {
         where,
         include: {
           _count: { select: { projectTeams: { where: { isDeleted: false } } } },
+          projectTeams: { where: { isDeleted: false }, select: { teamId: true } },
         },
         orderBy: { name: 'asc' },
         skip: (options.page - 1) * options.limit,
@@ -134,6 +136,7 @@ export class ProjectsRepository {
         where,
         include: {
           _count: { select: { projectTeams: { where: { isDeleted: false } } } },
+          projectTeams: { where: { isDeleted: false }, select: { teamId: true } },
         },
         orderBy: { name: 'asc' },
         skip: (options.page - 1) * options.limit,
@@ -334,6 +337,14 @@ export class ProjectsRepository {
     });
   }
 
+  async getTeamSummary(projectId: string): Promise<{ teamCount: number; teamIds: string[] }> {
+    const rows = await this.prisma.projectTeam.findMany({
+      where: { projectId, isDeleted: false },
+      select: { teamId: true },
+    });
+    return { teamCount: rows.length, teamIds: rows.map((r) => r.teamId) };
+  }
+
   async countTeams(projectId: string): Promise<number> {
     return this.prisma.projectTeam.count({ where: { projectId, isDeleted: false } });
   }
@@ -420,11 +431,15 @@ export class ProjectsRepository {
   }
 
   private toListItem(
-    project: Project & { _count: { projectTeams: number } },
+    project: Project & {
+      _count: { projectTeams: number };
+      projectTeams: { teamId: string }[];
+    },
   ): ProjectListItem {
     return {
       ...this.toEntity(project),
       teamCount: project._count.projectTeams,
+      teamIds: project.projectTeams.map((pt) => pt.teamId),
     };
   }
 
