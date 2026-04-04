@@ -28,9 +28,7 @@ export function TimeWindowCustom({
       setDraft({ from: day, to: undefined });
     } else if (draft.from) {
       // Second click — complete range, ensure from <= to
-      const [start, end] = draft.from <= day
-        ? [draft.from, day]
-        : [day, draft.from];
+      const [start, end] = draft.from <= day ? [draft.from, day] : [day, draft.from];
       setDraft(undefined);
       onChange({ dateFrom: formatDateISO(start), dateTo: formatDateISO(end) });
     }
@@ -45,15 +43,9 @@ export function TimeWindowCustom({
         // manual onDayClick two-click logic (first click = start, second = end)
         onSelect={() => {}}
         onDayClick={handleDayClick}
-        numberOfMonths={2}
+        numberOfMonths={1}
         disabled={!allowFutureDates ? { after: new Date() } : undefined}
         weekStartsOn={1}
-        classNames={{
-          weekdays: 'flex gap-1',
-          week: 'mt-2 flex w-full gap-1',
-          day: 'flex-1',
-          month: 'min-w-[10rem]',
-        }}
       />
     </div>
   );
