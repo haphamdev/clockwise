@@ -48,6 +48,7 @@ function makeProjectListItem(overrides?: Partial<ProjectListItem>): ProjectListI
     description: null,
     status: 'active',
     teamCount: 2,
+    teamIds: ['team-1', 'team-2'],
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,

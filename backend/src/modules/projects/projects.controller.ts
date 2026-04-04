@@ -190,6 +190,7 @@ export class ProjectsController {
       description: project.description,
       status: project.status,
       teamCount: project.teamCount,
+      teamIds: project.teamIds,
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
     };

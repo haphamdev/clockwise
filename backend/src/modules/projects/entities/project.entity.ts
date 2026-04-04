@@ -19,6 +19,7 @@ export interface ProjectTeamEntity {
 
 export interface ProjectListItem extends ProjectEntity {
   teamCount: number;
+  teamIds: string[];
 }
 
 export interface ProjectWithTeams extends ProjectEntity {

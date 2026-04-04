@@ -135,7 +135,7 @@ export class ProjectsService {
     }
 
     const updated = await this.projectsRepository.update(projectId, data);
-    const teamCount = await this.projectsRepository.countTeams(projectId);
+    const { teamCount, teamIds } = await this.projectsRepository.getTeamSummary(projectId);
 
     const before: Record<string, unknown> = {};
     const after: Record<string, unknown> = {};
@@ -158,7 +158,7 @@ export class ProjectsService {
       });
     }
 
-    return { ...updated, teamCount };
+    return { ...updated, teamCount, teamIds };
   }
 
   async archive(
@@ -169,7 +169,7 @@ export class ProjectsService {
     const project = await this.getProjectOrThrow(projectId, orgId);
     this.ensureNotArchived(project);
     const updated = await this.projectsRepository.archive(projectId);
-    const teamCount = await this.projectsRepository.countTeams(projectId);
+    const { teamCount, teamIds } = await this.projectsRepository.getTeamSummary(projectId);
     await this.auditLogService.log({
       orgId,
       entityType: 'project',
@@ -178,7 +178,7 @@ export class ProjectsService {
       performedBy,
       metadata: { before: { status: 'active' }, after: { status: 'archived' } },
     });
-    return { ...updated, teamCount };
+    return { ...updated, teamCount, teamIds };
   }
 
   async unarchive(
@@ -189,7 +189,7 @@ export class ProjectsService {
     const project = await this.getProjectOrThrow(projectId, orgId);
     this.ensureArchived(project);
     const updated = await this.projectsRepository.unarchive(projectId);
-    const teamCount = await this.projectsRepository.countTeams(projectId);
+    const { teamCount, teamIds } = await this.projectsRepository.getTeamSummary(projectId);
     await this.auditLogService.log({
       orgId,
       entityType: 'project',
@@ -198,7 +198,7 @@ export class ProjectsService {
       performedBy,
       metadata: { before: { status: 'archived' }, after: { status: 'active' } },
     });
-    return { ...updated, teamCount };
+    return { ...updated, teamCount, teamIds };
   }
 
   async assignTeam(

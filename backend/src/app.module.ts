@@ -16,6 +16,7 @@ import { UserPreferencesModule } from './modules/user-preferences/user-preferenc
 import { TasksModule } from './modules/tasks/tasks.module';
 import { TimeLogsModule } from './modules/time-logs/time-logs.module';
 import { ImportModule } from './modules/import/import.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ImportModule } from './modules/import/import.module';
     TasksModule,
     TimeLogsModule,
     ImportModule,
+    ReportsModule,
   ],
   controllers: [AppController],
 })
