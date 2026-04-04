@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -84,6 +84,19 @@ export function TimeSeriesChart({
   mode,
   showAverage = true,
 }: TimeSeriesChartProps) {
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+
+  const handleLegendClick = useCallback((entry: { dataKey?: string }) => {
+    const id = entry.dataKey as string;
+    if (!id) return;
+    setHiddenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   // Collect all unique series keys across all buckets
   const seriesKeys = useMemo(() => {
     const map = new Map<string, string>();
@@ -136,15 +149,42 @@ export function TimeSeriesChart({
     return { rows, avgRows };
   }, [buckets, dateFrom, dateTo, granularity, seriesKeys, showAverage]);
 
-  // Merge rows and avg rows
+  // Merge rows and avg rows; recompute _total_avg based on visible series
   const data = useMemo(
     () =>
-      rows.map((row, i) => ({
-        ...row,
-        ...(avgRows !== rows ? avgRows[i] : {}),
-      })),
-    [rows, avgRows],
+      rows.map((row, i) => {
+        const merged: ChartRow = { ...row, ...(avgRows !== rows ? avgRows[i] : {}) };
+        if (avgRows !== rows) {
+          let visibleTotal = 0;
+          for (const sk of seriesKeys) {
+            if (!hiddenIds.has(sk.id)) {
+              const v = merged[`${sk.id}_avg`];
+              if (typeof v === 'number') visibleTotal += v;
+            }
+          }
+          merged._total_avg = Math.round(visibleTotal * 100) / 100;
+        }
+        return merged;
+      }),
+    [rows, avgRows, seriesKeys, hiddenIds],
   );
+
+  // Fixed Y axis max based on full dataset, accounting for chart mode
+  // Stacked: max is sum of all series per period; Grouped: max is single highest value
+  const yMax = useMemo(() => {
+    let max = 0;
+    for (const row of rows) {
+      let stackedTotal = 0;
+      for (const sk of seriesKeys) {
+        const v = row[sk.id];
+        const val = typeof v === 'number' ? v : 0;
+        stackedTotal += val;
+        if (mode === 'grouped' && val > max) max = val;
+      }
+      if (mode === 'stacked' && stackedTotal > max) max = stackedTotal;
+    }
+    return Math.ceil(max);
+  }, [rows, seriesKeys, mode]);
 
   const hasAvg = showAverage && avgRows !== rows;
 
@@ -169,17 +209,20 @@ export function TimeSeriesChart({
 
       const isStacked = mode === 'stacked';
       let total = 0;
-      const lines = seriesKeys.map((sk, i) => {
-        const value = barValues.get(sk.id) ?? 0;
-        total += value;
-        const avg = !isStacked ? avgValues.get(sk.id) : undefined;
-        return (
-          <p key={sk.id} style={{ color: CHART_COLORS[i % CHART_COLORS.length], margin: '2px 0' }}>
-            {sk.label}: {value}h
-            {avg !== undefined && <span style={{ opacity: 0.7 }}> (avg. {avg}h)</span>}
-          </p>
-        );
-      });
+      const lines = seriesKeys
+        .filter((sk) => !hiddenIds.has(sk.id))
+        .map((sk) => {
+          const i = seriesKeys.indexOf(sk);
+          const value = barValues.get(sk.id) ?? 0;
+          total += value;
+          const avg = !isStacked ? avgValues.get(sk.id) : undefined;
+          return (
+            <p key={sk.id} style={{ color: CHART_COLORS[i % CHART_COLORS.length], margin: '2px 0' }}>
+              {sk.label}: {value}h
+              {avg !== undefined && <span style={{ opacity: 0.7 }}> (avg. {avg}h)</span>}
+            </p>
+          );
+        });
 
       return (
         <div
@@ -202,7 +245,7 @@ export function TimeSeriesChart({
         </div>
       );
     };
-  }, [seriesKeys, hasAvg, mode]);
+  }, [seriesKeys, hasAvg, mode, hiddenIds]);
 
   if (seriesKeys.length === 0) {
     return (
@@ -229,12 +272,20 @@ export function TimeSeriesChart({
           tickLine={false}
           axisLine={false}
           width={40}
+          domain={[0, yMax > 0 ? yMax : 'auto']}
+          allowDataOverflow
         />
         <Tooltip content={renderTooltip} />
         <Legend
-          wrapperStyle={{ fontSize: 12 }}
+          wrapperStyle={{ fontSize: 12, cursor: 'pointer' }}
           iconType="square"
           iconSize={10}
+          onClick={handleLegendClick}
+          formatter={(value: string, entry: { dataKey?: string }) => {
+            const id = entry.dataKey as string;
+            const hidden = hiddenIds.has(id);
+            return <span style={{ opacity: hidden ? 0.35 : 1 }}>{value}</span>;
+          }}
         />
         {seriesKeys.map((sk, i) => (
           <Bar
@@ -245,6 +296,7 @@ export function TimeSeriesChart({
             stackId={stackId}
             radius={stackId ? undefined : [2, 2, 0, 0]}
             maxBarSize={48}
+            hide={hiddenIds.has(sk.id)}
           />
         ))}
         {showAverage &&
@@ -269,6 +321,7 @@ export function TimeSeriesChart({
                 strokeWidth={2}
                 strokeDasharray="4 2"
                 dot={false}
+                hide={hiddenIds.has(sk.id)}
                 legendType="none"
               />
             ))
