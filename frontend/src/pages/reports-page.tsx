@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
 import { ReportsFilterBar } from '@/components/reports/reports-filter-bar';
+import { PersonalInsight } from '@/components/reports/personal-insight';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
 import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
@@ -85,7 +86,18 @@ export function ReportsPage() {
         onTeamIdsChange={handleTeamIdsChange}
       />
 
-      <SectionPlaceholder title="Personal Insight" />
+      {user && (
+        <PersonalInsight
+          filters={{
+            dateFrom,
+            dateTo,
+            projectIds: projectIds.length > 0 ? projectIds : undefined,
+            userIds: userIds.length > 0 ? userIds : undefined,
+            teamIds: teamIds.length > 0 ? teamIds : undefined,
+          }}
+          userId={user.id}
+        />
+      )}
       {showTeamSection && <SectionPlaceholder title="Team Insight" />}
       {showProjectSection && <SectionPlaceholder title="Project Insight" />}
     </div>
