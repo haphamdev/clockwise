@@ -306,7 +306,7 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 
 ---
 
-## Phase 3.5: Section-Specific Filters + URL Param Refactor
+## Phase 3.5: Section-Specific Filters + URL Param Refactor ✅ (DONE)
 
 > **Why a separate phase:** Phases 1–3 shipped with a single shared filter bar. This phase refactors to section-specific filters with the new URL param scheme. Doing this before Phase 4 (Project Insight) means the new section launches with the correct filter pattern from day one.
 

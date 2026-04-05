@@ -6,10 +6,9 @@ import { TeamInsight } from '@/components/reports/team-insight';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
 import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
-
-function parseIds(value: string): string[] {
-  return value ? value.split(',').filter(Boolean) : [];
-}
+import { autoGranularity } from '@/lib/reports/granularity-utils';
+import { codeToGranularity, granularityToCode } from '@/lib/reports/report-param-utils';
+import type { ReportGranularity } from '@/lib/reports/types';
 
 function SectionPlaceholder({ title }: { title: string }) {
   return (
@@ -26,55 +25,27 @@ export function ReportsPage() {
 
   const isAdmin = user?.isAdmin ?? false;
   const isManager = user?.teams.some((t) => t.role === 'manager') ?? false;
-  const showUserFilter = isAdmin || isManager;
-  const showTeamFilter = isAdmin || isManager;
   const showTeamSection = isAdmin || isManager;
   const showProjectSection = isAdmin || isManager;
 
+  // Shared date range
   const defaults = useMemo(() => defaultTimeWindow(), []);
   const dateFrom = getParam('dateFrom') || defaults.dateFrom;
   const dateTo = getParam('dateTo') || defaults.dateTo;
-  const projectIdsParam = getParam('projectIds');
-  const userIdsParam = getParam('userIds');
-  const teamIdsParam = getParam('teamIds');
-  const projectIds = useMemo(() => parseIds(projectIdsParam), [projectIdsParam]);
-  const userIds = useMemo(() => parseIds(userIdsParam), [userIdsParam]);
-  const teamIds = useMemo(() => parseIds(teamIdsParam), [teamIdsParam]);
 
-  const setArrayParam = useCallback(
-    (key: string, ids: string[]) => setParam(key, ids.join(',')),
-    [setParam],
-  );
+  // Shared granularity — URL param `gran` stores compact code (d/w/m/q),
+  // falls back to auto-computed value when absent.
+  const granParam = getParam('gran');
+  const granularity: ReportGranularity = codeToGranularity(granParam) ?? autoGranularity(dateFrom, dateTo);
 
   const handleTimeWindowChange = useCallback(
     (w: TimeWindow) => setParams({ dateFrom: w.dateFrom, dateTo: w.dateTo }),
     [setParams],
   );
 
-  const handleProjectIdsChange = useCallback(
-    (v: string[]) => setArrayParam('projectIds', v),
-    [setArrayParam],
-  );
-
-  const handleUserIdsChange = useCallback(
-    (v: string[]) => setArrayParam('userIds', v),
-    [setArrayParam],
-  );
-
-  const handleTeamIdsChange = useCallback(
-    (v: string[]) => setArrayParam('teamIds', v),
-    [setArrayParam],
-  );
-
-  const filters = useMemo(
-    () => ({
-      dateFrom,
-      dateTo,
-      projectIds: projectIds.length > 0 ? projectIds : undefined,
-      userIds: userIds.length > 0 ? userIds : undefined,
-      teamIds: teamIds.length > 0 ? teamIds : undefined,
-    }),
-    [dateFrom, dateTo, projectIds, userIds, teamIds],
+  const handleGranularityChange = useCallback(
+    (g: ReportGranularity) => setParam('gran', granularityToCode(g)),
+    [setParam],
   );
 
   return (
@@ -87,21 +58,31 @@ export function ReportsPage() {
       <ReportsFilterBar
         dateFrom={dateFrom}
         dateTo={dateTo}
-        projectIds={projectIds}
-        userIds={userIds}
-        teamIds={teamIds}
-        showUserFilter={showUserFilter}
-        showTeamFilter={showTeamFilter}
+        granularity={granularity}
         onTimeWindowChange={handleTimeWindowChange}
-        onProjectIdsChange={handleProjectIdsChange}
-        onUserIdsChange={handleUserIdsChange}
-        onTeamIdsChange={handleTeamIdsChange}
+        onGranularityChange={handleGranularityChange}
       />
 
       {user && (
-        <PersonalInsight filters={filters} userId={user.id} />
+        <PersonalInsight
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          granularity={granularity}
+          userId={user.id}
+          getParam={getParam}
+          setParam={setParam}
+        />
       )}
-      {showTeamSection && <TeamInsight filters={filters} />}
+      {showTeamSection && (
+        <TeamInsight
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          granularity={granularity}
+          getParam={getParam}
+          setParam={setParam}
+          setParams={setParams}
+        />
+      )}
       {showProjectSection && <SectionPlaceholder title="Project Insight" />}
     </div>
   );
