@@ -14,6 +14,7 @@ import { TimeSeriesChart } from './time-series-chart';
 import type { ChartMode } from './chart-mode-toggle';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ReportGranularity } from '@/lib/reports/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 // Default chart modes by position: chart 0 = Hours by User, chart 1 = Hours by Project
 const TI_MODE_DEFAULTS: ChartMode[] = ['grouped', 'stacked'];
@@ -135,95 +136,102 @@ export function TeamInsight({
 
   return (
     <section className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-lg font-semibold">Team Insight</h2>
-          <p className="text-sm text-muted-foreground">
+      <Card>
+        <CardHeader>
+          <CardTitle>Team Insight</CardTitle>
+          <CardDescription>
             Aggregated hours across all filtered team members. Spot workload imbalances in the user
             chart and track project allocation in the project chart.
-          </p>
-        </div>
-        <div className="flex items-end gap-3">
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs">Team</Label>
-            <Combobox
-              options={teamOptions}
-              value={tiTeamId}
-              onChange={handleTeamChange}
-              placeholder="Select team"
-              searchPlaceholder="Search teams..."
-              emptyText="No teams available."
-              className="w-[200px]"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs">Members</Label>
-            <Combobox
-              multiple
-              options={userOptions}
-              value={tiUserIds}
-              onChange={handleUserIdsChange}
-              placeholder="All members"
-              searchPlaceholder="Search members..."
-              emptyText="No members available."
-              className="w-[200px]"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs">Projects</Label>
-            <Combobox
-              multiple
-              options={projectOptions}
-              value={tiProjectIds}
-              onChange={handleProjectIdsChange}
-              placeholder="All projects"
-              searchPlaceholder="Search projects..."
-              emptyText="No projects available."
-              className="w-[200px]"
-            />
-          </div>
-        </div>
-      </div>
-      <SummaryCards cards={summaryCards} />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4 my-4">
+              <div className="w-full flex justify-end items-end gap-3">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Team</Label>
+                  <Combobox
+                    options={teamOptions}
+                    value={tiTeamId}
+                    onChange={handleTeamChange}
+                    placeholder="Select team"
+                    searchPlaceholder="Search teams..."
+                    emptyText="No teams available."
+                    className="w-[200px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Members</Label>
+                  <Combobox
+                    multiple
+                    options={userOptions}
+                    value={tiUserIds}
+                    onChange={handleUserIdsChange}
+                    placeholder="All members"
+                    searchPlaceholder="Search members..."
+                    emptyText="No members available."
+                    className="w-[200px]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs">Projects</Label>
+                  <Combobox
+                    multiple
+                    options={projectOptions}
+                    value={tiProjectIds}
+                    onChange={handleProjectIdsChange}
+                    placeholder="All projects"
+                    searchPlaceholder="Search projects..."
+                    emptyText="No projects available."
+                    className="w-[200px]"
+                  />
+                </div>
+              </div>
+            </div>
+            <SummaryCards cards={summaryCards} />
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
-            <p className="text-xs text-muted-foreground">
-              Each color represents a team member. Compare individual contributions per time period.
-            </p>
-          </div>
-          <ChartModeToggle value={modes[0]} onChange={(m) => setMode(0, m)} />
-        </div>
-        <TimeSeriesChart
-          buckets={userSeries?.buckets ?? []}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          granularity={granularity}
-          mode={modes[0]}
-        />
-      </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Each color represents a team member. Compare individual contributions per time
+                    period.
+                  </p>
+                </div>
+                <ChartModeToggle value={modes[0]} onChange={(m) => setMode(0, m)} />
+              </div>
+              <TimeSeriesChart
+                buckets={userSeries?.buckets ?? []}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                granularity={granularity}
+                mode={modes[0]}
+              />
+            </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
-            <p className="text-xs text-muted-foreground">
-              Each color represents a project. See how team effort is distributed across projects
-              over time.
-            </p>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Each color represents a project. See how team effort is distributed across
+                    projects over time.
+                  </p>
+                </div>
+                <ChartModeToggle value={modes[1]} onChange={(m) => setMode(1, m)} />
+              </div>
+              <TimeSeriesChart
+                buckets={projectSeries?.buckets ?? []}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                granularity={granularity}
+                mode={modes[1]}
+              />
+            </div>
           </div>
-          <ChartModeToggle value={modes[1]} onChange={(m) => setMode(1, m)} />
-        </div>
-        <TimeSeriesChart
-          buckets={projectSeries?.buckets ?? []}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          granularity={granularity}
-          mode={modes[1]}
-        />
-      </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

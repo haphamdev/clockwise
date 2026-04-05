@@ -12,17 +12,11 @@ interface FilterBarProps {
   className?: string;
 }
 
-export function FilterBar({
-  children,
-  collapsible = false,
-  className,
-}: FilterBarProps) {
+export function FilterBar({ children, collapsible = false, className }: FilterBarProps) {
   const [open, setOpen] = useState(true);
 
   if (!collapsible) {
-    return (
-      <div className={cn(filterRowClasses, className)}>{children}</div>
-    );
+    return <div className={cn(filterRowClasses, className)}>{children}</div>;
   }
 
   return (
@@ -31,7 +25,7 @@ export function FilterBar({
         variant="outline"
         size="sm"
         onClick={() => setOpen(!open)}
-        className="mb-3"
+        className="mb-3 border border-red-500"
       >
         <SlidersHorizontal className="h-4 w-4" />
         Filters
