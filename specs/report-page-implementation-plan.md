@@ -8,18 +8,66 @@ Users need reports to analyze time log data. The `/reports` page (route already 
 
 - **Chart library:** Recharts (via shadcn chart primitives). Heatmaps as custom CSS grids.
 - **Backend:** 4 endpoints (time-series, weekday-distribution, logging-delay, summary). Raw SQL via `$queryRaw` for `date_trunc` aggregations (first raw SQL in the codebase — Prisma's `groupBy` can't do date truncation).
-- **Filters:** TimeWindowPicker + Team/User/Project multi-select comboboxes. Role-scoped visibility.
-- **Phased:** 6 phases, verify each before proceeding.
+- **Filters:** Section-specific. Shared date range + granularity at top; each section owns its entity filters (team/user/project pickers). See "Filter Architecture" below.
+- **Phased:** 7 phases, verify each before proceeding.
 
 ## Access Control
 
-| Role    | Team filter                              | User filter                  | Project filter                 | Sections visible |
-| ------- | ---------------------------------------- | ---------------------------- | ------------------------------ | ---------------- |
-| Admin   | All teams                                | All users (scoped to teams)  | All projects (scoped to teams) | All 3            |
-| Manager | Teams they belong to (member or manager) | Self + managed team members  | Scoped to selected teams       | All 3            |
-| Member  | Teams they belong to                     | Auto-scoped to self (hidden) | Scoped to their teams          | Personal only    |
+| Role    | Personal Insight                  | Team Insight                                      | Project Insight (future)                           |
+| ------- | --------------------------------- | ------------------------------------------------- | -------------------------------------------------- |
+| Admin   | Own data, project filter (multi)  | Any team (single-select), user filter within team  | Any project (single-select), user filter within it |
+| Manager | Own data, project filter (multi)  | Managed teams (single-select), user filter         | Managed projects (single-select), user filter      |
+| Member  | Own data, project filter (multi)  | Not visible                                        | Not visible                                        |
 
-Default state: no team/project selected, current user pre-selected in user filter.
+## Filter Architecture
+
+### Shared vs section-specific filters
+
+The date range and time granularity apply globally — you typically want the same time window across all sections. Everything else is section-specific because each section has different semantics:
+
+- **Personal Insight** — always scoped to the current user. Only needs a project filter (multi-select) to let users compare specific projects.
+- **Team Insight** — scoped to one team at a time. Single-select team picker (auto-selects first team alphabetically). Optional user filter within that team. Changing the team resets the user filter.
+- **Project Insight** (future) — scoped to one project at a time. Single-select project picker. Optional user filter within that project.
+
+### URL parameter scheme
+
+All filter state is persisted in URL params for shareable/bookmarkable links. Short prefixes keep URLs compact while remaining readable.
+
+| Param | Scope | Type | Example | Description |
+|---|---|---|---|---|
+| `dateFrom` | Shared | string | `2026-03-01` | Start of date range (YYYY-MM-DD) |
+| `dateTo` | Shared | string | `2026-03-31` | End of date range |
+| `gran` | Shared | string | `w` | Granularity: `d`=day, `w`=week, `m`=month, `q`=quarter |
+| `piProjectIds` | Personal | csv | `id1,id2` | Selected project IDs (multi-select) |
+| `piMode` | Personal | csv | `s` | Chart modes, comma-separated, positional per chart |
+| `tiTeamId` | Team | string | `team-uuid` | Selected team ID (single-select) |
+| `tiUserIds` | Team | csv | `id1,id2` | Selected user IDs within team (multi-select) |
+| `tiMode` | Team | csv | `g,s` | Chart modes: chart 1 (Hours by User), chart 2 (Hours by Project) |
+| `prProjectId` | Project | string | `proj-uuid` | Selected project ID (single-select) |
+| `prUserIds` | Project | csv | `id1,id2` | Selected user IDs within project (multi-select) |
+| `prMode` | Project | csv | `s,g` | Chart modes per chart |
+
+**Chart mode encoding:** Each section stores its chart modes as a comma-separated string where position = chart index. Values: `s` = stacked, `g` = grouped. When a new chart is added to a section, old URLs with fewer values gracefully fall back to the chart's default mode for missing positions.
+
+Example URL:
+```
+/reports?dateFrom=2026-03-01&dateTo=2026-03-31&gran=w&piProjectIds=abc,def&piMode=s&tiTeamId=team1&tiMode=g,s
+```
+
+### Granularity short codes
+
+Stored as single chars in URL (`d`, `w`, `m`, `q`), mapped to full values (`day`, `week`, `month`, `quarter`) in code. `autoGranularity()` computes the default when no `gran` param is present.
+
+### Team auto-selection behavior
+
+When the Team Insight section first renders with no `tiTeamId` param:
+1. Fetch user's available teams (already loaded by `useTeams`)
+2. Pick the first team alphabetically
+3. Set `tiTeamId` in URL params
+
+When `tiTeamId` changes:
+1. Clear `tiUserIds` (reset user filter to "all members of this team")
+2. Section re-fetches data scoped to the new team
 
 ## Backend Endpoints
 
@@ -122,7 +170,7 @@ Date/ID values are parameterized via `Prisma.sql`. `SUM(tl.hours)::float` conver
 
 ---
 
-## Phase 1: Backend Endpoints + Frontend Infrastructure
+## Phase 1: Backend Endpoints + Frontend Infrastructure ✅ (DONE)
 
 ### Backend — New files
 
@@ -192,7 +240,7 @@ pnpm add recharts
 
 ---
 
-## Phase 2: Personal Insight Section
+## Phase 2: Personal Insight Section ✅ (DONE)
 
 ### New files
 
@@ -226,7 +274,7 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 
 ---
 
-## Phase 3: Team Insight Section
+## Phase 3: Team Insight Section ✅ (DONE)
 
 ### New files
 
@@ -258,6 +306,112 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 
 ---
 
+## Phase 3.5: Section-Specific Filters + URL Param Refactor
+
+> **Why a separate phase:** Phases 1–3 shipped with a single shared filter bar. This phase refactors to section-specific filters with the new URL param scheme. Doing this before Phase 4 (Project Insight) means the new section launches with the correct filter pattern from day one.
+
+### Summary of changes
+
+Replace the current shared `ReportsFilterBar` (date + team + user + project all in one bar) with:
+1. **Shared top bar** — date range picker + granularity picker only
+2. **Section-inline filters** — each section renders its own entity filters below its heading
+
+### New files
+
+| File | Purpose | ~Lines |
+|---|---|---|
+| `lib/reports/use-section-modes.ts` | Hook to read/write chart mode params. Parses positional comma-separated values (e.g. `g,s`) with fallback defaults for missing positions. Returns `[modes, setMode]` where `setMode(chartIndex, mode)` updates one position. | 40 |
+| `lib/reports/report-param-utils.ts` | Pure utility functions: `granularityToCode()`/`codeToGranularity()` for `d↔day`, `w↔week` etc. `parseChartModes(param, defaults)` and `serializeChartModes(modes)`. Centralizes the encoding logic so each section just calls these. | 30 |
+
+### Modify
+
+| File | Change |
+|---|---|
+| `pages/reports-page.tsx` | Remove shared team/user/project filter state. Keep only `dateFrom`, `dateTo`. Add `gran` param (read/write via `report-param-utils`). Move `GranularityPicker` into top bar alongside `TimeWindowPicker`. Pass `getParam`/`setParam` to sections so they can manage their own params. |
+| `components/reports/reports-filter-bar.tsx` | Slim down to date range + granularity only. Remove team/user/project comboboxes. Rename to `ReportsDateBar` (or keep name, just gut the entity filters). |
+| `components/reports/personal-insight.tsx` | Add inline project multi-select filter. Read `piProjectIds` and `piMode` from URL. Remove internal `useState` for granularity and chart mode — receive `granularity` as prop, read mode from URL param. |
+| `components/reports/team-insight.tsx` | Add inline single-team select + user multi-select. Read `tiTeamId`, `tiUserIds`, `tiMode` from URL. Auto-select first team alphabetically when no param. Reset `tiUserIds` on team change. Remove internal `useState` for granularity and chart modes. |
+
+### URL param flow
+
+```
+reports-page.tsx (owns dateFrom, dateTo, gran)
+  ├── ReportsDateBar (date picker + granularity picker)
+  ├── PersonalInsight (owns piProjectIds, piMode)
+  │     └── inline project Combobox
+  ├── TeamInsight (owns tiTeamId, tiUserIds, tiMode)
+  │     └── inline team Combobox (single) + user Combobox (multi)
+  └── ProjectInsight (owns prProjectId, prUserIds, prMode)  [future]
+        └── inline project Combobox (single) + user Combobox (multi)
+```
+
+### `use-section-modes` hook API
+
+```typescript
+// Each section declares its chart defaults (order matters — positional)
+const TEAM_CHART_DEFAULTS: ChartMode[] = ['grouped', 'stacked'];
+
+// In TeamInsight:
+const [modes, setMode] = useSectionModes('tiMode', TEAM_CHART_DEFAULTS);
+// modes[0] = 'grouped' (Hours by User chart)
+// modes[1] = 'stacked' (Hours by Project chart)
+// setMode(0, 'stacked') → updates URL to tiMode=s,s
+```
+
+### Granularity as URL param
+
+```typescript
+// report-param-utils.ts
+const GRAN_CODES = { d: 'day', w: 'week', m: 'month', q: 'quarter' } as const;
+
+// In reports-page.tsx:
+const granParam = getParam('gran');
+const granularity = codeToGranularity(granParam) ?? autoGranularity(dateFrom, dateTo);
+// When user picks granularity → setParam('gran', granularityToCode(value))
+```
+
+### Team auto-select logic
+
+```typescript
+// In TeamInsight:
+const tiTeamId = getParam('tiTeamId');
+const { data: teamsData } = useTeams({ limit: 100 });
+const availableTeams = teamsData?.data?.filter(t => !t.isArchived)
+  .sort((a, b) => a.name.localeCompare(b.name)) ?? [];
+
+// Auto-select first team if no param and teams are loaded
+useEffect(() => {
+  if (!tiTeamId && availableTeams.length > 0) {
+    setParam('tiTeamId', availableTeams[0].id);
+  }
+}, [tiTeamId, availableTeams, setParam]);
+
+// On team change: reset user filter
+const handleTeamChange = (teamId: string) => {
+  setParams({ tiTeamId: teamId, tiUserIds: '' });
+};
+```
+
+### Delete
+
+| File | Reason |
+|---|---|
+| — | No files deleted. `reports-filter-bar.tsx` is modified in place (slimmed down), not removed. |
+
+### Verify Phase 3.5
+
+1. **Shared date range** — Changing date range updates all sections simultaneously
+2. **Shared granularity** — `gran` param in URL; D/W/M/Q picker in top bar; all sections use same granularity
+3. **Personal Insight** — project multi-select filter appears inline; `piProjectIds` and `piMode` in URL
+4. **Team Insight** — single team picker auto-selects first team; changing team clears user filter; `tiTeamId`, `tiUserIds`, `tiMode` in URL
+5. **Chart modes** — Toggle stacked/grouped on any chart → URL updates with positional codes (e.g. `tiMode=g,s`)
+6. **Bookmarkable URLs** — Copy URL with filters set, open in new tab → same state restored
+7. **Graceful defaults** — Open `/reports` with no params → date defaults to last 30 days, granularity auto-computed, first team auto-selected, all chart modes at defaults
+8. **Old params ignored** — Remove old `projectIds`/`userIds`/`teamIds` params from any bookmarks; page works without them
+9. `pnpm build` passes
+
+---
+
 ## Phase 4: Project Insight Section
 
 ### New files
@@ -274,6 +428,12 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 
 **KPIs**: Total hours, contributors count, teams count.
 
+### Filters (inline, following Phase 3.5 pattern)
+
+- Single-select project picker (`prProjectId`). Auto-selects first project alphabetically.
+- Multi-select user picker (`prUserIds`), scoped to the selected project's members.
+- Chart modes in `prMode` (e.g. `s,g`).
+
 ### Modify
 
 | File                     | Change                                         |
@@ -285,10 +445,12 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 1. Select a project — charts show team and user comparisons
 2. KPIs reflect selected project
 3. Only visible to managers/admins
+4. `prProjectId`, `prUserIds`, `prMode` persist in URL
+5. Changing project resets user filter
 
 ---
 
-## Phase 5: Weekday Distribution Heatmaps
+## Phase 5: Weekday Distribution Heatmaps (renumbered from original Phase 5)
 
 ### New files
 
@@ -314,7 +476,7 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 
 ---
 
-## Phase 6: Logging Behavior
+## Phase 6: Logging Behavior (renumbered from original Phase 6)
 
 ### New files
 
@@ -346,4 +508,9 @@ Computed client-side in `useMemo`: simple moving average over the last N buckets
 | `backend/src/modules/time-logs/dto/list-time-logs-query.dto.ts` | DTO validation: `@Transform` for comma-separated UUIDs         |
 | `frontend/src/components/time-logs/time-logs-filter-bar.tsx`    | Filter bar with cascading team→user scoping                    |
 | `frontend/src/lib/time-logs/time-logs-api.ts`                   | API client function pattern with URLSearchParams               |
+| `frontend/src/hooks/use-pagination-params.ts`                   | `getParam`/`setParam`/`setParams` for URL state management     |
+| `frontend/src/components/reports/reports-filter-bar.tsx`         | Current shared filter bar (to be slimmed in Phase 3.5)         |
+| `frontend/src/components/reports/personal-insight.tsx`           | Current section pattern (to be refactored in Phase 3.5)        |
+| `frontend/src/components/reports/team-insight.tsx`               | Current section pattern with dual charts                       |
+| `frontend/src/lib/reports/granularity-utils.ts`                 | `autoGranularity()` and granularity constants                  |
 | `backend/prisma/schema.prisma`                                  | Data model, column mappings, indexes                           |
