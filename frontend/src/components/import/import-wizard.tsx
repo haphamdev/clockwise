@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Upload, Download, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -146,7 +147,14 @@ export function ImportWizard({ type }: ImportWizardProps) {
           />
         )}
 
-        {step === 'importing' && <ImportingStep importingText={config.importingText} />}
+        {step === 'importing' && (
+          <ImportingStep
+            importingText={config.importingText}
+            totalRows={jobData?.totalRows ?? 0}
+            imported={jobData?.imported ?? 0}
+            errorCount={jobData?.errorCount ?? 0}
+          />
+        )}
 
         {step === 'done' && jobData && (
           <DoneStep
@@ -295,15 +303,36 @@ function PreviewStep({
   );
 }
 
-function ImportingStep({ importingText }: { importingText: string }) {
+function ImportingStep({
+  importingText,
+  totalRows,
+  imported,
+  errorCount,
+}: {
+  importingText: string;
+  totalRows: number;
+  imported: number;
+  errorCount: number;
+}) {
+  const processed = imported + errorCount;
+  const percent = totalRows > 0 ? Math.round((processed / totalRows) * 100) : 0;
+
   return (
     <div className="flex flex-col items-center gap-4 py-8">
       <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      <div className="text-center">
-        <p className="font-medium">{importingText}</p>
-        <p className="text-sm text-muted-foreground">
-          This may take a moment. Please don't close this page.
-        </p>
+      <div className="w-full max-w-xs space-y-2">
+        <Progress value={percent} />
+        <div className="text-center">
+          <p className="font-medium">{importingText}</p>
+          <p className="text-sm text-muted-foreground">
+            {processed} of {totalRows} processed
+            {processed > 0 && ` — ${imported} imported`}
+            {errorCount > 0 && `, ${errorCount} failed`}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Please don't close this page.
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -57,6 +57,7 @@ export class ImportController {
       status: 'pending',
       totalRows,
       imported: 0,
+      errorCount: 0,
       errors: [],
     };
   }

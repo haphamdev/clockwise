@@ -6,6 +6,7 @@ import {
   ImportPreviewResult,
   ImportResult,
   ImportCallerContext,
+  ImportProgressCallback,
 } from '../interfaces/import-processor.interface';
 import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-parser';
 import { ProjectsService } from '../../projects/projects.service';
@@ -120,7 +121,11 @@ export class ProjectImportProcessor implements ImportProcessor {
     return { validRows, executableRows, errors, totalRows: dataRowCount };
   }
 
-  async execute(validRows: ImportRow[], ctx: ImportCallerContext): Promise<ImportResult> {
+  async execute(
+    validRows: ImportRow[],
+    ctx: ImportCallerContext,
+    onProgress?: ImportProgressCallback,
+  ): Promise<ImportResult> {
     let imported = 0;
     const errors: ImportValidationError[] = [];
 
@@ -149,6 +154,7 @@ export class ProjectImportProcessor implements ImportProcessor {
         const message = error instanceof Error ? error.message : 'Unknown error';
         errors.push({ row: row.rowNumber, field: '', message });
       }
+      onProgress?.(imported, errors.length);
     }
 
     return { totalRows: validRows.length, imported, errors };

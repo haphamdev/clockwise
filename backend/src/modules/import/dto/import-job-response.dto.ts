@@ -15,6 +15,9 @@ export class ImportJobResponseDto {
   @ApiProperty()
   imported: number;
 
+  @ApiProperty()
+  errorCount: number;
+
   @ApiProperty({ type: [ImportValidationErrorDto] })
   errors: ImportValidationErrorDto[];
 

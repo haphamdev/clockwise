@@ -41,6 +41,7 @@ export interface ImportJobResponse {
   status: ImportJobStatus;
   totalRows: number;
   imported: number;
+  errorCount: number;
   errors: ImportValidationError[];
   completedAt?: string;
 }

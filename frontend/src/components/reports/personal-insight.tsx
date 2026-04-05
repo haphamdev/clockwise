@@ -47,7 +47,12 @@ export function PersonalInsight({ filters, userId }: PersonalInsightProps) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">Personal Insight</h2>
+      <div>
+        <h2 className="text-lg font-semibold">Personal Insight</h2>
+        <p className="text-sm text-muted-foreground">
+          Your logged hours broken down by project. Use stacked mode to see total effort over time, or grouped mode to compare projects side-by-side.
+        </p>
+      </div>
       <SummaryCards cards={summaryCards} />
       <div className="flex items-center justify-between">
         <GranularityPicker value={granularity} onChange={setGranularity} />
