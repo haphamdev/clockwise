@@ -92,7 +92,7 @@ function Calendar({
         range_start: cn('!bg-primary rounded-l-2xl', defaultClassNames.range_start),
         range_middle: cn('!bg-accent', defaultClassNames.range_middle),
         range_end: cn('!bg-primary rounded-r-2xl', defaultClassNames.range_end),
-        today: cn(defaultClassNames.today),
+        today: cn('has-[:hover]:rounded-md', defaultClassNames.today),
         outside: cn(defaultClassNames.outside),
         disabled: cn(defaultClassNames.disabled),
         hidden: cn('invisible', defaultClassNames.hidden),
