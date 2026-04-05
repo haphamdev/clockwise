@@ -1,49 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { formatDateISO, parseDateISO, type TimeWindow } from '@/lib/dates/time-window-utils';
+import { formatDateISO, parseDateISO } from '@/lib/dates/time-window-utils';
 import type { DateRange } from 'react-day-picker';
+import type { Draft } from '@/components/ui/time-window-picker';
 
 interface TimeWindowCustomProps {
-  value: TimeWindow;
-  onChange: (window: TimeWindow) => void;
+  draft: Draft;
+  onDraftChange: (draft: Draft) => void;
   allowFutureDates?: boolean;
 }
 
 export function TimeWindowCustom({
-  value,
-  onChange,
+  draft,
+  onDraftChange,
   allowFutureDates = false,
 }: TimeWindowCustomProps) {
-  // Tracks intermediate selection: first click sets `from`, second completes range
-  const [draft, setDraft] = useState<DateRange | undefined>(undefined);
+  const [month, setMonth] = useState(() => parseDateISO(draft.dateFrom));
 
-  const selected: DateRange = draft ?? {
-    from: parseDateISO(value.dateFrom),
-    to: parseDateISO(value.dateTo),
-  };
+  // Scroll calendar to draft.dateFrom when changed by preset/rolling
+  useEffect(() => {
+    if (draft.source !== 'calendar') {
+      setMonth(parseDateISO(draft.dateFrom));
+    }
+  }, [draft.dateFrom, draft.source]);
+
+  const selected: DateRange = draft.calendarPendingFrom
+    ? { from: parseDateISO(draft.calendarPendingFrom), to: undefined }
+    : { from: parseDateISO(draft.dateFrom), to: parseDateISO(draft.dateTo) };
 
   const handleDayClick = (day: Date) => {
-    if (!draft) {
-      // First click — start a fresh range with the exact clicked date
-      setDraft({ from: day, to: undefined });
-    } else if (draft.from) {
-      // Second click — complete range, ensure from <= to
-      const [start, end] = draft.from <= day ? [draft.from, day] : [day, draft.from];
-      setDraft(undefined);
-      onChange({ dateFrom: formatDateISO(start), dateTo: formatDateISO(end) });
+    if (!draft.calendarPendingFrom) {
+      // First click — start fresh custom range
+      onDraftChange({
+        dateFrom: draft.dateFrom,
+        dateTo: draft.dateTo,
+        source: 'calendar',
+        calendarPendingFrom: formatDateISO(day),
+      });
+    } else {
+      // Second click — resolve range
+      const first = parseDateISO(draft.calendarPendingFrom);
+      const [start, end] = first <= day ? [first, day] : [day, first];
+      onDraftChange({
+        dateFrom: formatDateISO(start),
+        dateTo: formatDateISO(end),
+        source: 'calendar',
+      });
     }
   };
 
   return (
-    <div className="flex justify-end p-3">
+    <div className="flex justify-center px-3">
       <Calendar
         mode="range"
         selected={selected}
-        // No-op: bypass Calendar's built-in range selection in favor of
-        // manual onDayClick two-click logic (first click = start, second = end)
         onSelect={() => {}}
         onDayClick={handleDayClick}
+        month={month}
+        onMonthChange={setMonth}
         numberOfMonths={1}
+        fixedWeeks
         disabled={!allowFutureDates ? { after: new Date() } : undefined}
         weekStartsOn={1}
       />

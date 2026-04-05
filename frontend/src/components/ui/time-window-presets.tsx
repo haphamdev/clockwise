@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,70 +15,97 @@ import {
   resolveRolling,
   detectRolling,
   isPresetMatch,
-  ALL_PRESETS,
   PRESET_LABELS,
   ROLLING_MAX,
-  type TimeWindow,
   type TimeWindowPreset,
   type RollingUnit,
 } from '@/lib/dates/time-window-utils';
+import type { Draft } from '@/components/ui/time-window-picker';
+
+const ROW_1: TimeWindowPreset[] = ['today', 'this-week', 'this-month', 'this-quarter'];
+const ROW_2: TimeWindowPreset[] = ['yesterday', 'last-week', 'last-month', 'last-quarter'];
 
 interface TimeWindowPresetsProps {
-  value: TimeWindow;
-  onChange: (window: TimeWindow) => void;
+  draft: Draft;
+  onDraftChange: (draft: Draft) => void;
 }
 
-function isActivePreset(preset: TimeWindowPreset, value: TimeWindow) {
-  return value.preset === preset;
-}
-
-export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
+export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsProps) {
   const today = new Date();
-  const detected = isPresetMatch(value) ? null : detectRolling(value, today);
+  const detected =
+    !isPresetMatch(draft) ? detectRolling(draft, today) : null;
   const [rollingN, setRollingN] = useState(detected ? String(detected.n) : '7');
   const [rollingUnit, setRollingUnit] = useState<RollingUnit>(detected?.unit ?? 'days');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Sync rolling inputs when draft changes from outside (e.g. popover reopen)
+  useEffect(() => {
+    const det = !isPresetMatch(draft) ? detectRolling(draft, new Date()) : null;
+    if (det) {
+      setRollingN(String(det.n));
+      setRollingUnit(det.unit);
+    }
+  }, [draft.dateFrom, draft.dateTo, draft.preset]);
+
+  const applyRolling = (n: number, unit: RollingUnit) => {
+    if (!n || n <= 0) return;
+    const clamped = Math.min(n, ROLLING_MAX[unit]);
+    const resolved = resolveRolling(clamped, unit, today);
+    onDraftChange({
+      dateFrom: resolved.dateFrom,
+      dateTo: resolved.dateTo,
+      source: 'rolling',
+    });
+  };
+
+  const handleNumberChange = (raw: string) => {
+    const v = raw.replace(/\D/g, '').slice(0, 3);
+    setRollingN(v);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const n = parseInt(v, 10);
+      if (n > 0) applyRolling(n, rollingUnit);
+    }, 300);
+  };
+
+  const handleUnitChange = (unit: RollingUnit) => {
+    setRollingUnit(unit);
+    const n = parseInt(rollingN, 10);
+    if (n > 0) applyRolling(n, unit);
+  };
+
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
 
   const handlePresetClick = (preset: TimeWindowPreset) => {
-    onChange(resolvePreset(preset, today));
+    const resolved = resolvePreset(preset, today);
+    onDraftChange({
+      dateFrom: resolved.dateFrom,
+      dateTo: resolved.dateTo,
+      preset,
+      source: 'preset',
+    });
   };
 
-  const handleRollingApply = () => {
-    const n = parseInt(rollingN, 10);
-    if (!n || n <= 0) return;
-    const clamped = Math.min(n, ROLLING_MAX[rollingUnit]);
-    setRollingN(String(clamped));
-    onChange(resolveRolling(clamped, rollingUnit, today));
-  };
+  const isActive = (preset: TimeWindowPreset) =>
+    draft.source === 'preset' && draft.preset === preset;
+
+  const renderPresetButton = (preset: TimeWindowPreset) => (
+    <Button
+      key={preset}
+      variant={isActive(preset) ? 'secondary' : 'ghost'}
+      size="sm"
+      className="justify-start text-xs"
+      onClick={() => handlePresetClick(preset)}
+    >
+      {PRESET_LABELS[preset]}
+    </Button>
+  );
 
   return (
-    <div className="p-3 space-y-3">
-      <div className="flex justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          {ALL_PRESETS.filter((_, i) => i % 2 === 0).map((preset) => (
-            <Button
-              key={preset}
-              variant={isActivePreset(preset, value) ? 'secondary' : 'ghost'}
-              size="sm"
-              className="justify-start text-xs"
-              onClick={() => handlePresetClick(preset)}
-            >
-              {PRESET_LABELS[preset]}
-            </Button>
-          ))}
-        </div>
-        <div className="flex flex-col gap-1">
-          {ALL_PRESETS.filter((_, i) => i % 2 === 1).map((preset) => (
-            <Button
-              key={preset}
-              variant={isActivePreset(preset, value) ? 'secondary' : 'ghost'}
-              size="sm"
-              className="justify-start text-xs"
-              onClick={() => handlePresetClick(preset)}
-            >
-              {PRESET_LABELS[preset]}
-            </Button>
-          ))}
-        </div>
+    <div className="space-y-3">
+      <div className="grid grid-cols-4 gap-1">
+        {ROW_1.map(renderPresetButton)}
+        {ROW_2.map(renderPresetButton)}
       </div>
 
       <Separator />
@@ -91,16 +118,10 @@ export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
             type="text"
             inputMode="numeric"
             value={rollingN}
-            onChange={(e) => {
-              const v = e.target.value.replace(/\D/g, '').slice(0, 3);
-              setRollingN(v);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleRollingApply();
-            }}
+            onChange={(e) => handleNumberChange(e.target.value)}
             className="w-16 h-8 text-sm"
           />
-          <Select value={rollingUnit} onValueChange={(v) => setRollingUnit(v as RollingUnit)}>
+          <Select value={rollingUnit} onValueChange={(v) => handleUnitChange(v as RollingUnit)}>
             <SelectTrigger className="w-24 h-8 text-sm">
               <SelectValue />
             </SelectTrigger>
@@ -110,9 +131,6 @@ export function TimeWindowPresets({ value, onChange }: TimeWindowPresetsProps) {
               <SelectItem value="months">months</SelectItem>
             </SelectContent>
           </Select>
-          <Button size="sm" variant="outline" className="h-8" onClick={handleRollingApply}>
-            Apply
-          </Button>
         </div>
       </div>
     </div>
