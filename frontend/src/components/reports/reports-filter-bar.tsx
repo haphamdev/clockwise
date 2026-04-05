@@ -21,15 +21,12 @@ export function ReportsFilterBar({
   onGranularityChange,
 }: ReportsFilterBarProps) {
   return (
-    <FilterBar>
+    <FilterBar className="flex flex-row items-start justify-between">
       <div className="flex flex-col gap-1">
         <Label className="text-xs">Date range</Label>
-        <TimeWindowPicker
-          value={{ dateFrom, dateTo }}
-          onChange={onTimeWindowChange}
-        />
+        <TimeWindowPicker value={{ dateFrom, dateTo }} onChange={onTimeWindowChange} />
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 items-end">
         <Label className="text-xs">Granularity</Label>
         <GranularityPicker value={granularity} onChange={onGranularityChange} />
       </div>

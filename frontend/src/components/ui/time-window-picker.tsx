@@ -16,8 +16,20 @@ export type DraftSource = 'preset' | 'rolling' | 'calendar';
 export interface Draft {
   dateFrom: string;
   dateTo: string;
+  /**
+   * Which preset the date range is from
+   * Only available if source is 'preset'
+   */
   preset?: TimeWindowPreset;
   source: DraftSource;
+  /**
+   * User needs to select two dates for a range.
+   * First selected date is stored in calendarPendingFrom, without changing the current draft range
+   * On second click, the calendarPendingFrom will be used at one end of the range,
+   * the other end is the newly date from the second click
+   * Notice that the the second click might select a date before the first click
+   * That's why I say 'one end of the range', not 'start of the range'
+   */
   calendarPendingFrom?: string;
 }
 
@@ -45,9 +57,7 @@ export function TimeWindowPicker({
 }: TimeWindowPickerProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(() => makeDraft(value));
-  const [activePreset, setActivePreset] = useState<TimeWindowPreset | null>(
-    value.preset ?? null,
-  );
+  const [activePreset, setActivePreset] = useState<TimeWindowPreset | null>(value.preset ?? null);
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -72,9 +82,7 @@ export function TimeWindowPicker({
 
   const isMidClick = !!draft.calendarPendingFrom;
 
-  const enriched: TimeWindow = activePreset
-    ? { ...value, preset: activePreset }
-    : value;
+  const enriched: TimeWindow = activePreset ? { ...value, preset: activePreset } : value;
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>

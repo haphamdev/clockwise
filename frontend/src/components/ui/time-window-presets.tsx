@@ -32,8 +32,7 @@ interface TimeWindowPresetsProps {
 
 export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsProps) {
   const today = new Date();
-  const detected =
-    !isPresetMatch(draft) ? detectRolling(draft, today) : null;
+  const detected = !isPresetMatch(draft) ? detectRolling(draft, today) : null;
   const [rollingN, setRollingN] = useState(detected ? String(detected.n) : '7');
   const [rollingUnit, setRollingUnit] = useState<RollingUnit>(detected?.unit ?? 'days');
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -45,7 +44,7 @@ export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsPro
       setRollingN(String(det.n));
       setRollingUnit(det.unit);
     }
-  }, [draft.dateFrom, draft.dateTo, draft.preset]);
+  }, [draft, draft.dateFrom, draft.dateTo, draft.preset]);
 
   const applyRolling = (n: number, unit: RollingUnit) => {
     if (!n || n <= 0) return;

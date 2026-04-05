@@ -50,7 +50,7 @@ export function ReportsPage() {
   );
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-4">
       <PageHeader
         title="Reports"
         description="Analyze time tracking data across people, teams, and projects."
