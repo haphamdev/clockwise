@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AppException } from './app.exception';
+import { ErrorCode } from './error-codes';
 
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
@@ -43,6 +44,24 @@ export class AppExceptionFilter implements ExceptionFilter {
         error: HttpStatus[status],
         code: 'UNHANDLED',
         message,
+      });
+      return;
+    }
+
+    // Express body-parser PayloadTooLargeError
+    // This is NOT a NestJS HttpException, so it's not caught by the branch above.
+    if (
+      typeof exception === 'object' &&
+      exception !== null &&
+      (exception as Record<string, unknown>).type === 'entity.too.large'
+    ) {
+      const length = (exception as Record<string, unknown>).length;
+      this.logger.warn(`Payload too large: ${length} bytes`);
+      response.status(HttpStatus.PAYLOAD_TOO_LARGE).json({
+        statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
+        error: 'PAYLOAD_TOO_LARGE',
+        code: ErrorCode.COMMON.PAYLOAD_TOO_LARGE,
+        message: 'Request body is too large. Maximum file size is 5MB.',
       });
       return;
     }

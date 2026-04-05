@@ -83,5 +83,6 @@ export const ErrorCode = {
   },
   COMMON: {
     VALIDATION_ERROR: 'VALIDATION_ERROR',
+    PAYLOAD_TOO_LARGE: 'PAYLOAD_TOO_LARGE',
   },
 } as const;

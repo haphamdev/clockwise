@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
 import { ReportsFilterBar } from '@/components/reports/reports-filter-bar';
 import { PersonalInsight } from '@/components/reports/personal-insight';
+import { TeamInsight } from '@/components/reports/team-insight';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
 import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
@@ -65,6 +66,17 @@ export function ReportsPage() {
     [setArrayParam],
   );
 
+  const filters = useMemo(
+    () => ({
+      dateFrom,
+      dateTo,
+      projectIds: projectIds.length > 0 ? projectIds : undefined,
+      userIds: userIds.length > 0 ? userIds : undefined,
+      teamIds: teamIds.length > 0 ? teamIds : undefined,
+    }),
+    [dateFrom, dateTo, projectIds, userIds, teamIds],
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -87,18 +99,9 @@ export function ReportsPage() {
       />
 
       {user && (
-        <PersonalInsight
-          filters={{
-            dateFrom,
-            dateTo,
-            projectIds: projectIds.length > 0 ? projectIds : undefined,
-            userIds: userIds.length > 0 ? userIds : undefined,
-            teamIds: teamIds.length > 0 ? teamIds : undefined,
-          }}
-          userId={user.id}
-        />
+        <PersonalInsight filters={filters} userId={user.id} />
       )}
-      {showTeamSection && <SectionPlaceholder title="Team Insight" />}
+      {showTeamSection && <TeamInsight filters={filters} />}
       {showProjectSection && <SectionPlaceholder title="Project Insight" />}
     </div>
   );
