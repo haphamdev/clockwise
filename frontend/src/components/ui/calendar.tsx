@@ -84,21 +84,15 @@ function Calendar({
           defaultClassNames.week_number,
         ),
         day: cn(
-          'p-sm m-sm border-1 rounded-md group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md',
+          'group/day relative aspect-square h-full w-full select-none p-[2px] text-center',
           defaultClassNames.day,
         ),
-        range_start: cn('!bg-primary border-1 rounded-l-2xl', defaultClassNames.range_start),
-        range_middle: cn(
-          '!bg-accent border-1 !border-primary text-primary',
-          defaultClassNames.range_middle,
-        ),
-        range_end: cn('!bg-primary border-1 rounded-r-2xl', defaultClassNames.range_end),
-        today: cn('!rounded-md text-primary p-sm bg-accent', defaultClassNames.today),
-        outside: cn(
-          defaultClassNames.outside,
-          '!border-0 data-[selected=true]:!border-1 data-[selected=true]:!border-primary rounded-md text-muted-foreground',
-        ),
-        disabled: cn('text-muted-foreground opacity-50', defaultClassNames.disabled),
+        range_start: cn('!bg-primary rounded-l-2xl', defaultClassNames.range_start),
+        range_middle: cn('!bg-accent', defaultClassNames.range_middle),
+        range_end: cn('!bg-primary rounded-r-2xl', defaultClassNames.range_end),
+        today: cn(defaultClassNames.today),
+        outside: cn(defaultClassNames.outside),
+        disabled: cn(defaultClassNames.disabled),
         hidden: cn('invisible', defaultClassNames.hidden),
         ...classNames,
       }}
@@ -147,36 +141,47 @@ function CalendarDayButton({
     if (modifiers.focused) ref.current?.focus();
   }, [modifiers.focused]);
 
+  // Compute visual state by priority (highest first, mutually exclusive)
+  const isSelectedSingle =
+    modifiers.selected &&
+    !modifiers.range_start &&
+    !modifiers.range_end &&
+    !modifiers.range_middle;
+
+  const visualState = isSelectedSingle
+    ? 'selected-single'
+    : modifiers.range_start || modifiers.range_end
+      ? 'range-endpoint'
+      : modifiers.range_middle
+        ? 'range-middle'
+        : modifiers.disabled
+          ? 'disabled'
+          : modifiers.today
+            ? 'today'
+            : modifiers.outside
+              ? 'outside'
+              : 'default';
+
   return (
     <Button
       ref={ref}
       variant="ghost"
       size="icon"
       data-day={day.date.toLocaleDateString()}
-      data-selected-single={
-        modifiers.selected &&
-        !modifiers.range_start &&
-        !modifiers.range_end &&
-        !modifiers.range_middle
-      }
-      data-today={modifiers.today}
-      data-range-start={modifiers.range_start}
-      data-range-end={modifiers.range_end}
-      data-range-middle={modifiers.range_middle}
+      data-visual-state={visualState}
       className={cn(
         // Layout
-        'flex aspect-square h-auto w-md min-w-[--cell-size] flex-col gap-1 font-normal leading-none',
-        // Today
-        'data-[today=true]:text-primary data-[today=true]:font-bold',
-        // Single selection
-        'data-[selected-single=true]:bg-primary data-[selected-single=true]:text-primary-foreground',
-        // Range start
-        'data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-start=true]:rounded-md',
-        // Range middle
-        'data-[range-middle=true]:rounded-md',
-        // Range end
-        'data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-end=true]:rounded-md',
-        // Focus ring
+        'flex size-[calc(var(--cell-size)-4px)] flex-col gap-1 font-normal leading-none',
+        // Visual states (mutually exclusive — no specificity conflicts)
+        visualState === 'default' && 'text-foreground border border-border',
+        visualState === 'outside' && 'text-muted-foreground opacity-50',
+        visualState === 'today' && 'bg-accent text-primary font-bold',
+        visualState === 'disabled' && 'text-muted-foreground opacity-50',
+        visualState === 'range-middle' && 'bg-transparent text-primary',
+        visualState === 'range-endpoint' && 'bg-transparent text-primary-foreground',
+        visualState === 'selected-single' &&
+          'bg-primary text-primary-foreground rounded-full',
+        // Focus ring (orthogonal — always applies)
         'group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 group-data-[focused=true]/day:ring-[3px]',
         // Nested spans
         '[&>span]:text-xs [&>span]:opacity-70',
