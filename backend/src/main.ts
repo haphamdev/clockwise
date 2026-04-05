@@ -3,14 +3,22 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import * as cookieParser from 'cookie-parser';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { AppExceptionFilter } from './common/exceptions/app-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { ValidationException } from './common/exceptions/validation.exception';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true,
+    bodyParser: false,
+  });
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  // 6MB transport limit: allows 5MB CSV file content + ~1MB overhead for
+  // JSON envelope, field names, and encoding.
+  app.use(json({ limit: '6mb' }));
+  app.use(urlencoded({ limit: '6mb', extended: true }));
   app.use(cookieParser());
   const logger = new Logger('Bootstrap');
 

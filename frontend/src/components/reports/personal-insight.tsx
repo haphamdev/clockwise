@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTimeSeries } from '@/lib/reports/use-time-series';
 import { useReportSummary } from '@/lib/reports/use-report-summary';
 import { autoGranularity } from '@/lib/reports/granularity-utils';
@@ -19,6 +19,7 @@ export function PersonalInsight({ filters, userId }: PersonalInsightProps) {
     [filters.dateFrom, filters.dateTo],
   );
   const [granularity, setGranularity] = useState<ReportGranularity>(defaultGran);
+  useEffect(() => setGranularity(defaultGran), [defaultGran]);
   const [chartMode, setChartMode] = useState<ChartMode>('stacked');
 
   // Personal scope: always filter to current user
