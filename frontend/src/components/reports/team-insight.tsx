@@ -42,13 +42,23 @@ export function TeamInsight({ filters }: TeamInsightProps) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold">Team Insight</h2>
+      <div>
+        <h2 className="text-lg font-semibold">Team Insight</h2>
+        <p className="text-sm text-muted-foreground">
+          Aggregated hours across all filtered team members. Spot workload imbalances in the user chart and track project allocation in the project chart.
+        </p>
+      </div>
       <SummaryCards cards={summaryCards} />
       <GranularityPicker value={granularity} onChange={setGranularity} />
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
+            <p className="text-xs text-muted-foreground">
+              Each color represents a team member. Compare individual contributions per time period.
+            </p>
+          </div>
           <ChartModeToggle value={userChartMode} onChange={setUserChartMode} />
         </div>
         <TimeSeriesChart
@@ -62,7 +72,12 @@ export function TeamInsight({ filters }: TeamInsightProps) {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+            <p className="text-xs text-muted-foreground">
+              Each color represents a project. See how team effort is distributed across projects over time.
+            </p>
+          </div>
           <ChartModeToggle value={projectChartMode} onChange={setProjectChartMode} />
         </div>
         <TimeSeriesChart

@@ -199,17 +199,23 @@ export class ImportService {
         status: 'failed',
         totalRows: jobData.executableRows.length,
         imported: 0,
+        errorCount: 0,
         errors: [
           { row: 0, field: '', message: 'Import failed. Please try again or contact support.' },
         ],
       };
     }
 
+    const raw = job.progress;
+    const progress = typeof raw === 'object' && raw !== null
+      ? (raw as { imported?: number; errorCount?: number })
+      : undefined;
     return {
       jobId,
       status: state === 'active' ? 'processing' : 'pending',
       totalRows: jobData.executableRows.length,
-      imported: 0,
+      imported: progress?.imported ?? 0,
+      errorCount: progress?.errorCount ?? 0,
       errors: [],
     };
   }

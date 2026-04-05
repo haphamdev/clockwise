@@ -4,7 +4,10 @@ import { Job } from 'bullmq';
 import { ImportJobStatus } from '@prisma/client';
 import { ImportService } from './import.service';
 import { ImportJobData, ImportJobResult } from './interfaces/import-job.interface';
+import { ImportProgressCallback } from './interfaces/import-processor.interface';
 import { IMPORT_QUEUE } from './import.constants';
+
+const PROGRESS_INTERVAL_MS = 2000;
 
 @Processor(IMPORT_QUEUE, { concurrency: 1 })
 export class ImportJobProcessor extends WorkerHost {
@@ -18,7 +21,18 @@ export class ImportJobProcessor extends WorkerHost {
     const { type, executableRows, userId, orgId, isAdmin, importJobId } = job.data;
 
     const processor = this.importService.getProcessor(type);
-    const result = await processor.execute(executableRows, { userId, orgId, isAdmin });
+
+    let lastUpdate = 0;
+    const onProgress: ImportProgressCallback = (imported, errorCount) => {
+      const now = Date.now();
+      if (now - lastUpdate >= PROGRESS_INTERVAL_MS) {
+        job.updateProgress({ imported, errorCount }).catch(() => {});
+        lastUpdate = now;
+      }
+    };
+
+    const result = await processor.execute(executableRows, { userId, orgId, isAdmin }, onProgress);
+    await job.updateProgress({ imported: result.imported, errorCount: result.errors.length });
 
     const completedAt = new Date();
     try {
@@ -38,6 +52,7 @@ export class ImportJobProcessor extends WorkerHost {
       status: 'completed',
       totalRows: result.totalRows,
       imported: result.imported,
+      errorCount: result.errors.length,
       errors: result.errors,
       completedAt: completedAt.toISOString(),
     };

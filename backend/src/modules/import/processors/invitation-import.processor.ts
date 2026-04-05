@@ -6,6 +6,7 @@ import {
   ImportPreviewResult,
   ImportResult,
   ImportCallerContext,
+  ImportProgressCallback,
 } from '../interfaces/import-processor.interface';
 import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-parser';
 import { InvitationsService } from '../../invitations/invitations.service';
@@ -121,6 +122,7 @@ export class InvitationImportProcessor implements ImportProcessor {
   async execute(
     validRows: ImportRow[],
     ctx: ImportCallerContext,
+    onProgress?: ImportProgressCallback,
   ): Promise<ImportResult> {
     let imported = 0;
     const errors: ImportValidationError[] = [];
@@ -142,6 +144,7 @@ export class InvitationImportProcessor implements ImportProcessor {
         const message = error instanceof Error ? error.message : 'Unknown error';
         errors.push({ row: row.rowNumber, field: '', message });
       }
+      onProgress?.(imported, errors.length);
     }
 
     return { totalRows: validRows.length, imported, errors };

@@ -6,6 +6,7 @@ import {
   ImportPreviewResult,
   ImportResult,
   ImportCallerContext,
+  ImportProgressCallback,
 } from '../interfaces/import-processor.interface';
 import { parseCsv, validateHeadersWithOptional, parseCommaSeparated } from '../utils/csv-parser';
 import { TeamsService } from '../../teams/teams.service';
@@ -125,7 +126,11 @@ export class TeamImportProcessor implements ImportProcessor {
     return { validRows, executableRows, errors, totalRows: dataRowCount };
   }
 
-  async execute(validRows: ImportRow[], ctx: ImportCallerContext): Promise<ImportResult> {
+  async execute(
+    validRows: ImportRow[],
+    ctx: ImportCallerContext,
+    onProgress?: ImportProgressCallback,
+  ): Promise<ImportResult> {
     let imported = 0;
     const errors: ImportValidationError[] = [];
 
@@ -150,6 +155,7 @@ export class TeamImportProcessor implements ImportProcessor {
         const message = error instanceof Error ? error.message : 'Unknown error';
         errors.push({ row: row.rowNumber, field: '', message });
       }
+      onProgress?.(imported, errors.length);
     }
 
     return { totalRows: validRows.length, imported, errors };

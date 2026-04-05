@@ -31,6 +31,8 @@ export interface ImportCallerContext {
   isAdmin: boolean;
 }
 
+export type ImportProgressCallback = (imported: number, errorCount: number) => void;
+
 export interface ImportProcessor {
   readonly type: string;
   readonly adminOnly?: boolean;
@@ -41,5 +43,6 @@ export interface ImportProcessor {
   execute(
     validRows: ImportRow[],
     ctx: ImportCallerContext,
+    onProgress?: ImportProgressCallback,
   ): Promise<ImportResult>;
 }

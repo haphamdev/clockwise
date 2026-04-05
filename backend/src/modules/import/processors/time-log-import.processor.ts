@@ -6,6 +6,7 @@ import {
   ImportPreviewResult,
   ImportResult,
   ImportCallerContext,
+  ImportProgressCallback,
 } from '../interfaces/import-processor.interface';
 import { parseCsv, validateHeaders } from '../utils/csv-parser';
 import { ProjectsService } from '../../projects/projects.service';
@@ -113,6 +114,7 @@ export class TimeLogImportProcessor implements ImportProcessor {
   async execute(
     validRows: ImportRow[],
     ctx: ImportCallerContext,
+    onProgress?: ImportProgressCallback,
   ): Promise<ImportResult> {
     let imported = 0;
     const errors: ImportValidationError[] = [];
@@ -138,6 +140,7 @@ export class TimeLogImportProcessor implements ImportProcessor {
         const message = error instanceof Error ? error.message : 'Unknown error';
         errors.push({ row: row.rowNumber, field: '', message });
       }
+      onProgress?.(imported, errors.length);
     }
 
     return { totalRows: validRows.length, imported, errors };
