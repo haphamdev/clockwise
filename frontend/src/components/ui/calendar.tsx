@@ -85,6 +85,8 @@ function Calendar({
         ),
         day: cn(
           'group/day relative aspect-square h-full w-full select-none p-[2px] text-center',
+          'has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50 has-[:focus-visible]:z-10',
+          'has-[:hover]:bg-accent/50',
           defaultClassNames.day,
         ),
         range_start: cn('!bg-primary rounded-l-2xl', defaultClassNames.range_start),
@@ -175,14 +177,14 @@ function CalendarDayButton({
         // Visual states (mutually exclusive — no specificity conflicts)
         visualState === 'default' && 'text-foreground border border-border',
         visualState === 'outside' && 'text-muted-foreground opacity-50',
-        visualState === 'today' && 'bg-accent text-primary font-bold',
+        visualState === 'today' && 'bg-accent text-primary font-bold hover:bg-accent',
         visualState === 'disabled' && 'text-muted-foreground opacity-50',
         visualState === 'range-middle' && 'bg-transparent text-primary',
         visualState === 'range-endpoint' && 'bg-transparent text-primary-foreground',
         visualState === 'selected-single' &&
-          'bg-primary text-primary-foreground rounded-full',
-        // Focus ring (orthogonal — always applies)
-        'group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 group-data-[focused=true]/day:ring-[3px]',
+          'bg-primary text-primary-foreground rounded-full hover:bg-primary',
+        // Suppress button's own focus ring and hover — both live on the outer td now
+        'hover:bg-transparent focus-visible:ring-0',
         // Nested spans
         '[&>span]:text-xs [&>span]:opacity-70',
         defaultClassNames.day,
