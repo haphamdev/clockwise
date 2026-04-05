@@ -1,10 +1,10 @@
 import type { ReportGranularity } from './types';
 
 export const GRANULARITY_OPTIONS: { value: ReportGranularity; label: string }[] = [
-  { value: 'day', label: 'D' },
-  { value: 'week', label: 'W' },
-  { value: 'month', label: 'M' },
-  { value: 'quarter', label: 'Q' },
+  { value: 'day', label: 'Daily' },
+  { value: 'week', label: 'Weekly' },
+  { value: 'month', label: 'Monthly' },
+  { value: 'quarter', label: 'Quarterly' },
 ];
 
 /** Pick a sensible default granularity based on the date range width. */
