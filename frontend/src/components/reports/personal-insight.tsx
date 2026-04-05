@@ -5,6 +5,7 @@ import { useTimeSeries } from '@/lib/reports/use-time-series';
 import { useReportSummary } from '@/lib/reports/use-report-summary';
 import { useProjects } from '@/lib/projects/use-projects';
 import { useSectionModes } from '@/lib/reports/use-section-modes';
+import { parseIds } from '@/lib/reports/report-param-utils';
 import { SummaryCards } from './summary-cards';
 import { ChartModeToggle } from './chart-mode-toggle';
 import { TimeSeriesChart } from './time-series-chart';
@@ -22,10 +23,6 @@ interface PersonalInsightProps {
   userId: string;
   getParam: (key: string) => string;
   setParam: (key: string, value: string) => void;
-}
-
-function parseIds(value: string): string[] {
-  return value ? value.split(',').filter(Boolean) : [];
 }
 
 export function PersonalInsight({

@@ -36,10 +36,11 @@ export function ReportsPage() {
   // Shared granularity — URL param `gran` stores compact code (d/w/m/q),
   // falls back to auto-computed value when absent.
   const granParam = getParam('gran');
-  const granularity: ReportGranularity = codeToGranularity(granParam) ?? autoGranularity(dateFrom, dateTo);
+  const granularity: ReportGranularity =
+    codeToGranularity(granParam) ?? autoGranularity(dateFrom, dateTo);
 
   const handleTimeWindowChange = useCallback(
-    (w: TimeWindow) => setParams({ dateFrom: w.dateFrom, dateTo: w.dateTo }),
+    (w: TimeWindow) => setParams({ dateFrom: w.dateFrom, dateTo: w.dateTo, gran: '' }),
     [setParams],
   );
 
@@ -49,7 +50,7 @@ export function ReportsPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-16">
       <PageHeader
         title="Reports"
         description="Analyze time tracking data across people, teams, and projects."

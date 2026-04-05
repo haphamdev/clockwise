@@ -3,9 +3,10 @@ import { usersKeys } from './users-keys';
 import { fetchUsers } from './users-api';
 import type { ListUsersParams } from './types';
 
-export function useUsers(params: ListUsersParams = {}) {
+export function useUsers(params: ListUsersParams = {}, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: usersKeys.list(params),
     queryFn: () => fetchUsers(params),
+    enabled: options?.enabled,
   });
 }

@@ -58,3 +58,11 @@ export function parseChartModes(param: string, defaults: ChartMode[]): ChartMode
 export function serializeChartModes(modes: ChartMode[]): string {
   return modes.map((m) => MODE_TO_CODE[m]).join(',');
 }
+
+/**
+ * Parse a comma-separated list of IDs from a URL param.
+ * Returns empty array for empty/falsy input.
+ */
+export function parseIds(value: string): string[] {
+  return value ? value.split(',').filter(Boolean) : [];
+}
