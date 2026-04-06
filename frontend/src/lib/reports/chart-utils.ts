@@ -13,13 +13,46 @@ export interface ChartRow {
 
 export type ChartMode = 'stacked' | 'grouped';
 
+function getEndDate(startDate: Date, granularity: ReportGranularity): Date {
+  const d = new Date(startDate); // avoid mutating input
+
+  switch (granularity) {
+    case 'day':
+      return d; // same day
+
+    case 'week': {
+      // week starts Monday → end is Sunday
+      const end = new Date(d);
+      end.setUTCDate(d.getUTCDate() + 6);
+      return end;
+    }
+
+    case 'month': {
+      // move to first day of next month, then go back 1 day
+      const end = new Date(d);
+      end.setUTCMonth(d.getUTCMonth() + 1);
+      end.setUTCDate(0); // day 0 = last day of previous month
+      return end;
+    }
+
+    case 'quarter': {
+      const end = new Date(d);
+      // move to next quarter
+      end.setUTCMonth(d.getUTCMonth() + 3);
+      end.setUTCDate(1); // first day of next quarter
+      end.setUTCDate(0); // step back → last day of current quarter
+      return end;
+    }
+  }
+}
+
 /** Generate all period start dates between dateFrom and dateTo for a given granularity. */
 export function generatePeriodStarts(
   dateFrom: string,
   dateTo: string,
   granularity: ReportGranularity,
-): string[] {
-  const starts: string[] = [];
+): { start: string; end: string }[] {
+  const periods: { start: string; end: string }[] = [];
   const end = new Date(dateTo + 'T00:00:00Z');
   const d = new Date(dateFrom + 'T00:00:00Z');
 
@@ -42,7 +75,10 @@ export function generatePeriodStarts(
   }
 
   while (d <= end) {
-    starts.push(d.toISOString().slice(0, 10));
+    periods.push({
+      start: d.toISOString().slice(0, 10),
+      end: getEndDate(d, granularity).toISOString().slice(0, 10),
+    });
     switch (granularity) {
       case 'day':
         d.setUTCDate(d.getUTCDate() + 1);
@@ -59,7 +95,7 @@ export function generatePeriodStarts(
     }
   }
 
-  return starts;
+  return periods;
 }
 
 /** Collect all unique series keys (id + label) across all buckets, preserving insertion order. */
@@ -83,8 +119,8 @@ export function buildChartRows(
   const bucketMap = new Map(buckets.map((b) => [b.periodStart, b]));
   const allPeriods = generatePeriodStarts(dateFrom, dateTo, granularity);
 
-  return allPeriods.map((periodStart) => {
-    const row: ChartRow = { label: formatPeriodLabel(periodStart, granularity) };
+  return allPeriods.map(({ start: periodStart, end: periodEnd }) => {
+    const row: ChartRow = { label: formatPeriodLabel(periodStart, periodEnd, granularity) };
     const bucket = bucketMap.get(periodStart);
     if (bucket) {
       for (const s of bucket.series) {
@@ -146,11 +182,7 @@ export function mergeChartData(
 }
 
 /** Compute fixed Y axis max based on full dataset, accounting for chart mode. */
-export function computeYMax(
-  rows: ChartRow[],
-  seriesKeys: SeriesKey[],
-  mode: ChartMode,
-): number {
+export function computeYMax(rows: ChartRow[], seriesKeys: SeriesKey[], mode: ChartMode): number {
   let max = 0;
   for (const row of rows) {
     let stackedTotal = 0;
