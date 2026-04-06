@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/ui/combobox';
 import { useTimeSeries } from '@/lib/reports/use-time-series';
 import { useReportSummary } from '@/lib/reports/use-report-summary';
+import { useAnomalies } from '@/lib/reports/use-anomalies';
 import { useTeams } from '@/lib/teams/use-teams';
 import { useUsers } from '@/lib/users/use-users';
 import { useProjects } from '@/lib/projects/use-projects';
@@ -11,6 +12,8 @@ import { parseIds } from '@/lib/reports/report-param-utils';
 import { SummaryCards } from './summary-cards';
 import { ChartToolbar } from './chart-toolbar';
 import { TimeSeriesChart } from './time-series-chart';
+import { AnomalyHeatmap } from './anomaly-heatmap';
+import { AnomalyList } from './anomaly-list';
 import type { ChartMode, ChartLayers } from './chart-toolbar';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ReportGranularity } from '@/lib/reports/types';
@@ -121,6 +124,7 @@ export function TeamInsight({
   const { data: summaryData } = useReportSummary(filters);
   const { data: userSeries } = useTimeSeries({ ...filters, granularity, groupBy: 'user' });
   const { data: projectSeries } = useTimeSeries({ ...filters, granularity, groupBy: 'project' });
+  const { data: anomalyData } = useAnomalies(filters);
 
   const summaryCards = useMemo(() => {
     if (!summaryData) return [];
@@ -241,6 +245,20 @@ export function TeamInsight({
                 granularity={granularity}
                 mode={modes[1]}
                 layers={layersProject}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Overtime Anomalies</h3>
+                <p className="text-xs text-muted-foreground">
+                  Days where a member logged &ge;{anomalyData?.thresholds.warningHigh ?? 10}h. Highlights potential overwork patterns.
+                </p>
+              </div>
+              <AnomalyHeatmap entries={anomalyData?.entries ?? []} />
+              <AnomalyList
+                entries={anomalyData?.entries ?? []}
+                thresholds={anomalyData?.thresholds ?? { warningHigh: 10, criticalHigh: 12 }}
               />
             </div>
           </div>

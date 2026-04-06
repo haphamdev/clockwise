@@ -3,6 +3,7 @@ import type {
   WeekdayDistributionParams,
   LoggingDelayParams,
   SummaryParams,
+  AnomaliesParams,
 } from './types';
 
 export const reportsKeys = {
@@ -13,4 +14,5 @@ export const reportsKeys = {
   loggingDelay: (params: LoggingDelayParams) =>
     [...reportsKeys.all, 'logging-delay', params] as const,
   summary: (params: SummaryParams) => [...reportsKeys.all, 'summary', params] as const,
+  anomalies: (params: AnomaliesParams) => [...reportsKeys.all, 'anomalies', params] as const,
 };

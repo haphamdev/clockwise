@@ -78,3 +78,21 @@ export interface SummaryResponse {
   uniqueTeams: number;
   totalEntries: number;
 }
+
+export type AnomaliesParams = ReportBaseParams;
+
+export type AnomalySeverity = 'warning' | 'critical';
+
+export interface AnomalyEntry {
+  userId: string;
+  userName: string;
+  date: string;
+  weekday: number;
+  totalHours: number;
+  severity: AnomalySeverity;
+}
+
+export interface AnomaliesResponse {
+  entries: AnomalyEntry[];
+  thresholds: { warningHigh: number; criticalHigh: number };
+}

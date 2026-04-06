@@ -6,6 +6,7 @@ import type {
   WeekdayDistributionQueryDto,
   LoggingDelayQueryDto,
   SummaryQueryDto,
+  AnomaliesQueryDto,
   ReportGranularity,
 } from './dto/reports-query.dto';
 import type {
@@ -13,6 +14,7 @@ import type {
   WeekdayDistributionResponseDto,
   LoggingDelayResponseDto,
   SummaryResponseDto,
+  AnomaliesResponseDto,
 } from './dto/reports-response.dto';
 
 const DELAY_BUCKETS = [
@@ -237,6 +239,42 @@ export class ReportsService {
       uniqueTeams: result.uniqueTeams,
       totalEntries: result.totalEntries,
     };
+  }
+
+  async getAnomalies(
+    orgId: string,
+    userId: string,
+    isAdmin: boolean,
+    query: AnomaliesQueryDto,
+  ): Promise<AnomaliesResponseDto> {
+    this.validateDateRange(query.dateFrom, query.dateTo);
+    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+
+    // TODO: pull from org settings when configurable thresholds are implemented
+    const thresholds = { warningHigh: 10, criticalHigh: 12 };
+
+    const rows = await this.reportsRepository.findDailyAnomalies({
+      orgId,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      userIds: scopedUserIds,
+      teamIds: query.teamIds,
+      projectIds: query.projectIds,
+      warningThreshold: thresholds.warningHigh,
+    });
+
+    const entries = rows.map((row) => ({
+      userId: row.user_id,
+      userName: row.user_name,
+      date: row.date.toISOString().slice(0, 10),
+      weekday: row.weekday,
+      totalHours: Math.round(row.total_hours * 100) / 100,
+      severity: (row.total_hours >= thresholds.criticalHigh ? 'critical' : 'warning') as
+        | 'warning'
+        | 'critical',
+    }));
+
+    return { entries, thresholds };
   }
 
   private validateDateRange(dateFrom: string, dateTo: string): void {
