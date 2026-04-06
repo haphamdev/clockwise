@@ -9,12 +9,14 @@ import {
   WeekdayDistributionQueryDto,
   LoggingDelayQueryDto,
   SummaryQueryDto,
+  AnomaliesQueryDto,
 } from './dto/reports-query.dto';
 import {
   TimeSeriesResponseDto,
   WeekdayDistributionResponseDto,
   LoggingDelayResponseDto,
   SummaryResponseDto,
+  AnomaliesResponseDto,
 } from './dto/reports-response.dto';
 
 @ApiTags('Reports')
@@ -64,5 +66,16 @@ export class ReportsController {
     @Query() query: SummaryQueryDto,
   ): Promise<SummaryResponseDto> {
     return this.reportsService.getSummary(user.orgId, user.id, user.isAdmin, query);
+  }
+
+  @Get('anomalies')
+  @Auth()
+  @ApiOperation({ summary: 'Detect daily overtime anomalies (≥10h warning, ≥12h critical)' })
+  @ApiOkResponse({ type: AnomaliesResponseDto })
+  async getAnomalies(
+    @CurrentUser() user: UserEntity,
+    @Query() query: AnomaliesQueryDto,
+  ): Promise<AnomaliesResponseDto> {
+    return this.reportsService.getAnomalies(user.orgId, user.id, user.isAdmin, query);
   }
 }

@@ -8,6 +8,8 @@ import type {
   LoggingDelayResponse,
   SummaryParams,
   SummaryResponse,
+  AnomaliesParams,
+  AnomaliesResponse,
   ReportBaseParams,
 } from './types';
 
@@ -43,4 +45,9 @@ export function fetchLoggingDelay(params: LoggingDelayParams) {
 export function fetchReportSummary(params: SummaryParams) {
   const sp = buildSearchParams(params);
   return apiClient<SummaryResponse>(`/reports/summary?${sp.toString()}`);
+}
+
+export function fetchAnomalies(params: AnomaliesParams) {
+  const sp = buildSearchParams(params);
+  return apiClient<AnomaliesResponse>(`/reports/anomalies?${sp.toString()}`);
 }

@@ -34,6 +34,14 @@ interface DelayRow {
   count: bigint;
 }
 
+interface DailyAnomalyRow {
+  user_id: string;
+  user_name: string;
+  date: Date;
+  weekday: number;
+  total_hours: number;
+}
+
 // Validated column references — never from user input
 const GROUP_COLS: Record<ReportGroupBy, { id: string; label: string }> = {
   user: { id: 'tl.user_id', label: 'u.name' },
@@ -215,6 +223,30 @@ export class ReportsRepository {
       uniqueTeams: Number(teamRows[0].unique_teams),
       distinctDays: Number(row.distinct_days),
     };
+  }
+
+  async findDailyAnomalies(
+    params: FilterParams & { warningThreshold: number },
+  ): Promise<DailyAnomalyRow[]> {
+    const conditions = this.buildConditions(params, false);
+
+    return this.prisma.$queryRaw<DailyAnomalyRow[]>(
+      Prisma.sql`
+        SELECT
+          tl.user_id,
+          u.name AS user_name,
+          tl.date,
+          ((EXTRACT(DOW FROM tl.date)::int + 6) % 7) AS weekday,
+          SUM(tl.hours)::float AS total_hours
+        FROM time_log tl
+        JOIN "user" u ON u.id = tl.user_id
+        JOIN project p ON p.id = tl.project_id
+        WHERE ${Prisma.join(conditions, ' AND ')}
+        GROUP BY tl.user_id, u.name, tl.date
+        HAVING SUM(tl.hours) >= ${params.warningThreshold}
+        ORDER BY tl.date DESC, u.name
+      `,
+    );
   }
 
   async findManagedUserIds(managerId: string): Promise<string[]> {

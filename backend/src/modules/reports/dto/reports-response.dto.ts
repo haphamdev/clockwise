@@ -109,3 +109,39 @@ export class SummaryResponseDto {
   @ApiProperty()
   totalEntries: number;
 }
+
+export class AnomalyThresholdsDto {
+  @ApiProperty()
+  warningHigh: number;
+
+  @ApiProperty()
+  criticalHigh: number;
+}
+
+export class AnomalyEntryDto {
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
+  userName: string;
+
+  @ApiProperty({ description: 'YYYY-MM-DD' })
+  date: string;
+
+  @ApiProperty({ description: '0=Mon, 6=Sun' })
+  weekday: number;
+
+  @ApiProperty()
+  totalHours: number;
+
+  @ApiProperty({ enum: ['warning', 'critical'] })
+  severity: 'warning' | 'critical';
+}
+
+export class AnomaliesResponseDto {
+  @ApiProperty({ type: [AnomalyEntryDto] })
+  entries: AnomalyEntryDto[];
+
+  @ApiProperty({ type: AnomalyThresholdsDto })
+  thresholds: AnomalyThresholdsDto;
+}

@@ -57,3 +57,5 @@ export class WeekdayDistributionQueryDto extends ReportBaseQueryDto {
 export class LoggingDelayQueryDto extends ReportBaseQueryDto {}
 
 export class SummaryQueryDto extends ReportBaseQueryDto {}
+
+export class AnomaliesQueryDto extends ReportBaseQueryDto {}
