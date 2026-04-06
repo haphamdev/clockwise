@@ -76,12 +76,15 @@ export class UsersRepository {
       search?: string;
       status?: string;
       teamId?: string;
+      projectId?: string;
     },
   ): Promise<{ data: UserWithTeams[]; total: number }> {
+    const teamMembershipFilter = this.buildTeamMembershipFilter(options.teamId, options.projectId);
+
     const where: Prisma.UserWhereInput = {
       orgId,
       ...(options.status && { status: options.status as 'pending' | 'active' | 'deactivated' }),
-      ...(options.teamId && { teamMemberships: { some: { teamId: options.teamId } } }),
+      ...(teamMembershipFilter && { teamMemberships: { some: teamMembershipFilter } }),
       ...(options.search && {
         OR: [
           { name: { contains: options.search, mode: 'insensitive' as const } },
@@ -196,6 +199,23 @@ export class UsersRepository {
       where: { id },
     });
     return user ? { ...this.toEntity(user), refreshToken: user.refreshToken } : null;
+  }
+
+  /**
+   * Builds a TeamMember where clause that combines optional teamId and projectId filters.
+   * When both are provided, a single `some` clause ensures the user is on that team AND project.
+   */
+  private buildTeamMembershipFilter(
+    teamId?: string,
+    projectId?: string,
+  ): Prisma.TeamMemberWhereInput | null {
+    if (!teamId && !projectId) return null;
+    return {
+      ...(teamId && { teamId }),
+      ...(projectId && {
+        team: { projectTeams: { some: { projectId, isDeleted: false } } },
+      }),
+    };
   }
 
   private toEntity(user: User): UserEntity {

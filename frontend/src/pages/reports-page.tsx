@@ -3,21 +3,13 @@ import { PageHeader } from '@/components/ui/page-header';
 import { ReportsFilterBar } from '@/components/reports/reports-filter-bar';
 import { PersonalInsight } from '@/components/reports/personal-insight';
 import { TeamInsight } from '@/components/reports/team-insight';
+import { ProjectInsight } from '@/components/reports/project-insight';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
 import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
 import { autoGranularity } from '@/lib/reports/granularity-utils';
 import { codeToGranularity, granularityToCode } from '@/lib/reports/report-param-utils';
 import type { ReportGranularity } from '@/lib/reports/types';
-
-function SectionPlaceholder({ title }: { title: string }) {
-  return (
-    <div className="rounded-lg border border-dashed p-8 text-center">
-      <h2 className="text-lg font-medium">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Coming soon</p>
-    </div>
-  );
-}
 
 export function ReportsPage() {
   const { user } = useAuth();
@@ -84,7 +76,16 @@ export function ReportsPage() {
           setParams={setParams}
         />
       )}
-      {showProjectSection && <SectionPlaceholder title="Project Insight" />}
+      {showProjectSection && (
+        <ProjectInsight
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          granularity={granularity}
+          getParam={getParam}
+          setParam={setParam}
+          setParams={setParams}
+        />
+      )}
     </div>
   );
 }

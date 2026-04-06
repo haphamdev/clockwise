@@ -9,6 +9,7 @@ export function fetchUsers(params: ListUsersParams = {}) {
   if (params.search) searchParams.set('search', params.search);
   if (params.status) searchParams.set('status', params.status);
   if (params.teamId) searchParams.set('teamId', params.teamId);
+  if (params.projectId) searchParams.set('projectId', params.projectId);
   const qs = searchParams.toString();
   return apiClient<PaginatedResponse<User>>(`/users${qs ? `?${qs}` : ''}`);
 }

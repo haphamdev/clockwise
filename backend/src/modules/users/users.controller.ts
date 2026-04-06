@@ -34,6 +34,7 @@ export class UsersController {
       search: query.search,
       status: query.status,
       teamId: query.teamId,
+      projectId: query.projectId,
     });
 
     return {
