@@ -412,7 +412,7 @@ const handleTeamChange = (teamId: string) => {
 
 ---
 
-## Phase 4: Project Insight Section
+## Phase 4: Project Insight Section ✅ (DONE)
 
 ### New files
 
