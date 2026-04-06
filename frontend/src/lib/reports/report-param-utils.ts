@@ -1,5 +1,5 @@
 import type { ReportGranularity } from './types';
-import type { ChartMode } from '@/components/reports/chart-mode-toggle';
+import type { ChartMode } from '@/components/reports/chart-toolbar';
 
 /**
  * Granularity ↔ single-char URL codes.

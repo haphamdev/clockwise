@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useCallback } from 'react';
+import { useMemo, useEffect, useCallback, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/ui/combobox';
 import { useTimeSeries } from '@/lib/reports/use-time-series';
@@ -9,9 +9,9 @@ import { useProjects } from '@/lib/projects/use-projects';
 import { useSectionModes } from '@/lib/reports/use-section-modes';
 import { parseIds } from '@/lib/reports/report-param-utils';
 import { SummaryCards } from './summary-cards';
-import { ChartModeToggle } from './chart-mode-toggle';
+import { ChartToolbar } from './chart-toolbar';
 import { TimeSeriesChart } from './time-series-chart';
-import type { ChartMode } from './chart-mode-toggle';
+import type { ChartMode, ChartLayers } from './chart-toolbar';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ReportGranularity } from '@/lib/reports/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -43,6 +43,8 @@ export function TeamInsight({
   const tiProjectIdsParam = getParam('tiProjectIds');
   const tiProjectIds = useMemo(() => parseIds(tiProjectIdsParam), [tiProjectIdsParam]);
   const [modes, setMode] = useSectionModes('tiMode', TI_MODE_DEFAULTS, getParam, setParam);
+  const [layersUser, setLayersUser] = useState<ChartLayers>({ values: true, trend: true });
+  const [layersProject, setLayersProject] = useState<ChartLayers>({ values: true, trend: true });
 
   // Team options (non-archived, sorted alphabetically)
   const { data: teamsData } = useTeams({ limit: 100 });
@@ -199,7 +201,12 @@ export function TeamInsight({
                     period.
                   </p>
                 </div>
-                <ChartModeToggle value={modes[0]} onChange={(m) => setMode(0, m)} />
+                <ChartToolbar
+                  mode={modes[0]}
+                  onModeChange={(m) => setMode(0, m)}
+                  layers={layersUser}
+                  onLayersChange={setLayersUser}
+                />
               </div>
               <TimeSeriesChart
                 buckets={userSeries?.buckets ?? []}
@@ -207,6 +214,7 @@ export function TeamInsight({
                 dateTo={dateTo}
                 granularity={granularity}
                 mode={modes[0]}
+                layers={layersUser}
               />
             </div>
 
@@ -219,7 +227,12 @@ export function TeamInsight({
                     projects over time.
                   </p>
                 </div>
-                <ChartModeToggle value={modes[1]} onChange={(m) => setMode(1, m)} />
+                <ChartToolbar
+                  mode={modes[1]}
+                  onModeChange={(m) => setMode(1, m)}
+                  layers={layersProject}
+                  onLayersChange={setLayersProject}
+                />
               </div>
               <TimeSeriesChart
                 buckets={projectSeries?.buckets ?? []}
@@ -227,6 +240,7 @@ export function TeamInsight({
                 dateTo={dateTo}
                 granularity={granularity}
                 mode={modes[1]}
+                layers={layersProject}
               />
             </div>
           </div>

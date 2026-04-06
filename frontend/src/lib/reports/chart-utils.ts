@@ -1,6 +1,20 @@
 import { formatPeriodLabel } from './granularity-utils';
 import type { ReportGranularity, TimeSeriesBucket } from './types';
 
+export const CHART_COLORS = Array.from({ length: 10 }, (_, i) => `var(--chart-${i + 1})`);
+
+/** Convert X-axis two-line label into a single-line tooltip label.
+ *  "Mar\n2–8" → "Mar 2 - 8"  (same-month: month on first line, dates on second)
+ *  "Jan 26\nFeb 1" → "Jan 26 - Feb 1"  (cross-month: each line has month + day) */
+export function formatTooltipLabel(label: string): string {
+  if (!label.includes('\n')) return label;
+  const [line1, line2] = label.split('\n');
+  // Same-month: line1 is just the month name (no digit), line2 is the date range
+  if (/^\d/.test(line2)) return `${line1} ${line2.replace('–', ' - ')}`;
+  // Cross-month: both lines have month + day
+  return `${line1} - ${line2}`;
+}
+
 export interface SeriesKey {
   id: string;
   label: string;
@@ -10,8 +24,6 @@ export interface ChartRow {
   label: string;
   [key: string]: string | number;
 }
-
-export type ChartMode = 'stacked' | 'grouped';
 
 function getEndDate(startDate: Date, granularity: ReportGranularity): Date {
   const d = new Date(startDate); // avoid mutating input
@@ -180,6 +192,8 @@ export function mergeChartData(
     return merged;
   });
 }
+
+export type ChartMode = 'stacked' | 'grouped';
 
 /** Compute fixed Y axis max based on full dataset, accounting for chart mode. */
 export function computeYMax(rows: ChartRow[], seriesKeys: SeriesKey[], mode: ChartMode): number {

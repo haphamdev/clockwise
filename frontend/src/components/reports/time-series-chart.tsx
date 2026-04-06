@@ -10,46 +10,21 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import type { TooltipContentProps } from 'recharts/types/component/Tooltip';
 import type { LegendPayload } from 'recharts/types/component/DefaultLegendContent';
 import type { ReportGranularity, TimeSeriesBucket } from '@/lib/reports/types';
-import type { ChartMode } from './chart-mode-toggle';
+import { DEFAULT_LAYERS } from './chart-toolbar';
+import type { ChartMode, ChartLayers } from './chart-toolbar';
 import {
+  CHART_COLORS,
   collectSeriesKeys,
   buildChartRows,
   buildAvgRows,
   mergeChartData,
   computeYMax,
 } from '@/lib/reports/chart-utils';
-
-const CHART_COLORS = Array.from({ length: 10 }, (_, i) => `var(--chart-${i + 1})`);
-
-function CustomTick({
-  x,
-  y,
-  payload,
-}: {
-  x: string | number;
-  y: string | number;
-  payload: { value: string };
-}) {
-  const [line1, line2] = payload.value.split('\n');
-
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} textAnchor="middle" fill="var(--text-muted)" fontSize={12}>
-        <tspan x={0} dy="0.8em">
-          {line1}
-        </tspan>
-        {line2 && (
-          <tspan x={0} dy="1.2em">
-            {line2}
-          </tspan>
-        )}
-      </text>
-    </g>
-  );
-}
+import { CustomTick } from './custom-tick';
+import { ChartTooltip } from './chart-tooltip';
+import type { ChartVisibility } from './chart-tooltip';
 
 interface TimeSeriesChartProps {
   buckets: TimeSeriesBucket[];
@@ -57,7 +32,7 @@ interface TimeSeriesChartProps {
   dateTo: string;
   granularity: ReportGranularity;
   mode: ChartMode;
-  showAverage?: boolean;
+  layers?: ChartLayers;
 }
 
 export function TimeSeriesChart({
@@ -66,9 +41,17 @@ export function TimeSeriesChart({
   dateTo,
   granularity,
   mode,
-  showAverage = true,
+  layers = DEFAULT_LAYERS,
 }: TimeSeriesChartProps) {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+
+  const showValues = layers.values;
+  const showTrend = layers.trend;
+
+  const visibility = useMemo<ChartVisibility>(
+    () => ({ hiddenIds, showValues, showTrend }),
+    [hiddenIds, showValues, showTrend],
+  );
 
   const handleLegendClick = useCallback((entry: LegendPayload) => {
     const id = String(entry.dataKey ?? '');
@@ -89,8 +72,8 @@ export function TimeSeriesChart({
   );
 
   const avgRows = useMemo(
-    () => (showAverage ? buildAvgRows(rows, seriesKeys) : rows),
-    [rows, seriesKeys, showAverage],
+    () => (showTrend ? buildAvgRows(rows, seriesKeys) : rows),
+    [rows, seriesKeys, showTrend],
   );
 
   const data = useMemo(
@@ -100,78 +83,18 @@ export function TimeSeriesChart({
 
   const yMax = useMemo(() => computeYMax(rows, seriesKeys, mode), [rows, seriesKeys, mode]);
 
-  const renderTooltip = useMemo(() => {
-    return function ChartTooltip({ active, payload, label: tooltipLabel }: TooltipContentProps) {
-      if (!active || !payload?.length) return null;
-
-      const barValues = new Map<string, number>();
-      const avgValues = new Map<string, number>();
-      let totalAvg: number | undefined;
-      for (const entry of payload) {
-        const key = entry.dataKey as string;
-        if (key === '_total_avg') {
-          totalAvg = Number(entry.value ?? 0);
-        } else if (key.endsWith('_avg')) {
-          avgValues.set(key.replace('_avg', ''), Number(entry.value ?? 0));
-        } else {
-          barValues.set(key, Number(entry.value ?? 0));
-        }
-      }
-
-      const isStacked = mode === 'stacked';
-      let total = 0;
-      const lines = seriesKeys
-        .filter((sk) => !hiddenIds.has(sk.id))
-        .map((sk) => {
-          const i = seriesKeys.indexOf(sk);
-          const value = barValues.get(sk.id) ?? 0;
-          total += value;
-          const avg = !isStacked ? avgValues.get(sk.id) : undefined;
-          return (
-            <p
-              key={sk.id}
-              style={{ color: CHART_COLORS[i % CHART_COLORS.length], margin: '2px 0' }}
-            >
-              {sk.label}: {value}h
-              {avg !== undefined && <span style={{ opacity: 0.7 }}> (avg. {avg}h)</span>}
-            </p>
-          );
-        });
-
-      return (
-        <div
-          style={{
-            background: 'var(--bg-light)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)',
-            fontSize: 12,
-            padding: '8px 12px',
-          }}
-        >
-          <p style={{ marginBottom: 4, fontWeight: 500 }}>{String(tooltipLabel ?? '').replace('\n', ' – ')}</p>
-          {lines}
-          {isStacked && (
-            <p
-              style={{
-                color: 'var(--text)',
-                margin: '4px 0 0',
-                borderTop: '1px solid var(--border-muted)',
-                paddingTop: 4,
-              }}
-            >
-              Total: {Math.round(total * 100) / 100}h
-              {totalAvg !== undefined && <span style={{ opacity: 0.7 }}> (avg. {totalAvg}h)</span>}
-            </p>
-          )}
-        </div>
-      );
-    };
-  }, [seriesKeys, mode, hiddenIds]);
-
   if (seriesKeys.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
         No data for this period
+      </div>
+    );
+  }
+
+  if (!showValues && !showTrend) {
+    return (
+      <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
+        No visible layers
       </div>
     );
   }
@@ -182,12 +105,7 @@ export function TimeSeriesChart({
     <ResponsiveContainer width="100%" height={320}>
       <ComposedChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: -8 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-muted)" />
-        <XAxis
-          dataKey="label"
-          tick={CustomTick}
-          tickLine={false}
-          axisLine={false}
-        />
+        <XAxis dataKey="label" tick={CustomTick} tickLine={false} axisLine={false} />
         <YAxis
           tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
           tickLine={false}
@@ -196,7 +114,11 @@ export function TimeSeriesChart({
           domain={[0, yMax > 0 ? yMax : 'auto']}
           allowDataOverflow
         />
-        <Tooltip content={renderTooltip} />
+        <Tooltip
+          content={
+            <ChartTooltip seriesKeys={seriesKeys} mode={mode} visibility={visibility} />
+          }
+        />
         <Legend
           wrapperStyle={{ fontSize: 12, cursor: 'pointer' }}
           iconType="square"
@@ -217,10 +139,10 @@ export function TimeSeriesChart({
             stackId={stackId}
             radius={stackId ? undefined : [2, 2, 0, 0]}
             maxBarSize={48}
-            hide={hiddenIds.has(sk.id)}
+            hide={!showValues || hiddenIds.has(sk.id)}
           />
         ))}
-        {showAverage &&
+        {showTrend &&
           avgRows !== rows &&
           (stackId ? (
             <Line
