@@ -24,6 +24,33 @@ import {
 
 const CHART_COLORS = Array.from({ length: 10 }, (_, i) => `var(--chart-${i + 1})`);
 
+function CustomTick({
+  x,
+  y,
+  payload,
+}: {
+  x: string | number;
+  y: string | number;
+  payload: { value: string };
+}) {
+  const [line1, line2] = payload.value.split('\n');
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={0} y={0} textAnchor="middle" fill="var(--text-muted)" fontSize={12}>
+        <tspan x={0} dy="0.8em">
+          {line1}
+        </tspan>
+        {line2 && (
+          <tspan x={0} dy="1.2em">
+            {line2}
+          </tspan>
+        )}
+      </text>
+    </g>
+  );
+}
+
 interface TimeSeriesChartProps {
   buckets: TimeSeriesBucket[];
   dateFrom: string;
@@ -71,10 +98,7 @@ export function TimeSeriesChart({
     [rows, avgRows, seriesKeys, hiddenIds],
   );
 
-  const yMax = useMemo(
-    () => computeYMax(rows, seriesKeys, mode),
-    [rows, seriesKeys, mode],
-  );
+  const yMax = useMemo(() => computeYMax(rows, seriesKeys, mode), [rows, seriesKeys, mode]);
 
   const renderTooltip = useMemo(() => {
     return function ChartTooltip({ active, payload, label: tooltipLabel }: TooltipContentProps) {
@@ -124,7 +148,7 @@ export function TimeSeriesChart({
             padding: '8px 12px',
           }}
         >
-          <p style={{ marginBottom: 4, fontWeight: 500 }}>{tooltipLabel}</p>
+          <p style={{ marginBottom: 4, fontWeight: 500 }}>{String(tooltipLabel ?? '').replace('\n', ' – ')}</p>
           {lines}
           {isStacked && (
             <p
@@ -160,7 +184,7 @@ export function TimeSeriesChart({
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-muted)" />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
+          tick={CustomTick}
           tickLine={false}
           axisLine={false}
         />

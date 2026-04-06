@@ -20,21 +20,33 @@ export function autoGranularity(dateFrom: string, dateTo: string): ReportGranula
 }
 
 /** Format a period start date for chart x-axis labels. */
-export function formatPeriodLabel(dateStr: string, granularity: ReportGranularity): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  const month = d.toLocaleString('en', { month: 'short' });
-  const day = d.getDate();
+export function formatPeriodLabel(
+  start: string,
+  end: string,
+  granularity: ReportGranularity,
+): string {
+  const dStart = new Date(start + 'T00:00:00');
+  const monthStart = dStart.toLocaleString('en', { month: 'short' });
+  const dayStart = dStart.getDate();
 
   switch (granularity) {
     case 'day':
-      return `${month} ${day}`;
-    case 'week':
-      return `${month} ${day}`;
+      return `${monthStart} ${dayStart}`;
+    case 'week': {
+      const dEnd = new Date(end + 'T00:00:00');
+      const dayEnd = dEnd.getDate();
+      const sameMonth = dStart.getMonth() === dEnd.getMonth() && dStart.getFullYear() === dEnd.getFullYear();
+      if (sameMonth) {
+        return `${monthStart}\n${dayStart}–${dayEnd}`;
+      }
+      const monthEnd = dEnd.toLocaleString('en', { month: 'short' });
+      return `${monthStart} ${dayStart}\n${monthEnd} ${dayEnd}`;
+    }
     case 'month':
-      return `${month} ${d.getFullYear().toString().slice(2)}`;
+      return `${monthStart} ${dStart.getFullYear().toString().slice(2)}`;
     case 'quarter': {
-      const q = Math.floor(d.getMonth() / 3) + 1;
-      return `Q${q} ${d.getFullYear().toString().slice(2)}`;
+      const q = Math.floor(dStart.getMonth() / 3) + 1;
+      return `Q${q} ${dStart.getFullYear().toString().slice(2)}`;
     }
   }
 }
