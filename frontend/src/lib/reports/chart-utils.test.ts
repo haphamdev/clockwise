@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { TimeSeriesBucket } from './types';
 import type { ChartRow, SeriesKey } from './chart-utils';
 import {
+  formatTooltipLabel,
   generatePeriodStarts,
   collectSeriesKeys,
   buildChartRows,
@@ -11,40 +12,86 @@ import {
 } from './chart-utils';
 
 // ---------------------------------------------------------------------------
+// formatTooltipLabel
+// ---------------------------------------------------------------------------
+describe('formatTooltipLabel', () => {
+  it('returns single-line labels unchanged', () => {
+    expect(formatTooltipLabel('Apr 1')).toBe('Apr 1');
+    expect(formatTooltipLabel('Mar 26')).toBe('Mar 26');
+    expect(formatTooltipLabel('Q1 26')).toBe('Q1 26');
+  });
+
+  it('formats same-month week: month + date range', () => {
+    expect(formatTooltipLabel('Mar\n2–8')).toBe('Mar 2 - 8');
+    expect(formatTooltipLabel('Jan\n19–25')).toBe('Jan 19 - 25');
+  });
+
+  it('formats cross-month week with separator', () => {
+    expect(formatTooltipLabel('Jan 26\nFeb 1')).toBe('Jan 26 - Feb 1');
+    expect(formatTooltipLabel('Mar 30\nApr 5')).toBe('Mar 30 - Apr 5');
+  });
+
+  it('handles empty string', () => {
+    expect(formatTooltipLabel('')).toBe('');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // generatePeriodStarts
 // ---------------------------------------------------------------------------
 describe('generatePeriodStarts', () => {
   it('generates daily periods', () => {
     const result = generatePeriodStarts('2026-04-01', '2026-04-04', 'day');
-    expect(result).toEqual(['2026-04-01', '2026-04-02', '2026-04-03', '2026-04-04']);
+    expect(result).toEqual([
+      { start: '2026-04-01', end: '2026-04-01' },
+      { start: '2026-04-02', end: '2026-04-02' },
+      { start: '2026-04-03', end: '2026-04-03' },
+      { start: '2026-04-04', end: '2026-04-04' },
+    ]);
   });
 
   it('generates weekly periods aligned to Monday', () => {
     // 2026-04-01 is a Wednesday → aligns back to Monday 2026-03-30
     const result = generatePeriodStarts('2026-04-01', '2026-04-14', 'week');
-    expect(result).toEqual(['2026-03-30', '2026-04-06', '2026-04-13']);
+    expect(result).toEqual([
+      { start: '2026-03-30', end: '2026-04-05' },
+      { start: '2026-04-06', end: '2026-04-12' },
+      { start: '2026-04-13', end: '2026-04-19' },
+    ]);
   });
 
   it('aligns Sunday to previous Monday for weekly', () => {
     // 2026-04-05 is a Sunday → aligns back to Monday 2026-03-30
     const result = generatePeriodStarts('2026-04-05', '2026-04-12', 'week');
-    expect(result).toEqual(['2026-03-30', '2026-04-06']);
+    expect(result).toEqual([
+      { start: '2026-03-30', end: '2026-04-05' },
+      { start: '2026-04-06', end: '2026-04-12' },
+    ]);
   });
 
   it('generates monthly periods aligned to 1st', () => {
     const result = generatePeriodStarts('2026-03-15', '2026-06-10', 'month');
-    expect(result).toEqual(['2026-03-01', '2026-04-01', '2026-05-01', '2026-06-01']);
+    expect(result).toEqual([
+      { start: '2026-03-01', end: '2026-03-31' },
+      { start: '2026-04-01', end: '2026-04-30' },
+      { start: '2026-05-01', end: '2026-05-31' },
+      { start: '2026-06-01', end: '2026-06-30' },
+    ]);
   });
 
   it('generates quarterly periods aligned to quarter start', () => {
     // Feb 2026 → aligns to Jan 1 (Q1)
     const result = generatePeriodStarts('2026-02-15', '2026-08-01', 'quarter');
-    expect(result).toEqual(['2026-01-01', '2026-04-01', '2026-07-01']);
+    expect(result).toEqual([
+      { start: '2026-01-01', end: '2026-03-31' },
+      { start: '2026-04-01', end: '2026-06-30' },
+      { start: '2026-07-01', end: '2026-09-30' },
+    ]);
   });
 
   it('returns single period when dateFrom equals dateTo for day', () => {
     const result = generatePeriodStarts('2026-04-01', '2026-04-01', 'day');
-    expect(result).toEqual(['2026-04-01']);
+    expect(result).toEqual([{ start: '2026-04-01', end: '2026-04-01' }]);
   });
 
   it('returns empty array when dateFrom is after dateTo', () => {
@@ -54,13 +101,21 @@ describe('generatePeriodStarts', () => {
 
   it('handles year boundary for monthly', () => {
     const result = generatePeriodStarts('2025-11-01', '2026-02-15', 'month');
-    expect(result).toEqual(['2025-11-01', '2025-12-01', '2026-01-01', '2026-02-01']);
+    expect(result).toEqual([
+      { start: '2025-11-01', end: '2025-11-30' },
+      { start: '2025-12-01', end: '2025-12-31' },
+      { start: '2026-01-01', end: '2026-01-31' },
+      { start: '2026-02-01', end: '2026-02-28' },
+    ]);
   });
 
   it('weekly period starting on Monday stays on Monday', () => {
     // 2026-03-30 is a Monday
     const result = generatePeriodStarts('2026-03-30', '2026-04-06', 'week');
-    expect(result).toEqual(['2026-03-30', '2026-04-06']);
+    expect(result).toEqual([
+      { start: '2026-03-30', end: '2026-04-05' },
+      { start: '2026-04-06', end: '2026-04-12' },
+    ]);
   });
 });
 

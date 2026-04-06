@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { ChartMode } from '@/components/reports/chart-mode-toggle';
+import type { ChartMode } from '@/components/reports/chart-toolbar';
 import { parseChartModes, serializeChartModes } from './report-param-utils';
 
 /**
@@ -23,10 +23,7 @@ export function useSectionModes(
 ): [ChartMode[], (chartIndex: number, mode: ChartMode) => void] {
   const raw = getParam(paramKey);
 
-  const modes = useMemo(
-    () => parseChartModes(raw, defaults),
-    [raw, defaults],
-  );
+  const modes = useMemo(() => parseChartModes(raw, defaults), [raw, defaults]);
 
   const setMode = useCallback(
     (chartIndex: number, mode: ChartMode) => {

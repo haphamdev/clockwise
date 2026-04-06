@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Combobox } from '@/components/ui/combobox';
 import { useTimeSeries } from '@/lib/reports/use-time-series';
@@ -7,9 +7,9 @@ import { useProjects } from '@/lib/projects/use-projects';
 import { useSectionModes } from '@/lib/reports/use-section-modes';
 import { parseIds } from '@/lib/reports/report-param-utils';
 import { SummaryCards } from './summary-cards';
-import { ChartModeToggle } from './chart-mode-toggle';
+import { ChartToolbar } from './chart-toolbar';
 import { TimeSeriesChart } from './time-series-chart';
-import type { ChartMode } from './chart-mode-toggle';
+import type { ChartMode, ChartLayers } from './chart-toolbar';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ReportGranularity } from '@/lib/reports/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -38,6 +38,7 @@ export function PersonalInsight({
   const piProjectIdsParam = getParam('piProjectIds');
   const piProjectIds = useMemo(() => parseIds(piProjectIdsParam), [piProjectIdsParam]);
   const [modes, setMode] = useSectionModes('piMode', PI_MODE_DEFAULTS, getParam, setParam);
+  const [layers, setLayers] = useState<ChartLayers>({ values: true, trend: true });
 
   // Project options for inline filter
   const { data: projectsData } = useProjects({ limit: 100 });
@@ -110,7 +111,12 @@ export function PersonalInsight({
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
-                <ChartModeToggle value={modes[0]} onChange={(m) => setMode(0, m)} />
+                <ChartToolbar
+                  mode={modes[0]}
+                  onModeChange={(m) => setMode(0, m)}
+                  layers={layers}
+                  onLayersChange={setLayers}
+                />
               </div>
               <TimeSeriesChart
                 buckets={timeSeriesData?.buckets ?? []}
@@ -118,6 +124,7 @@ export function PersonalInsight({
                 dateTo={dateTo}
                 granularity={granularity}
                 mode={modes[0]}
+                layers={layers}
               />
             </div>
           </div>
