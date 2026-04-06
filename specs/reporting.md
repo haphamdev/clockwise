@@ -118,6 +118,31 @@ Reports can be grouped and nested by:
 
 ---
 
+## Overtime Anomaly Detection
+
+Flags days where a team member's total logged hours exceed configurable thresholds. Surfaced in the Team Insight section of the reports page.
+
+### Thresholds
+
+| Level | Threshold | Color |
+|-------|-----------|-------|
+| Warning | ≥ 10h/day | Amber |
+| Critical | ≥ 12h/day | Red |
+
+Thresholds are currently hardcoded in the service. Future: configurable per organization via org settings.
+
+### Visualizations
+
+**Heatmap (user × weekday):** Shows which users tend to overwork on which days. Cell intensity uses a weighted model: `warnings × 2 + criticals × 3`. Colors use a relative scale — the heaviest cell in the current dataset is always the darkest, so patterns are visible regardless of date range size.
+
+**Detail list:** Paginated table of individual anomaly entries (User, Date, Hours). Hours text colored by severity. Includes threshold footnote.
+
+### Access Control
+
+Same as Team Insight — admins see all users, managers see only their managed team members. The backend endpoint (`GET /reports/anomalies`) uses the same `resolveScopedUserIds` pattern as other report endpoints.
+
+---
+
 ## Performance Considerations
 - Reports should load within 2 seconds for datasets up to 100k time log entries.
 - Use pre-aggregated data (materialized views or summary tables) for dashboard widgets.

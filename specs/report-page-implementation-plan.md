@@ -7,7 +7,7 @@ Users need reports to analyze time log data. The `/reports` page (route already 
 ## Design Decisions
 
 - **Chart library:** Recharts (via shadcn chart primitives). Heatmaps as custom CSS grids.
-- **Backend:** 4 endpoints (time-series, weekday-distribution, logging-delay, summary). Raw SQL via `$queryRaw` for `date_trunc` aggregations (first raw SQL in the codebase — Prisma's `groupBy` can't do date truncation).
+- **Backend:** 5 endpoints (time-series, weekday-distribution, logging-delay, summary, anomalies). Raw SQL via `$queryRaw` for `date_trunc` aggregations (first raw SQL in the codebase — Prisma's `groupBy` can't do date truncation).
 - **Filters:** Section-specific. Shared date range + granularity at top; each section owns its entity filters (team/user/project pickers). See "Filter Architecture" below.
 - **Phased:** 7 phases, verify each before proceeding.
 
@@ -144,6 +144,30 @@ Params: `dateFrom`, `dateTo`, `teamIds?`, `userIds?`, `projectIds?`
 Params: `dateFrom`, `dateTo`, `teamIds?`, `userIds?`, `projectIds?`
 
 Returns: `{ totalHours, avgHoursPerDay, uniqueProjects, uniqueUsers, uniqueTeams, totalEntries }`
+
+### `GET /reports/anomalies`
+
+Detects daily overtime anomalies — days where a member's total logged hours exceed warning/critical thresholds.
+
+Params: `dateFrom`, `dateTo`, `teamIds?`, `userIds?`, `projectIds?`
+
+```json
+{
+  "entries": [
+    {
+      "userId": "user-1",
+      "userName": "Alice Chen",
+      "date": "2026-03-25",
+      "weekday": 2,
+      "totalHours": 13.8,
+      "severity": "critical"
+    }
+  ],
+  "thresholds": { "warningHigh": 10, "criticalHigh": 12 }
+}
+```
+
+Weekday encoding: 0=Mon, 6=Sun (same as weekday-distribution). Severity: `warning` (≥10h), `critical` (≥12h). Thresholds are currently hardcoded in the service (TODO: pull from org settings).
 
 ## SQL Strategy
 
@@ -447,6 +471,55 @@ const handleTeamChange = (teamId: string) => {
 3. Only visible to managers/admins
 4. `prProjectId`, `prUserIds`, `prMode` persist in URL
 5. Changing project resets user filter
+
+---
+
+## Phase 4.5: Overtime Anomaly Detection ✅ (DONE)
+
+Adds overtime anomaly detection to the Team Insight section. Flags days where a member logged ≥10h (warning) or ≥12h (critical). Visualized as a user×weekday heatmap and a paginated detail list.
+
+### Backend — New/Modify
+
+| File | Change |
+|---|---|
+| `dto/reports-query.dto.ts` | Add `AnomaliesQueryDto extends ReportBaseQueryDto` |
+| `dto/reports-response.dto.ts` | Add `AnomalyThresholdsDto`, `AnomalyEntryDto`, `AnomaliesResponseDto` |
+| `reports.controller.ts` | Add `GET /reports/anomalies` endpoint with `@Auth()` |
+| `reports.repository.ts` | Add `findDailyAnomalies()` — groups time logs by user+date, filters by `HAVING SUM(hours) >= threshold`, computes weekday via `EXTRACT(DOW)` |
+| `reports.service.ts` | Add `getAnomalies()` — validates date range, resolves scoped user IDs, maps rows to entries with severity classification |
+
+### Frontend — New files
+
+| File | Purpose | ~Lines |
+|---|---|---|
+| `lib/reports/types.ts` | Add `AnomaliesParams`, `AnomalyEntry`, `AnomalySeverity`, `AnomaliesResponse` types | +18 |
+| `lib/reports/reports-api.ts` | Add `fetchAnomalies()` | +5 |
+| `lib/reports/reports-keys.ts` | Add `anomalies` query key | +1 |
+| `lib/reports/use-anomalies.ts` | `useAnomalies(params)` hook with `keepPreviousData` and `enabled` guard | 13 |
+| `components/reports/anomaly-heatmap.tsx` | User×weekday CSS grid heatmap. Weighted cell model (`warnings×2 + criticals×3`). Relative color scale — 10 oklch steps scaled to percentage of max weight. Right-aligned layout. Tooltip shows "X warnings, Y criticals". | 144 |
+| `components/reports/anomaly-list.tsx` | Paginated table (PAGE_SIZE=10) of anomaly entries. Hours text colored by severity (amber/red). Threshold footnote with colored text. Page resets on data change. | 88 |
+
+### Frontend — Modify
+
+| File | Change |
+|---|---|
+| `components/reports/team-insight.tsx` | Import `useAnomalies`, `AnomalyHeatmap`, `AnomalyList`. Add "Overtime Anomalies" subsection with description, heatmap, and list. |
+
+### Heatmap color scale
+
+Constant-lightness oklch ramp (L=0.76, hue=33) with increasing chroma (0.01→0.26). Cell weight = `warnings×2 + criticals×3`. Percentage = `(weight / maxWeight) × 100`. Mapped to 10 steps at 5% intervals. Empty cells use `bg-muted`.
+
+### Verify Phase 4.5
+
+1. Heatmap renders in Team Insight with weighted color intensity
+2. Tooltip shows "X warnings, Y criticals" per cell
+3. Heatmap is right-aligned with user labels flush against cells
+4. List shows User/Date/Hours columns — hours colored amber (warning) or red (critical)
+5. Pagination works (Previous/Next), resets on filter change
+6. Threshold footnote: "Warning ≥ 10h" in amber, "Critical ≥ 12h" in red
+7. Empty state shows "No overtime detected in this period"
+8. Auth scoping: managers see only their team members' anomalies
+9. `pnpm build` passes
 
 ---
 
