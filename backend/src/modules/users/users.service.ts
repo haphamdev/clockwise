@@ -78,6 +78,7 @@ export class UsersService {
       search?: string;
       status?: string;
       teamId?: string;
+      projectId?: string;
     },
   ): Promise<{ data: UserWithTeams[]; total: number }> {
     return this.usersRepository.findAll(orgId, options);

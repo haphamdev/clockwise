@@ -32,4 +32,9 @@ export class ListUsersQueryDto {
   @IsOptional()
   @IsUUID()
   teamId?: string;
+
+  @ApiProperty({ required: false, description: 'Filter by project membership (via team chain)' })
+  @IsOptional()
+  @IsUUID()
+  projectId?: string;
 }

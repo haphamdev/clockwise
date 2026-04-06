@@ -35,4 +35,5 @@ export interface ListUsersParams extends PaginationParams {
   search?: string;
   status?: UserStatus;
   teamId?: string;
+  projectId?: string;
 }
