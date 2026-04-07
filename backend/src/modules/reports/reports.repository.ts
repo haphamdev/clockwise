@@ -42,6 +42,14 @@ interface DailyAnomalyRow {
   total_hours: number;
 }
 
+interface DelayHeatmapRow {
+  user_id: string;
+  user_name: string;
+  weekday: number;
+  p75_delay: number;
+  entry_count: number;
+}
+
 // Validated column references — never from user input
 const GROUP_COLS: Record<ReportGroupBy, { id: string; label: string }> = {
   user: { id: 'tl.user_id', label: 'u.name' },
@@ -245,6 +253,32 @@ export class ReportsRepository {
         GROUP BY tl.user_id, u.name, tl.date
         HAVING SUM(tl.hours) >= ${params.warningThreshold}
         ORDER BY tl.date DESC, u.name
+      `,
+    );
+  }
+
+  async findLoggingDelayHeatmap(
+    params: FilterParams & { minEntries: number },
+  ): Promise<DelayHeatmapRow[]> {
+    const conditions = this.buildConditions(params, false);
+
+    return this.prisma.$queryRaw<DelayHeatmapRow[]>(
+      Prisma.sql`
+        SELECT
+          tl.user_id,
+          u.name AS user_name,
+          ((EXTRACT(DOW FROM tl.date)::int + 6) % 7) AS weekday,
+          PERCENTILE_CONT(0.75) WITHIN GROUP (
+            ORDER BY GREATEST((tl.created_at::date - tl.date)::int, 0)
+          )::float AS p75_delay,
+          COUNT(*)::int AS entry_count
+        FROM time_log tl
+        JOIN "user" u ON u.id = tl.user_id
+        JOIN project p ON p.id = tl.project_id
+        WHERE ${Prisma.join(conditions, ' AND ')}
+        GROUP BY tl.user_id, u.name, ((EXTRACT(DOW FROM tl.date)::int + 6) % 7)
+        HAVING COUNT(*) >= ${params.minEntries}
+        ORDER BY u.name, weekday
       `,
     );
   }

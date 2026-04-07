@@ -145,3 +145,28 @@ export class AnomaliesResponseDto {
   @ApiProperty({ type: AnomalyThresholdsDto })
   thresholds: AnomalyThresholdsDto;
 }
+
+export class DelayHeatmapCellDto {
+  @ApiProperty()
+  userId: string;
+
+  @ApiProperty()
+  userName: string;
+
+  @ApiProperty({ description: '0=Mon, 6=Sun' })
+  weekday: number;
+
+  @ApiProperty()
+  p75Delay: number;
+
+  @ApiProperty()
+  entryCount: number;
+}
+
+export class LoggingDelayHeatmapResponseDto {
+  @ApiProperty({ type: [DelayHeatmapCellDto] })
+  cells: DelayHeatmapCellDto[];
+
+  @ApiProperty({ description: 'Minimum entries required for a cell to be considered valid' })
+  minEntries: number;
+}

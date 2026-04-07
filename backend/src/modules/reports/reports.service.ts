@@ -7,6 +7,7 @@ import type {
   LoggingDelayQueryDto,
   SummaryQueryDto,
   AnomaliesQueryDto,
+  LoggingDelayHeatmapQueryDto,
   ReportGranularity,
 } from './dto/reports-query.dto';
 import type {
@@ -15,7 +16,10 @@ import type {
   LoggingDelayResponseDto,
   SummaryResponseDto,
   AnomaliesResponseDto,
+  LoggingDelayHeatmapResponseDto,
 } from './dto/reports-response.dto';
+
+const DELAY_HEATMAP_MIN_ENTRIES = 5;
 
 const DELAY_BUCKETS = [
   { label: 'Same day', maxDays: 0 },
@@ -275,6 +279,36 @@ export class ReportsService {
     }));
 
     return { entries, thresholds };
+  }
+
+  async getLoggingDelayHeatmap(
+    orgId: string,
+    userId: string,
+    isAdmin: boolean,
+    query: LoggingDelayHeatmapQueryDto,
+  ): Promise<LoggingDelayHeatmapResponseDto> {
+    this.validateDateRange(query.dateFrom, query.dateTo);
+    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+
+    const rows = await this.reportsRepository.findLoggingDelayHeatmap({
+      orgId,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      userIds: scopedUserIds,
+      teamIds: query.teamIds,
+      projectIds: query.projectIds,
+      minEntries: DELAY_HEATMAP_MIN_ENTRIES,
+    });
+
+    const cells = rows.map((row) => ({
+      userId: row.user_id,
+      userName: row.user_name,
+      weekday: row.weekday,
+      p75Delay: row.p75_delay,
+      entryCount: row.entry_count,
+    }));
+
+    return { cells, minEntries: DELAY_HEATMAP_MIN_ENTRIES };
   }
 
   private validateDateRange(dateFrom: string, dateTo: string): void {

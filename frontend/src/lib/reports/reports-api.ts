@@ -10,6 +10,8 @@ import type {
   SummaryResponse,
   AnomaliesParams,
   AnomaliesResponse,
+  DelayHeatmapParams,
+  DelayHeatmapResponse,
   ReportBaseParams,
 } from './types';
 
@@ -50,4 +52,9 @@ export function fetchReportSummary(params: SummaryParams) {
 export function fetchAnomalies(params: AnomaliesParams) {
   const sp = buildSearchParams(params);
   return apiClient<AnomaliesResponse>(`/reports/anomalies?${sp.toString()}`);
+}
+
+export function fetchDelayHeatmap(params: DelayHeatmapParams) {
+  const sp = buildSearchParams(params);
+  return apiClient<DelayHeatmapResponse>(`/reports/logging-delay-heatmap?${sp.toString()}`);
 }

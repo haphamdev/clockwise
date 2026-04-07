@@ -59,3 +59,5 @@ export class LoggingDelayQueryDto extends ReportBaseQueryDto {}
 export class SummaryQueryDto extends ReportBaseQueryDto {}
 
 export class AnomaliesQueryDto extends ReportBaseQueryDto {}
+
+export class LoggingDelayHeatmapQueryDto extends ReportBaseQueryDto {}

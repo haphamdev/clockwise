@@ -523,7 +523,7 @@ Constant-lightness oklch ramp (L=0.76, hue=33) with increasing chroma (0.01→0.
 
 ---
 
-## Phase 5: Weekday Distribution Heatmaps (renumbered from original Phase 5)
+## Phase 5: Weekday Distribution Heatmaps (renumbered from original Phase 5) — SKIPPED
 
 ### New files
 
@@ -549,26 +549,79 @@ Constant-lightness oklch ramp (L=0.76, hue=33) with increasing chroma (0.01→0.
 
 ---
 
-## Phase 6: Logging Behavior (renumbered from original Phase 6)
+## Phase 6: Logging Delay Heatmap — Team Insight ✅ (DONE)
 
-### New files
+Per-user logging delay heatmap in Team Insight. Shows a User × Weekday grid with P75 delay (days between work date and log creation) per cell. Absolute green-to-red color scale. Replaces the original Phase 6 plan (aggregate bar chart) with a more actionable per-user visualization.
 
-| File                                         | Purpose                                                                                                                     | ~Lines |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `components/reports/logging-delay-chart.tsx` | Recharts `BarChart`. 4 bars: Same day, 1-2 days, 3-5 days, 6+. Color gradient green→orange. Labels show count + percentage. | 80     |
+### Backend — New endpoint: `GET /reports/logging-delay-heatmap`
 
-### Modify
+Params: `dateFrom`, `dateTo`, `teamIds?`, `userIds?`, `projectIds?`
 
-| File                   | Change                                       |
-| ---------------------- | -------------------------------------------- |
-| `personal-insight.tsx` | Add `useLoggingDelay()` + render delay chart |
-| `team-insight.tsx`     | Add delay chart (team-scoped)                |
+Response: `{ cells: [{ userId, userName, weekday, p75Delay, entryCount }], minEntries: 5 }`
+
+SQL uses `PERCENTILE_CONT(0.75)` with `HAVING COUNT(*) >= 5` to filter statistically meaningless cells. `GREATEST((created_at::date - date)::int, 0)` clamps negative delays to zero.
+
+### Backend — Modify
+
+| File | Change |
+|------|--------|
+| `dto/reports-query.dto.ts` | Added `LoggingDelayHeatmapQueryDto extends ReportBaseQueryDto` |
+| `dto/reports-response.dto.ts` | Added `DelayHeatmapCellDto`, `LoggingDelayHeatmapResponseDto` |
+| `reports.repository.ts` | Added `findLoggingDelayHeatmap()` — PERCENTILE_CONT SQL, reuses `buildConditions()` |
+| `reports.service.ts` | Added `getLoggingDelayHeatmap()` — validates date range, resolves scoped user IDs |
+| `reports.controller.ts` | Added `GET /reports/logging-delay-heatmap` with `@Auth()` |
+
+### Backend — Tests
+
+| File | Tests |
+|------|-------|
+| `reports.service.spec.ts` | Scope resolution (admin/manager/member), date validation, filter passthrough, response structure |
+| `reports.controller.spec.ts` | Endpoint param delegation, response structure |
+
+### Frontend — New files
+
+| File | Purpose | ~Lines |
+|------|---------|--------|
+| `lib/reports/use-delay-heatmap.ts` | `useDelayHeatmap(params)` hook with `keepPreviousData` + `enabled` guard | 13 |
+| `components/reports/delay-heatmap.tsx` | User × Weekday CSS grid. Absolute color scale (green→red, 6 bands). Tooltip shows P75 + entry count. Inline legend. | ~110 |
+| `components/reports/team-delay-section.tsx` | Self-contained subsection: fetches delay heatmap data and renders description + `DelayHeatmap` | 25 |
+| `components/reports/team-anomalies-section.tsx` | Extracted subsection: fetches anomaly data and renders heatmap + list (refactored out of `team-insight.tsx`) | 29 |
+
+### Frontend — Modify
+
+| File | Change |
+|------|--------|
+| `lib/reports/types.ts` | Added `DelayHeatmapCell`, `DelayHeatmapResponse`, `DelayHeatmapParams` |
+| `lib/reports/reports-api.ts` | Added `fetchDelayHeatmap()` |
+| `lib/reports/reports-keys.ts` | Added `delayHeatmap` query key |
+| `components/reports/team-insight.tsx` | Replaced inline anomaly + delay sections with `TeamAnomaliesSection` and `TeamDelaySection` |
+
+### Heatmap color scale (absolute thresholds)
+
+| P75 Delay | Color | Meaning |
+|-----------|-------|---------|
+| < 5 entries | `bg-muted` | Insufficient data |
+| [0, 1) days | green | Same day — excellent |
+| [1, 2) days | yellow-green | Next day — great |
+| [2, 4) days | yellow | 2-3 days — acceptable |
+| [4, 6) days | orange | 4-5 days — concerning |
+| [6, 8) days | dark orange | 6-7 days — problematic |
+| [8, ∞) days | red | 8+ days — critical |
+
+### Bruno collection
+
+`bruno/clockwise/reports/get-logging-delay-heatmap.yml`
 
 ### Verify Phase 6
 
-1. Delay chart appears in Personal and Team sections
-2. Bars show correct counts matching actual `createdAt` vs `date` gaps
-3. Percentages sum to ~100%
+1. Backend tests pass (10 tests)
+2. `pnpm build` passes (both frontend and backend)
+3. Heatmap renders in Team Insight with green-to-red color progression
+4. Tooltip shows "P75 delay: X days (N entries)" on hover
+5. Cells with < 5 entries show as muted with "Not enough data" tooltip
+6. Color legend appears below heatmap
+7. Changing team/user/date filters updates the heatmap
+8. Auth scoping: managers see only their team members
 
 ---
 

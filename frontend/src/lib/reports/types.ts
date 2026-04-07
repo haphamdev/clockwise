@@ -96,3 +96,18 @@ export interface AnomaliesResponse {
   entries: AnomalyEntry[];
   thresholds: { warningHigh: number; criticalHigh: number };
 }
+
+export type DelayHeatmapParams = ReportBaseParams;
+
+export interface DelayHeatmapCell {
+  userId: string;
+  userName: string;
+  weekday: number;
+  p75Delay: number;
+  entryCount: number;
+}
+
+export interface DelayHeatmapResponse {
+  cells: DelayHeatmapCell[];
+  minEntries: number;
+}
