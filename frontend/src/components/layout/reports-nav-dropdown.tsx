@@ -1,6 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { BarChart3, User, Users, FolderKanban } from 'lucide-react';
 import { useAuth } from '@/lib/auth/use-auth';
+import { isAdminOrManager } from '@/lib/auth/role-utils';
+import { navLinkClasses } from '@/components/layout/nav-link-classes';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,21 +20,17 @@ export function ReportsNavDropdown() {
   const { user } = useAuth();
   const { pathname } = useLocation();
 
-  const isAdminOrManager = user?.isAdmin || user?.teams.some((t) => t.role === 'manager');
+  const showManagerLinks = user ? isAdminOrManager(user) : false;
   const isActive = pathname.startsWith('/reports');
 
   const visibleLinks = reportLinks.filter(
-    (link) => !link.requireManager || isAdminOrManager,
+    (link) => !link.requireManager || showManagerLinks,
   );
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors outline-none ${
-          isActive
-            ? 'bg-bg-light text-foreground'
-            : 'text-muted-foreground hover:text-foreground hover:bg-bg-light'
-        }`}
+        className={`flex items-center gap-1.5 outline-none ${navLinkClasses(isActive)}`}
       >
         <BarChart3 className="h-4 w-4" />
         Reports

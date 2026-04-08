@@ -10,8 +10,8 @@ interface ReportPageShellProps {
   dateFrom: string;
   dateTo: string;
   granularity: ReportGranularity;
-  handleTimeWindowChange: (window: TimeWindow) => void;
-  handleGranularityChange: (value: ReportGranularity) => void;
+  onTimeWindowChange: (window: TimeWindow) => void;
+  onGranularityChange: (value: ReportGranularity) => void;
   children: React.ReactNode;
 }
 
@@ -21,8 +21,8 @@ export function ReportPageShell({
   dateFrom,
   dateTo,
   granularity,
-  handleTimeWindowChange,
-  handleGranularityChange,
+  onTimeWindowChange,
+  onGranularityChange,
   children,
 }: ReportPageShellProps) {
   useDocumentTitle(`Clockwise - ${title}`);
@@ -36,8 +36,8 @@ export function ReportPageShell({
           dateFrom={dateFrom}
           dateTo={dateTo}
           granularity={granularity}
-          onTimeWindowChange={handleTimeWindowChange}
-          onGranularityChange={handleGranularityChange}
+          onTimeWindowChange={onTimeWindowChange}
+          onGranularityChange={onGranularityChange}
         />
       </div>
 

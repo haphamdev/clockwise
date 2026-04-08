@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
@@ -22,9 +23,21 @@ import { ProjectDetailPage } from '@/pages/project-detail-page';
 import { TimeLogsPage } from '@/pages/time-logs-page';
 import { ImportPage } from '@/pages/import-page';
 import { ManagerRoute } from '@/components/manager-route';
-import { PersonalInsightPage } from '@/pages/reports/personal-insight-page';
-import { TeamInsightPage } from '@/pages/reports/team-insight-page';
-import { ProjectInsightPage } from '@/pages/reports/project-insight-page';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const PersonalInsightPage = lazy(() =>
+  import('@/pages/reports/personal-insight-page').then((m) => ({ default: m.PersonalInsightPage })),
+);
+const TeamInsightPage = lazy(() =>
+  import('@/pages/reports/team-insight-page').then((m) => ({ default: m.TeamInsightPage })),
+);
+const ProjectInsightPage = lazy(() =>
+  import('@/pages/reports/project-insight-page').then((m) => ({ default: m.ProjectInsightPage })),
+);
+
+function ReportFallback() {
+  return <Skeleton className="h-[60vh] w-full" />;
+}
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -63,12 +76,21 @@ export default function App() {
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
                 <Route path="/reports" element={<Navigate to="/reports/personal" replace />} />
-                <Route path="/reports/personal" element={<PersonalInsightPage />} />
+                <Route
+                  path="/reports/personal"
+                  element={
+                    <Suspense fallback={<ReportFallback />}>
+                      <PersonalInsightPage />
+                    </Suspense>
+                  }
+                />
                 <Route
                   path="/reports/team"
                   element={
                     <ManagerRoute>
-                      <TeamInsightPage />
+                      <Suspense fallback={<ReportFallback />}>
+                        <TeamInsightPage />
+                      </Suspense>
                     </ManagerRoute>
                   }
                 />
@@ -76,7 +98,9 @@ export default function App() {
                   path="/reports/project"
                   element={
                     <ManagerRoute>
-                      <ProjectInsightPage />
+                      <Suspense fallback={<ReportFallback />}>
+                        <ProjectInsightPage />
+                      </Suspense>
                     </ManagerRoute>
                   }
                 />

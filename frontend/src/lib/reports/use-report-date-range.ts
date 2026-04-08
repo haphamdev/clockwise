@@ -19,15 +19,15 @@ export function useReportDateRange({ getParam, setParam, setParams }: UseReportD
   const granularity: ReportGranularity =
     codeToGranularity(granParam) ?? autoGranularity(dateFrom, dateTo);
 
-  const handleTimeWindowChange = useCallback(
+  const onTimeWindowChange = useCallback(
     (w: TimeWindow) => setParams({ dateFrom: w.dateFrom, dateTo: w.dateTo, gran: '' }),
     [setParams],
   );
 
-  const handleGranularityChange = useCallback(
+  const onGranularityChange = useCallback(
     (g: ReportGranularity) => setParam('gran', granularityToCode(g)),
     [setParam],
   );
 
-  return { dateFrom, dateTo, granularity, handleTimeWindowChange, handleGranularityChange };
+  return { dateFrom, dateTo, granularity, onTimeWindowChange, onGranularityChange };
 }
