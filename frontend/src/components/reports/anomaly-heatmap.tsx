@@ -5,6 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { UserLink } from '@/components/users/user-link';
 import type { AnomalyEntry } from '@/lib/reports/types';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -111,7 +112,7 @@ export function AnomalyHeatmap({ entries }: AnomalyHeatmapProps) {
           {users.map(([userId, userName]) => (
             <Fragment key={userId}>
               <div className="truncate pr-2 leading-[28px]">
-                {userName}
+                <UserLink id={userId} name={userName} />
               </div>
               {WEEKDAYS.map((_, wi) => {
                 const cell = grid.get(`${userId}:${wi}`);
