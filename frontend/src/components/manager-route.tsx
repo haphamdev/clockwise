@@ -1,11 +1,13 @@
 import { useAuth } from '@/lib/auth/use-auth';
+import { isAdminOrManager } from '@/lib/auth/role-utils';
 import { ForbiddenPage } from '@/pages/forbidden-page';
 
 export function ManagerRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  const isAdminOrManager = user?.isAdmin || user?.teams.some((t) => t.role === 'manager');
-  if (!isAdminOrManager) {
+  if (!user) return null;
+
+  if (!isAdminOrManager(user)) {
     return <ForbiddenPage />;
   }
 

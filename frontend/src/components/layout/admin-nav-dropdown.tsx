@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Shield, Users, Building2, Mail, Settings } from 'lucide-react';
+import { navLinkClasses } from '@/components/layout/nav-link-classes';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,9 @@ const adminLinks = [
 export function AdminNavDropdown() {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-bg-light transition-colors outline-none">
+      <DropdownMenuTrigger
+        className={`flex items-center gap-1.5 outline-none ${navLinkClasses(false)}`}
+      >
         <Shield className="h-4 w-4" />
         Admin
       </DropdownMenuTrigger>

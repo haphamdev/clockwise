@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '@/lib/auth/use-auth';
 import { AdminNavDropdown } from '@/components/layout/admin-nav-dropdown';
 import { ReportsNavDropdown } from '@/components/layout/reports-nav-dropdown';
+import { navLinkClasses } from '@/components/layout/nav-link-classes';
 import { UserNav } from '@/components/layout/user-nav';
 
 const navLinks = [
@@ -26,13 +27,7 @@ export function Navbar() {
             <NavLink
               key={link.href}
               to={link.href}
-              className={({ isActive }) =>
-                `rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-bg-light text-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-bg-light'
-                }`
-              }
+              className={({ isActive }) => navLinkClasses(isActive)}
             >
               {link.label}
             </NavLink>
