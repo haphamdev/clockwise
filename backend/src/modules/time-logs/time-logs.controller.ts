@@ -9,6 +9,7 @@ import { UpdateTimeLogDto } from './dto/update-time-log.dto';
 import { ArchiveTimeLogDto, UnarchiveTimeLogDto } from './dto/archive-time-log.dto';
 import { ListTimeLogsQueryDto } from './dto/list-time-logs-query.dto';
 import { WarningsQueryDto } from './dto/warnings-query.dto';
+import { LoggableUserDto } from './dto/loggable-user.dto';
 import {
   TimeLogResponseDto,
   TimeLogCreateResponseDto,
@@ -17,6 +18,7 @@ import {
   WarningDto,
 } from './dto/time-log-response.dto';
 import { TimeLogListItem } from './entities/time-log.entity';
+import { TimeLogCannotLogOnBehalfException } from '../../common/exceptions/time-log.exceptions';
 
 @ApiTags('Time Logs')
 @Controller('time-logs')
@@ -31,11 +33,19 @@ export class TimeLogsController {
     @CurrentUser() user: UserEntity,
     @Body() dto: CreateTimeLogDto,
   ): Promise<TimeLogCreateResponseDto> {
+    const targetUserId = dto.userId ?? user.id;
+    const isOnBehalf = targetUserId !== user.id;
+
+    if (isOnBehalf) {
+      await this.assertCanLogOnBehalf(user, targetUserId);
+    }
+
     const { timeLog, warnings } = await this.timeLogsService.create(
-      user.id,
+      targetUserId,
       user.orgId,
-      user.isAdmin,
+      isOnBehalf ? false : user.isAdmin,
       dto,
+      isOnBehalf ? user.id : undefined,
     );
     return { ...this.toResponse(timeLog), warnings };
   }
@@ -84,13 +94,29 @@ export class TimeLogsController {
     @CurrentUser() user: UserEntity,
     @Query() query: WarningsQueryDto,
   ): Promise<WarningDto[]> {
+    const targetUserId = query.userId ?? user.id;
+
+    if (targetUserId !== user.id) {
+      await this.assertCanLogOnBehalf(user, targetUserId);
+    }
+
     return this.timeLogsService.computeWarnings(
-      user.id,
+      targetUserId,
       new Date(query.date),
       user.orgId,
       query.projectId,
       query.hours ?? 0,
     );
+  }
+
+  @Get('loggable-users')
+  @Auth()
+  @ApiOperation({ summary: 'List users the caller can log time for' })
+  @ApiOkResponse({ type: [LoggableUserDto] })
+  async loggableUsers(
+    @CurrentUser() user: UserEntity,
+  ): Promise<LoggableUserDto[]> {
+    return this.timeLogsService.getLoggableUsers(user.id, user.orgId, user.isAdmin);
   }
 
   @Get(':id')
@@ -151,6 +177,15 @@ export class TimeLogsController {
   ): Promise<{ message: string }> {
     await this.timeLogsService.unarchive(id, user.orgId, user.id, user.isAdmin, dto);
     return { message: 'Time log unarchived' };
+  }
+
+  private async assertCanLogOnBehalf(caller: UserEntity, targetUserId: string): Promise<void> {
+    const allowed = await this.timeLogsService.canLogOnBehalf(
+      caller.id, caller.isAdmin, targetUserId, caller.orgId,
+    );
+    if (!allowed) {
+      throw new TimeLogCannotLogOnBehalfException();
+    }
   }
 
   private toResponse(timeLog: TimeLogListItem): TimeLogResponseDto {

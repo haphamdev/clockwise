@@ -9,6 +9,7 @@ import type {
   ListTimeLogsParams,
   Warning,
   WarningsPreviewParams,
+  LoggableUser,
 } from './types';
 
 export function fetchTimeLogs(params: ListTimeLogsParams = {}) {
@@ -60,7 +61,12 @@ export function unarchiveTimeLog(id: string, payload: ArchiveTimeLogPayload) {
 export function fetchWarningsPreview(params: WarningsPreviewParams) {
   const searchParams = new URLSearchParams();
   searchParams.set('date', params.date);
+  if (params.userId) searchParams.set('userId', params.userId);
   if (params.projectId) searchParams.set('projectId', params.projectId);
   if (params.hours !== undefined) searchParams.set('hours', String(params.hours));
   return apiClient<Warning[]>(`/time-logs/warnings?${searchParams.toString()}`);
+}
+
+export function fetchLoggableUsers() {
+  return apiClient<LoggableUser[]>('/time-logs/loggable-users');
 }

@@ -223,6 +223,21 @@ export class TimeLogsRepository {
     return Number(result._sum.hours ?? 0);
   }
 
+  async findLoggableUsers(
+    orgId: string,
+    userIds?: string[],
+  ): Promise<Array<{ id: string; name: string; email: string }>> {
+    return this.prisma.user.findMany({
+      where: {
+        orgId,
+        status: 'active',
+        ...(userIds && { id: { in: userIds } }),
+      },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   async findManagedUserIds(managerId: string): Promise<string[]> {
     const memberships = await this.prisma.teamMember.findMany({
       where: { userId: managerId, role: 'manager', team: { isArchived: false } },
@@ -239,6 +254,13 @@ export class TimeLogsRepository {
     });
 
     return members.map((m) => m.userId);
+  }
+
+  async isUserInOrg(userId: string, orgId: string): Promise<boolean> {
+    const count = await this.prisma.user.count({
+      where: { id: userId, orgId },
+    });
+    return count > 0;
   }
 
   private toEntity(timeLog: {
