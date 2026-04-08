@@ -17,6 +17,7 @@ export interface ImportPreviewResponse {
   errors: ImportValidationError[];
   totalRows: number;
   previewToken?: string;
+  expiresInSeconds?: number;
 }
 
 export interface ImportPreviewPayload {

@@ -38,6 +38,7 @@ export interface ImportPreviewResponse {
   errors: ImportValidationError[];
   totalRows: number;
   previewToken?: string;
+  expiresInSeconds?: number;
 }
 
 export interface ImportExecuteResponse {
@@ -82,6 +83,7 @@ export class ImportService {
     const result = await processor.parseAndValidate(csvContent, ctx);
 
     let previewToken: string | undefined;
+    let expiresInSeconds: number | undefined;
     if (result.executableRows.length > 0) {
       previewToken = await this.cachePreviewResult({
         type,
@@ -90,11 +92,12 @@ export class ImportService {
         orgId: ctx.orgId,
         isAdmin: ctx.isAdmin,
       });
+      expiresInSeconds = PREVIEW_CACHE_TTL_SECONDS;
     }
 
     // Return clean rows (without internal fields) to the client
     const { executableRows: _, ...response } = result;
-    return { ...response, previewToken };
+    return { ...response, previewToken, expiresInSeconds };
   }
 
   /**
