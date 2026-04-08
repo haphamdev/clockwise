@@ -215,7 +215,7 @@ export class TimeLogImportProcessor implements ImportProcessor {
         // Authorization: check caller can log on behalf of this user
         const cacheKey = `${ctx.userId}:${targetUser.id}`;
         if (!onBehalfCache.has(cacheKey)) {
-          const canLog = await this.timeLogsService.canLogOnBehalf(ctx.userId, ctx.isAdmin, targetUser.id);
+          const canLog = await this.timeLogsService.canLogOnBehalf(ctx.userId, ctx.isAdmin, targetUser.id, ctx.orgId);
           onBehalfCache.set(cacheKey, canLog);
         }
         if (!onBehalfCache.get(cacheKey)) {

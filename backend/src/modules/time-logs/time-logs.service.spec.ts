@@ -81,7 +81,9 @@ describe('TimeLogsService', () => {
       sumHoursForWeek: jest.fn(),
       replaceTimeLogTasks: jest.fn(),
       findManagedUserIds: jest.fn(),
+      findLoggableUsers: jest.fn(),
       existsByUserDateProjectTask: jest.fn(),
+      isUserInOrg: jest.fn(),
     } as unknown as jest.Mocked<TimeLogsRepository>;
 
     tasksService = {
@@ -206,6 +208,35 @@ describe('TimeLogsService', () => {
           performedBy: 'user-1',
         }),
       );
+    });
+
+    it('should set performedBy and onBehalfOf in audit when logging on behalf', async () => {
+      await service.create('user-2', 'org-1', false, createDto, 'manager-1');
+
+      expect(auditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          performedBy: 'manager-1',
+          metadata: expect.objectContaining({
+            onBehalfOf: 'user-2',
+          }),
+        }),
+      );
+    });
+
+    it('should not include onBehalfOf when performedBy matches userId', async () => {
+      await service.create('user-1', 'org-1', false, createDto, 'user-1');
+
+      const call = auditLogService.log.mock.calls[0][0];
+      expect(call.performedBy).toBe('user-1');
+      expect(call.metadata).not.toHaveProperty('onBehalfOf');
+    });
+
+    it('should not include onBehalfOf when performedBy is omitted', async () => {
+      await service.create('user-1', 'org-1', false, createDto);
+
+      const call = auditLogService.log.mock.calls[0][0];
+      expect(call.performedBy).toBe('user-1');
+      expect(call.metadata).not.toHaveProperty('onBehalfOf');
     });
   });
 
@@ -741,28 +772,78 @@ describe('TimeLogsService', () => {
   });
 
   describe('canLogOnBehalf', () => {
-    it('should allow admin to log on behalf of anyone', async () => {
-      const result = await service.canLogOnBehalf('admin-1', true, 'user-2');
+    it('should allow admin to log on behalf of same-org user', async () => {
+      repo.isUserInOrg.mockResolvedValue(true);
+      const result = await service.canLogOnBehalf('admin-1', true, 'user-2', 'org-1');
       expect(result).toBe(true);
+      expect(repo.isUserInOrg).toHaveBeenCalledWith('user-2', 'org-1');
       expect(repo.findManagedUserIds).not.toHaveBeenCalled();
+    });
+
+    it('should deny admin for cross-org user', async () => {
+      repo.isUserInOrg.mockResolvedValue(false);
+      const result = await service.canLogOnBehalf('admin-1', true, 'user-other-org', 'org-1');
+      expect(result).toBe(false);
     });
 
     it('should allow user to log for themselves', async () => {
-      const result = await service.canLogOnBehalf('user-1', false, 'user-1');
+      const result = await service.canLogOnBehalf('user-1', false, 'user-1', 'org-1');
       expect(result).toBe(true);
-      expect(repo.findManagedUserIds).not.toHaveBeenCalled();
+      expect(repo.isUserInOrg).not.toHaveBeenCalled();
     });
 
     it('should allow manager to log for managed team member', async () => {
+      repo.isUserInOrg.mockResolvedValue(true);
       repo.findManagedUserIds.mockResolvedValue(['user-2', 'user-3']);
-      const result = await service.canLogOnBehalf('manager-1', false, 'user-2');
+      const result = await service.canLogOnBehalf('manager-1', false, 'user-2', 'org-1');
       expect(result).toBe(true);
     });
 
     it('should deny non-manager for unrelated user', async () => {
+      repo.isUserInOrg.mockResolvedValue(true);
       repo.findManagedUserIds.mockResolvedValue(['user-3']);
-      const result = await service.canLogOnBehalf('user-1', false, 'user-2');
+      const result = await service.canLogOnBehalf('user-1', false, 'user-2', 'org-1');
       expect(result).toBe(false);
+    });
+  });
+
+  describe('getLoggableUsers', () => {
+    const allUsers = [
+      { id: 'user-1', name: 'Alice', email: 'alice@example.com' },
+      { id: 'user-2', name: 'Bob', email: 'bob@example.com' },
+      { id: 'user-3', name: 'Charlie', email: 'charlie@example.com' },
+    ];
+
+    it('should return all active users for admin', async () => {
+      repo.findLoggableUsers.mockResolvedValue(allUsers);
+
+      const result = await service.getLoggableUsers('admin-1', 'org-1', true);
+
+      expect(result).toEqual(allUsers);
+      expect(repo.findLoggableUsers).toHaveBeenCalledWith('org-1');
+    });
+
+    it('should return self + managed users for manager', async () => {
+      repo.findManagedUserIds.mockResolvedValue(['user-2', 'user-3']);
+      repo.findLoggableUsers.mockResolvedValue(allUsers);
+
+      const result = await service.getLoggableUsers('user-1', 'org-1', false);
+
+      expect(result).toEqual(allUsers);
+      expect(repo.findLoggableUsers).toHaveBeenCalledWith(
+        'org-1',
+        expect.arrayContaining(['user-1', 'user-2', 'user-3']),
+      );
+    });
+
+    it('should return only self for regular member', async () => {
+      repo.findManagedUserIds.mockResolvedValue([]);
+      repo.findLoggableUsers.mockResolvedValue([allUsers[0]]);
+
+      const result = await service.getLoggableUsers('user-1', 'org-1', false);
+
+      expect(result).toEqual([allUsers[0]]);
+      expect(repo.findLoggableUsers).toHaveBeenCalledWith('org-1', ['user-1']);
     });
   });
 

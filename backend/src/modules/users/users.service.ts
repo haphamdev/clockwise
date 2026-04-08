@@ -84,6 +84,13 @@ export class UsersService {
     return this.usersRepository.findAll(orgId, options);
   }
 
+  async canViewUserDetails(callerId: string, callerIsAdmin: boolean, targetId: string): Promise<boolean> {
+    if (callerIsAdmin) return true;
+    if (callerId === targetId) return true;
+    const count = await this.usersRepository.countManagerRelationship(callerId, targetId);
+    return count > 0;
+  }
+
   async getUserDetail(userId: string, orgId: string): Promise<UserWithTeams> {
     const user = await this.usersRepository.findById(userId);
     if (!user || user.orgId !== orgId) {

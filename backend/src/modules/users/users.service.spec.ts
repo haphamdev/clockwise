@@ -46,6 +46,7 @@ describe('UsersService', () => {
       countValidTeams: jest.fn(),
       findTeamsWhereOnlyManager: jest.fn(),
       findTeamNames: jest.fn(),
+      countManagerRelationship: jest.fn(),
     } as unknown as jest.Mocked<UsersRepository>;
 
     auditLogService = {
@@ -190,6 +191,33 @@ describe('UsersService', () => {
       });
       expect(repo.updateIsAdmin).toHaveBeenCalled();
       expect(repo.replaceTeamAssignments).toHaveBeenCalled();
+    });
+  });
+
+  describe('canViewUserDetails', () => {
+    it('should allow admin', async () => {
+      const result = await service.canViewUserDetails('admin-1', true, 'user-2');
+      expect(result).toBe(true);
+      expect(repo.countManagerRelationship).not.toHaveBeenCalled();
+    });
+
+    it('should allow self', async () => {
+      const result = await service.canViewUserDetails('user-1', false, 'user-1');
+      expect(result).toBe(true);
+      expect(repo.countManagerRelationship).not.toHaveBeenCalled();
+    });
+
+    it('should allow manager of shared team', async () => {
+      repo.countManagerRelationship.mockResolvedValue(1);
+      const result = await service.canViewUserDetails('manager-1', false, 'user-2');
+      expect(result).toBe(true);
+      expect(repo.countManagerRelationship).toHaveBeenCalledWith('manager-1', 'user-2');
+    });
+
+    it('should deny non-manager for unrelated user', async () => {
+      repo.countManagerRelationship.mockResolvedValue(0);
+      const result = await service.canViewUserDetails('user-1', false, 'user-2');
+      expect(result).toBe(false);
     });
   });
 

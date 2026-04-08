@@ -34,6 +34,7 @@ export class TimeLogsService {
       hours: number;
       notes?: string;
     },
+    performedBy?: string,
   ): Promise<{ timeLog: TimeLogListItem; warnings: Warning[] }> {
     await this.projectsService.validateProjectAccess(
       dto.projectId,
@@ -65,12 +66,13 @@ export class TimeLogsService {
       taskIds: tasks.map((t) => t.id),
     });
 
+    const caller = performedBy ?? userId;
     await this.auditLogService.log({
       orgId,
       entityType: 'time_log',
       entityId: timeLog.id,
       action: 'created',
-      performedBy: userId,
+      performedBy: caller,
       metadata: {
         after: {
           projectId: dto.projectId,
@@ -78,6 +80,7 @@ export class TimeLogsService {
           hours: dto.hours,
           tasks: tasks.map((t) => t.label),
         },
+        ...(caller !== userId && { onBehalfOf: userId }),
       },
     });
 
@@ -144,9 +147,36 @@ export class TimeLogsService {
     );
   }
 
-  async canLogOnBehalf(callerUserId: string, callerIsAdmin: boolean, targetUserId: string): Promise<boolean> {
-    if (callerIsAdmin) return true;
+  async getLoggableUsers(
+    userId: string,
+    orgId: string,
+    isAdmin: boolean,
+  ): Promise<Array<{ id: string; name: string; email: string }>> {
+    if (isAdmin) {
+      return this.timeLogsRepository.findLoggableUsers(orgId);
+    }
+
+    // Sequential: first resolve managed user IDs, then filter loggable users.
+    // Could be combined into a single query, but the two-step approach is
+    // simpler and this endpoint is called infrequently (once on sheet open).
+    const managedIds = await this.timeLogsRepository.findManagedUserIds(userId);
+    const userIds = [...new Set([userId, ...managedIds])];
+    return this.timeLogsRepository.findLoggableUsers(orgId, userIds);
+  }
+
+  async canLogOnBehalf(
+    callerUserId: string,
+    callerIsAdmin: boolean,
+    targetUserId: string,
+    orgId: string,
+  ): Promise<boolean> {
     if (callerUserId === targetUserId) return true;
+
+    // Verify target user belongs to the same org
+    const targetInOrg = await this.timeLogsRepository.isUserInOrg(targetUserId, orgId);
+    if (!targetInOrg) return false;
+
+    if (callerIsAdmin) return true;
     const managedIds = await this.timeLogsRepository.findManagedUserIds(callerUserId);
     return managedIds.includes(targetUserId);
   }

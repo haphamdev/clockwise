@@ -14,6 +14,11 @@ import {
 } from 'class-validator';
 
 export class CreateTimeLogDto {
+  @ApiProperty({ required: false, description: 'Target user ID (for logging on behalf of another user)' })
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
+
   @ApiProperty()
   @IsUUID()
   projectId: string;

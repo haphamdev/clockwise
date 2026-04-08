@@ -7,6 +7,7 @@ import { UsersService } from './users.service';
 import { ProjectsService } from '../projects/projects.service';
 import { ListUsersQueryDto } from './dto/list-users-query.dto';
 import { ListUserProjectsQueryDto } from './dto/list-user-projects-query.dto';
+import { UserNotFoundException } from '../../common/exceptions/user.exceptions';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto, UserListResponseDto } from './dto/user-response.dto';
 import { ProjectListResponseDto } from '../projects/dto/project-response.dto';
@@ -68,14 +69,18 @@ export class UsersController {
   }
 
   @Get(':id/projects')
-  @AdminOnly()
-  @ApiOperation({ summary: 'List projects for a user (admin only)' })
+  @Auth()
+  @ApiOperation({ summary: 'List projects for a user' })
   @ApiOkResponse({ type: ProjectListResponseDto })
   async listUserProjects(
     @Param('id') id: string,
     @CurrentUser() user: UserEntity,
     @Query() query: ListUserProjectsQueryDto,
   ): Promise<ProjectListResponseDto> {
+    const canView = await this.usersService.canViewUserDetails(user.id, user.isAdmin, id);
+    if (!canView) {
+      throw new UserNotFoundException();
+    }
     await this.usersService.getUserDetail(id, user.orgId);
 
     const page = query.page ?? 1;

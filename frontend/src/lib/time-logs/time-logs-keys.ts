@@ -7,4 +7,5 @@ export const timeLogsKeys = {
   details: () => [...timeLogsKeys.all, 'detail'] as const,
   detail: (id: string) => [...timeLogsKeys.details(), id] as const,
   warnings: (params: WarningsPreviewParams) => [...timeLogsKeys.all, 'warnings', params] as const,
+  loggableUsers: () => [...timeLogsKeys.all, 'loggable-users'] as const,
 };

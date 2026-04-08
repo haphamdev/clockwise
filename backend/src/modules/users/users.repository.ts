@@ -186,6 +186,18 @@ export class UsersRepository {
     ]);
   }
 
+  async countManagerRelationship(managerId: string, memberId: string): Promise<number> {
+    return this.prisma.team.count({
+      where: {
+        isArchived: false,
+        AND: [
+          { members: { some: { userId: managerId, role: 'manager' } } },
+          { members: { some: { userId: memberId } } },
+        ],
+      },
+    });
+  }
+
   async findTeamNames(teamIds: string[]): Promise<Map<string, string>> {
     const teams = await this.prisma.team.findMany({
       where: { id: { in: teamIds } },

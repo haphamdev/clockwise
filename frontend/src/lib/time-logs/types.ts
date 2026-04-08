@@ -58,7 +58,14 @@ export interface TimeLogListResponse {
   totalPages: number;
 }
 
+export interface LoggableUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface CreateTimeLogPayload {
+  userId?: string;
   projectId: string;
   taskLabels: string[];
   date: string;
@@ -79,6 +86,7 @@ export interface ArchiveTimeLogPayload {
 }
 
 export interface WarningsPreviewParams {
+  userId?: string;
   date: string;
   projectId?: string;
   hours?: number;

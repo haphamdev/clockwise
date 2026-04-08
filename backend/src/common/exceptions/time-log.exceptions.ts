@@ -39,3 +39,13 @@ export class TimeLogFutureDateException extends AppException {
     );
   }
 }
+
+export class TimeLogCannotLogOnBehalfException extends AppException {
+  constructor() {
+    super(
+      ErrorCode.TIME_LOG.CANNOT_LOG_ON_BEHALF,
+      'You do not have permission to log time on behalf of this user',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+}

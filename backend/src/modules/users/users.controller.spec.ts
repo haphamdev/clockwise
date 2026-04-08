@@ -67,6 +67,7 @@ describe('UsersController', () => {
       updateUser: jest.fn(),
       deactivateUser: jest.fn(),
       reactivateUser: jest.fn(),
+      canViewUserDetails: jest.fn(),
     } as unknown as jest.Mocked<UsersService>;
 
     projectsService = {
@@ -150,7 +151,8 @@ describe('UsersController', () => {
   });
 
   describe('listUserProjects', () => {
-    it('should return paginated projects for a user', async () => {
+    it('should return paginated projects for admin', async () => {
+      service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
       projectsService.findProjectsForUser.mockResolvedValue({
         data: [makeProjectListItem(), makeProjectListItem({ id: 'proj-2', name: 'Project Beta' })],
@@ -166,10 +168,33 @@ describe('UsersController', () => {
       expect(result.total).toBe(2);
       expect(result.page).toBe(1);
       expect(result.limit).toBe(5);
+      expect(service.canViewUserDetails).toHaveBeenCalledWith('admin-1', true, 'user-1');
       expect(service.getUserDetail).toHaveBeenCalledWith('user-1', 'org-1');
     });
 
+    it('should allow manager to view managed member projects', async () => {
+      const manager = makeAdmin({ id: 'manager-1', isAdmin: false });
+      service.canViewUserDetails.mockResolvedValue(true);
+      service.getUserDetail.mockResolvedValue(makeUserWithTeams());
+      projectsService.findProjectsForUser.mockResolvedValue({ data: [makeProjectListItem()], total: 1 });
+
+      const result = await controller.listUserProjects('user-1', manager, {});
+
+      expect(result.data).toHaveLength(1);
+      expect(service.canViewUserDetails).toHaveBeenCalledWith('manager-1', false, 'user-1');
+    });
+
+    it('should throw NOT_FOUND when member tries to view another user projects', async () => {
+      const member = makeAdmin({ id: 'member-1', isAdmin: false });
+      service.canViewUserDetails.mockResolvedValue(false);
+
+      await expect(
+        controller.listUserProjects('user-1', member, {}),
+      ).rejects.toThrow(UserNotFoundException);
+    });
+
     it('should pass includeArchived param to service', async () => {
+      service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
       projectsService.findProjectsForUser.mockResolvedValue({ data: [], total: 0 });
 
@@ -187,6 +212,7 @@ describe('UsersController', () => {
     });
 
     it('should default includeArchived to false', async () => {
+      service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
       projectsService.findProjectsForUser.mockResolvedValue({ data: [], total: 0 });
 
@@ -200,6 +226,7 @@ describe('UsersController', () => {
     });
 
     it('should throw 404 if user not found', async () => {
+      service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockRejectedValue(new UserNotFoundException());
 
       await expect(
