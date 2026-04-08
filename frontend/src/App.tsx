@@ -21,7 +21,10 @@ import { ProjectsPage } from '@/pages/projects-page';
 import { ProjectDetailPage } from '@/pages/project-detail-page';
 import { TimeLogsPage } from '@/pages/time-logs-page';
 import { ImportPage } from '@/pages/import-page';
-import { ReportsPage } from '@/pages/reports-page';
+import { ManagerRoute } from '@/components/manager-route';
+import { PersonalInsightPage } from '@/pages/reports/personal-insight-page';
+import { TeamInsightPage } from '@/pages/reports/team-insight-page';
+import { ProjectInsightPage } from '@/pages/reports/project-insight-page';
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -59,7 +62,24 @@ export default function App() {
                 <Route path="/import" element={<ImportPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/reports" element={<Navigate to="/reports/personal" replace />} />
+                <Route path="/reports/personal" element={<PersonalInsightPage />} />
+                <Route
+                  path="/reports/team"
+                  element={
+                    <ManagerRoute>
+                      <TeamInsightPage />
+                    </ManagerRoute>
+                  }
+                />
+                <Route
+                  path="/reports/project"
+                  element={
+                    <ManagerRoute>
+                      <ProjectInsightPage />
+                    </ManagerRoute>
+                  }
+                />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/settings" element={<UserPreferencesPage />} />
 

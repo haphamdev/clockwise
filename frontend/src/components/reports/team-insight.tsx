@@ -16,7 +16,6 @@ import { TeamDelaySection } from './team-delay-section';
 import type { ChartMode, ChartLayers } from './chart-toolbar';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ReportGranularity } from '@/lib/reports/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 // Default chart modes by position: chart 0 = Hours by User, chart 1 = Hours by Project
 const TI_MODE_DEFAULTS: ChartMode[] = ['grouped', 'stacked'];
@@ -39,12 +38,12 @@ export function TeamInsight({
   setParams,
 }: TeamInsightProps) {
   // Section-specific URL params
-  const tiTeamId = getParam('tiTeamId');
-  const tiUserIdsParam = getParam('tiUserIds');
-  const tiUserIds = useMemo(() => parseIds(tiUserIdsParam), [tiUserIdsParam]);
-  const tiProjectIdsParam = getParam('tiProjectIds');
-  const tiProjectIds = useMemo(() => parseIds(tiProjectIdsParam), [tiProjectIdsParam]);
-  const [modes, setMode] = useSectionModes('tiMode', TI_MODE_DEFAULTS, getParam, setParam);
+  const teamId = getParam('teamId');
+  const userIdsParam = getParam('userIds');
+  const userIds = useMemo(() => parseIds(userIdsParam), [userIdsParam]);
+  const projectIdsParam = getParam('projectIds');
+  const projectIds = useMemo(() => parseIds(projectIdsParam), [projectIdsParam]);
+  const [modes, setMode] = useSectionModes('mode', TI_MODE_DEFAULTS, getParam, setParam);
   const [layersUser, setLayersUser] = useState<ChartLayers>({ values: true, trend: true });
   const [layersProject, setLayersProject] = useState<ChartLayers>({ values: true, trend: true });
 
@@ -65,15 +64,15 @@ export function TeamInsight({
 
   // Auto-select first team alphabetically when no param is set
   useEffect(() => {
-    if (!tiTeamId && availableTeams.length > 0) {
-      setParam('tiTeamId', availableTeams[0].id);
+    if (!teamId && availableTeams.length > 0) {
+      setParam('teamId', availableTeams[0].id);
     }
-  }, [tiTeamId, availableTeams, setParam]);
+  }, [teamId, availableTeams, setParam]);
 
   // User options scoped to selected team (skip fetch until a team is selected)
   const { data: usersData } = useUsers(
-    { limit: 100, teamId: tiTeamId || undefined },
-    { enabled: !!tiTeamId },
+    { limit: 100, teamId: teamId || undefined },
+    { enabled: !!teamId },
   );
   const userOptions: ComboboxOption[] = useMemo(
     () => (usersData?.data ?? []).map((u) => ({ value: u.id, label: u.name })),
@@ -82,8 +81,8 @@ export function TeamInsight({
 
   // Project options scoped to selected team (skip fetch until a team is selected)
   const { data: projectsData } = useProjects(
-    { limit: 100, teamId: tiTeamId || undefined },
-    { enabled: !!tiTeamId },
+    { limit: 100, teamId: teamId || undefined },
+    { enabled: !!teamId },
   );
   const projectOptions: ComboboxOption[] = useMemo(
     () => (projectsData?.data ?? []).map((p) => ({ value: p.id, label: p.name })),
@@ -92,19 +91,19 @@ export function TeamInsight({
 
   // Changing team clears user and project filters
   const handleTeamChange = useCallback(
-    (teamId: string) => {
-      setParams({ tiTeamId: teamId, tiUserIds: '', tiProjectIds: '' });
+    (newTeamId: string) => {
+      setParams({ teamId: newTeamId, userIds: '', projectIds: '' });
     },
     [setParams],
   );
 
   const handleUserIdsChange = useCallback(
-    (ids: string[]) => setParam('tiUserIds', ids.join(',')),
+    (ids: string[]) => setParam('userIds', ids.join(',')),
     [setParam],
   );
 
   const handleProjectIdsChange = useCallback(
-    (ids: string[]) => setParam('tiProjectIds', ids.join(',')),
+    (ids: string[]) => setParam('projectIds', ids.join(',')),
     [setParam],
   );
 
@@ -113,11 +112,11 @@ export function TeamInsight({
     () => ({
       dateFrom,
       dateTo,
-      teamIds: tiTeamId ? [tiTeamId] : undefined,
-      userIds: tiUserIds.length > 0 ? tiUserIds : undefined,
-      projectIds: tiProjectIds.length > 0 ? tiProjectIds : undefined,
+      teamIds: teamId ? [teamId] : undefined,
+      userIds: userIds.length > 0 ? userIds : undefined,
+      projectIds: projectIds.length > 0 ? projectIds : undefined,
     }),
-    [dateFrom, dateTo, tiTeamId, tiUserIds, tiProjectIds],
+    [dateFrom, dateTo, teamId, userIds, projectIds],
   );
 
   const { data: summaryData } = useReportSummary(filters);
@@ -138,118 +137,105 @@ export function TeamInsight({
   }, [summaryData]);
 
   return (
-    <section className="space-y-8">
-      <Card>
-        <CardHeader>
-          <CardTitle>Team Insight</CardTitle>
-          <CardDescription>
-            Aggregated hours across all filtered team members. Spot workload imbalances in the user
-            chart and track project allocation in the project chart.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start justify-between gap-4 my-4">
-              <div className="w-full flex justify-end items-end gap-3">
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Team</Label>
-                  <Combobox
-                    options={teamOptions}
-                    value={tiTeamId}
-                    onChange={handleTeamChange}
-                    placeholder="Select team"
-                    searchPlaceholder="Search teams..."
-                    emptyText="No teams available."
-                    className="w-[200px]"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Members</Label>
-                  <Combobox
-                    multiple
-                    options={userOptions}
-                    value={tiUserIds}
-                    onChange={handleUserIdsChange}
-                    placeholder="All members"
-                    searchPlaceholder="Search members..."
-                    emptyText="No members available."
-                    className="w-[200px]"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Label className="text-xs">Projects</Label>
-                  <Combobox
-                    multiple
-                    options={projectOptions}
-                    value={tiProjectIds}
-                    onChange={handleProjectIdsChange}
-                    placeholder="All projects"
-                    searchPlaceholder="Search projects..."
-                    emptyText="No projects available."
-                    className="w-[200px]"
-                  />
-                </div>
-              </div>
-            </div>
-            <SummaryCards cards={summaryCards} />
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Each color represents a team member. Compare individual contributions per time
-                    period.
-                  </p>
-                </div>
-                <ChartToolbar
-                  mode={modes[0]}
-                  onModeChange={(m) => setMode(0, m)}
-                  layers={layersUser}
-                  onLayersChange={setLayersUser}
-                />
-              </div>
-              <TimeSeriesChart
-                buckets={userSeries?.buckets ?? []}
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-                granularity={granularity}
-                mode={modes[0]}
-                layers={layersUser}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Each color represents a project. See how team effort is distributed across
-                    projects over time.
-                  </p>
-                </div>
-                <ChartToolbar
-                  mode={modes[1]}
-                  onModeChange={(m) => setMode(1, m)}
-                  layers={layersProject}
-                  onLayersChange={setLayersProject}
-                />
-              </div>
-              <TimeSeriesChart
-                buckets={projectSeries?.buckets ?? []}
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-                granularity={granularity}
-                mode={modes[1]}
-                layers={layersProject}
-              />
-            </div>
-
-            <TeamAnomaliesSection filters={filters} />
-            <TeamDelaySection filters={filters} />
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start justify-between gap-4 my-4">
+        <div className="w-full flex justify-end items-end gap-3">
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs">Team</Label>
+            <Combobox
+              options={teamOptions}
+              value={teamId}
+              onChange={handleTeamChange}
+              placeholder="Select team"
+              searchPlaceholder="Search teams..."
+              emptyText="No teams available."
+              className="w-[200px]"
+            />
           </div>
-        </CardContent>
-      </Card>
-    </section>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs">Members</Label>
+            <Combobox
+              multiple
+              options={userOptions}
+              value={userIds}
+              onChange={handleUserIdsChange}
+              placeholder="All members"
+              searchPlaceholder="Search members..."
+              emptyText="No members available."
+              className="w-[200px]"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label className="text-xs">Projects</Label>
+            <Combobox
+              multiple
+              options={projectOptions}
+              value={projectIds}
+              onChange={handleProjectIdsChange}
+              placeholder="All projects"
+              searchPlaceholder="Search projects..."
+              emptyText="No projects available."
+              className="w-[200px]"
+            />
+          </div>
+        </div>
+      </div>
+      <SummaryCards cards={summaryCards} />
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
+            <p className="text-xs text-muted-foreground">
+              Each color represents a team member. Compare individual contributions per time
+              period.
+            </p>
+          </div>
+          <ChartToolbar
+            mode={modes[0]}
+            onModeChange={(m) => setMode(0, m)}
+            layers={layersUser}
+            onLayersChange={setLayersUser}
+          />
+        </div>
+        <TimeSeriesChart
+          buckets={userSeries?.buckets ?? []}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          granularity={granularity}
+          mode={modes[0]}
+          layers={layersUser}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+            <p className="text-xs text-muted-foreground">
+              Each color represents a project. See how team effort is distributed across
+              projects over time.
+            </p>
+          </div>
+          <ChartToolbar
+            mode={modes[1]}
+            onModeChange={(m) => setMode(1, m)}
+            layers={layersProject}
+            onLayersChange={setLayersProject}
+          />
+        </div>
+        <TimeSeriesChart
+          buckets={projectSeries?.buckets ?? []}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          granularity={granularity}
+          mode={modes[1]}
+          layers={layersProject}
+        />
+      </div>
+
+      <TeamAnomaliesSection filters={filters} />
+      <TeamDelaySection filters={filters} />
+    </div>
   );
 }
