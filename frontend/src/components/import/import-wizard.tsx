@@ -45,7 +45,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
   useEffect(() => {
     if (step === 'importing' && jobData && (jobData.status === 'completed' || jobData.status === 'failed')) {
       setStep('done');
-      queryClient.invalidateQueries({ queryKey: importKeys.jobList(type) });
+      queryClient.invalidateQueries({ queryKey: importKeys.jobLists() });
       if (jobData.status === 'completed') {
         for (const key of IMPORT_INVALIDATION_KEYS[type]) {
           queryClient.invalidateQueries({ queryKey: key });
