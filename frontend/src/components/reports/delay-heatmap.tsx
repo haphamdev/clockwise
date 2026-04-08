@@ -5,6 +5,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { UserLink } from '@/components/users/user-link';
 import type { DelayHeatmapCell } from '@/lib/reports/types';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -74,7 +75,7 @@ export function DelayHeatmap({ cells, minEntries }: DelayHeatmapProps) {
           {users.map(([userId, userName]) => (
             <Fragment key={userId}>
               <div className="max-w-[120px] truncate pr-2 leading-[28px]">
-                {userName}
+                <UserLink id={userId} name={userName} />
               </div>
               {WEEKDAYS.map((_, wi) => {
                 const cell = grid.get(`${userId}:${wi}`);
