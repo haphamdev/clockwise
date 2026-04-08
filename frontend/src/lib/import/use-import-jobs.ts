@@ -4,7 +4,7 @@ import { importKeys } from './import-keys';
 
 export function useImportJobs(params: { type?: string; page?: number; limit?: number }) {
   return useQuery({
-    queryKey: importKeys.jobList(params.type),
+    queryKey: importKeys.jobList({ type: params.type, page: params.page, limit: params.limit }),
     queryFn: () => fetchImportJobs(params),
     refetchInterval: (query) => {
       const jobs = query.state.data?.data;

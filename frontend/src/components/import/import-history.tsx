@@ -1,15 +1,9 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { type ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ServerDataTable } from '@/components/ui/server-data-table';
+import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useImportJobs } from '@/lib/import/use-import-jobs';
-import type { ImportJobStatus } from '@/lib/import/types';
+import type { ImportJobListItem, ImportJobStatus } from '@/lib/import/types';
 
 interface ImportHistoryProps {
   type?: string;
@@ -32,66 +26,74 @@ function formatDate(iso: string): string {
   });
 }
 
-export function ImportHistory({ type }: ImportHistoryProps) {
-  const { data, isLoading } = useImportJobs({ type, limit: 20 });
+const columns: ColumnDef<ImportJobListItem>[] = [
+  {
+    accessorKey: 'createdAt',
+    header: 'Date',
+    cell: ({ row }) => (
+      <span className="text-sm">{formatDate(row.original.createdAt)}</span>
+    ),
+  },
+  {
+    accessorKey: 'type',
+    header: 'Type',
+    cell: ({ row }) => (
+      <span className="text-sm capitalize">{row.original.type.replace(/-/g, ' ')}</span>
+    ),
+  },
+  {
+    id: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const config = statusConfig[row.original.status];
+      return <Badge variant={config.variant}>{config.label}</Badge>;
+    },
+  },
+  {
+    accessorKey: 'imported',
+    header: () => <div className="text-right">Imported</div>,
+    cell: ({ row }) => (
+      <div className="text-right tabular-nums">
+        {row.original.imported}/{row.original.totalRows}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'errorCount',
+    header: () => <div className="text-right">Failed</div>,
+    cell: ({ row }) => (
+      <div className="text-right tabular-nums">
+        {row.original.errorCount > 0 ? (
+          <span className="text-destructive">{row.original.errorCount}</span>
+        ) : (
+          '0'
+        )}
+      </div>
+    ),
+  },
+];
 
-  const jobs = data?.data ?? [];
+export function ImportHistory({ type }: ImportHistoryProps) {
+  const { page, limit, setPage } = usePaginationParams({ defaultLimit: 10 });
+  const { data, isLoading } = useImportJobs({ type, page, limit });
+
+  const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Import History</CardTitle>
-        <CardDescription>Previous imports for your account.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading...</p>
-        ) : jobs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No previous imports.</p>
-        ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Imported</TableHead>
-                  <TableHead className="text-right">Failed</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobs.map((job) => {
-                  const config = statusConfig[job.status];
-                  return (
-                    <TableRow key={job.id}>
-                      <TableCell className="text-sm">
-                        {formatDate(job.createdAt)}
-                      </TableCell>
-                      <TableCell className="text-sm capitalize">
-                        {job.type.replace(/-/g, ' ')}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={config.variant}>{config.label}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {job.imported}/{job.totalRows}
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {job.errorCount > 0 ? (
-                          <span className="text-destructive">{job.errorCount}</span>
-                        ) : (
-                          '0'
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-lg font-semibold">Import History</h3>
+        <p className="text-sm text-muted-foreground">Previous imports for your account.</p>
+      </div>
+      <ServerDataTable
+        columns={columns}
+        data={data?.data ?? []}
+        page={page}
+        totalPages={totalPages}
+        total={data?.total ?? 0}
+        onPageChange={setPage}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }
