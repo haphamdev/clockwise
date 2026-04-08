@@ -50,4 +50,10 @@ export class ImportPreviewResponseDto {
     description: 'Token to pass to the execute endpoint. Only present when there are valid rows.',
   })
   previewToken?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'Seconds until the preview expires. Only present when previewToken is set.',
+  })
+  expiresInSeconds?: number;
 }

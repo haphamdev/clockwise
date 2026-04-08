@@ -1,0 +1,6 @@
+date,project_name,task,hours,notes,user_email
+2026-04-07,Mobile App Redesign,Expiry test task 1,2,Testing preview expiration,bob.martinez@clockwise.test
+2026-04-07,API Platform v2,Expiry test task 2,3.5,Should expire before import,carol.white@clockwise.test
+2026-04-07,Customer Dashboard,Expiry test task 3,1.5,,david.kim@clockwise.test
+2026-04-08,Design System,Expiry test task 4,4,Wait 15 min then try to import,alice.chen@clockwise.test
+2026-04-08,Automated Test Suite,Expiry test task 5,2.5,Preview should show countdown,eva.johnson@clockwise.test
