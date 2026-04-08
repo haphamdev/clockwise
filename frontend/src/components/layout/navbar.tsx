@@ -1,6 +1,7 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '@/lib/auth/use-auth';
 import { AdminNavDropdown } from '@/components/layout/admin-nav-dropdown';
+import { ReportsNavDropdown } from '@/components/layout/reports-nav-dropdown';
 import { UserNav } from '@/components/layout/user-nav';
 
 const navLinks = [
@@ -8,7 +9,6 @@ const navLinks = [
   { label: 'Time Logs', href: '/time-logs' },
   { label: 'Import', href: '/import' },
   { label: 'Projects', href: '/projects' },
-  { label: 'Reports', href: '/reports' },
 ];
 
 export function Navbar() {
@@ -37,6 +37,7 @@ export function Navbar() {
               {link.label}
             </NavLink>
           ))}
+          <ReportsNavDropdown />
           {user?.isAdmin && <AdminNavDropdown />}
         </nav>
 

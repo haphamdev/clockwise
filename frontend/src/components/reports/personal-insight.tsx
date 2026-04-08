@@ -12,7 +12,6 @@ import { TimeSeriesChart } from './time-series-chart';
 import type { ChartMode, ChartLayers } from './chart-toolbar';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ReportGranularity } from '@/lib/reports/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 // Default chart modes by position. Currently one chart (Hours by Project).
 const PI_MODE_DEFAULTS: ChartMode[] = ['stacked'];
@@ -35,9 +34,9 @@ export function PersonalInsight({
   setParam,
 }: PersonalInsightProps) {
   // Section-specific URL params
-  const piProjectIdsParam = getParam('piProjectIds');
-  const piProjectIds = useMemo(() => parseIds(piProjectIdsParam), [piProjectIdsParam]);
-  const [modes, setMode] = useSectionModes('piMode', PI_MODE_DEFAULTS, getParam, setParam);
+  const projectIdsParam = getParam('projectIds');
+  const projectIds = useMemo(() => parseIds(projectIdsParam), [projectIdsParam]);
+  const [modes, setMode] = useSectionModes('mode', PI_MODE_DEFAULTS, getParam, setParam);
   const [layers, setLayers] = useState<ChartLayers>({ values: true, trend: true });
 
   // Project options for inline filter
@@ -48,7 +47,7 @@ export function PersonalInsight({
   );
 
   const handleProjectIdsChange = useCallback(
-    (ids: string[]) => setParam('piProjectIds', ids.join(',')),
+    (ids: string[]) => setParam('projectIds', ids.join(',')),
     [setParam],
   );
 
@@ -58,9 +57,9 @@ export function PersonalInsight({
       dateFrom,
       dateTo,
       userIds: [userId],
-      projectIds: piProjectIds.length > 0 ? piProjectIds : undefined,
+      projectIds: projectIds.length > 0 ? projectIds : undefined,
     }),
-    [dateFrom, dateTo, userId, piProjectIds],
+    [dateFrom, dateTo, userId, projectIds],
   );
 
   const { data: summaryData } = useReportSummary(filters);
@@ -81,55 +80,42 @@ export function PersonalInsight({
   }, [summaryData]);
 
   return (
-    <section className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Insight</CardTitle>
-          <CardDescription>
-            Your logged hours broken down by project. Use stacked mode to see total effort over
-            time, or grouped mode to compare projects side-by-side.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-start gap-4 justify-end">
-              <div className="flex flex-col gap-1">
-                <Label className="text-xs">Projects</Label>
-                <Combobox
-                  multiple
-                  options={projectOptions}
-                  value={piProjectIds}
-                  onChange={handleProjectIdsChange}
-                  placeholder="All projects"
-                  searchPlaceholder="Search projects..."
-                  emptyText="No projects available."
-                  className="w-[200px]"
-                />
-              </div>
-            </div>
-            <SummaryCards cards={summaryCards} />
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
-                <ChartToolbar
-                  mode={modes[0]}
-                  onModeChange={(m) => setMode(0, m)}
-                  layers={layers}
-                  onLayersChange={setLayers}
-                />
-              </div>
-              <TimeSeriesChart
-                buckets={timeSeriesData?.buckets ?? []}
-                dateFrom={dateFrom}
-                dateTo={dateTo}
-                granularity={granularity}
-                mode={modes[0]}
-                layers={layers}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </section>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start gap-4 justify-end">
+        <div className="flex flex-col gap-1">
+          <Label className="text-xs">Projects</Label>
+          <Combobox
+            multiple
+            options={projectOptions}
+            value={projectIds}
+            onChange={handleProjectIdsChange}
+            placeholder="All projects"
+            searchPlaceholder="Search projects..."
+            emptyText="No projects available."
+            className="w-[200px]"
+          />
+        </div>
+      </div>
+      <SummaryCards cards={summaryCards} />
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+          <ChartToolbar
+            mode={modes[0]}
+            onModeChange={(m) => setMode(0, m)}
+            layers={layers}
+            onLayersChange={setLayers}
+          />
+        </div>
+        <TimeSeriesChart
+          buckets={timeSeriesData?.buckets ?? []}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          granularity={granularity}
+          mode={modes[0]}
+          layers={layers}
+        />
+      </div>
+    </div>
   );
 }
