@@ -20,6 +20,7 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { useCreateProject } from '@/lib/projects/use-create-project';
 import { useTeams } from '@/lib/teams/use-teams';
 import { useAuth } from '@/lib/auth/use-auth';
@@ -105,8 +106,8 @@ export function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetPro
               control={form.control}
               name="teamIds"
               render={({ field, fieldState }) => (
-                <FormItem>
-                  <FormLabel>Teams</FormLabel>
+                <div className="space-y-2">
+                  <Label>Teams</Label>
                   <Combobox
                     multiple
                     options={teamOptions}
@@ -121,7 +122,7 @@ export function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetPro
                       {fieldState.error.message}
                     </p>
                   )}
-                </FormItem>
+                </div>
               )}
             />
             <Button type="submit" disabled={createProject.isPending} className="w-full">
