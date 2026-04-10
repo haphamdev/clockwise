@@ -12,6 +12,8 @@ function makeSettings(overrides?: Partial<OrgSettingsEntity>): OrgSettingsEntity
     dateFormat: 'YYYY-MM-DD',
     timeFormat: '12h',
     csvMaxRows: 500,
+    trackSaturday: false,
+    trackSunday: false,
     ...overrides,
   };
 }

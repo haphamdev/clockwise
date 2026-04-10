@@ -21,4 +21,10 @@ export class OrgSettingsResponseDto {
 
   @ApiProperty({ example: 500 })
   csvMaxRows: number;
+
+  @ApiProperty({ example: false })
+  trackSaturday: boolean;
+
+  @ApiProperty({ example: false })
+  trackSunday: boolean;
 }

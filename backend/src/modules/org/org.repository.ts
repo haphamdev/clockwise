@@ -10,6 +10,8 @@ interface SettingsJson {
   dateFormat?: string;
   timeFormat?: string;
   csvMaxRows?: number;
+  trackSaturday?: boolean;
+  trackSunday?: boolean;
 }
 
 @Injectable()
@@ -39,6 +41,8 @@ export class OrgRepository {
       dateFormat?: string;
       timeFormat?: string;
       csvMaxRows?: number;
+      trackSaturday?: boolean;
+      trackSunday?: boolean;
     },
   ): Promise<OrgSettingsEntity> {
     const { orgName, ...settingsFields } = data;
@@ -67,6 +71,8 @@ export class OrgRepository {
       dateFormat: (s.dateFormat as OrgSettingsEntity['dateFormat']) ?? d.dateFormat,
       timeFormat: (s.timeFormat as OrgSettingsEntity['timeFormat']) ?? d.timeFormat,
       csvMaxRows: s.csvMaxRows ?? d.csvMaxRows,
+      trackSaturday: s.trackSaturday ?? d.trackSaturday,
+      trackSunday: s.trackSunday ?? d.trackSunday,
     };
   }
 }

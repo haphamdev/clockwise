@@ -58,6 +58,8 @@ const defaultOrgSettings = {
   dateFormat: 'YYYY-MM-DD' as const,
   timeFormat: '24h' as const,
   csvMaxRows: 500,
+  trackSaturday: false,
+  trackSunday: false,
 };
 
 describe('TimeLogsService', () => {

@@ -17,6 +17,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { TimeLogsModule } from './modules/time-logs/time-logs.module';
 import { ImportModule } from './modules/import/import.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     TimeLogsModule,
     ImportModule,
     ReportsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
 })

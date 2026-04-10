@@ -9,6 +9,8 @@ export interface OrgSettings {
   dateFormat: DateFormat;
   timeFormat: TimeFormat;
   csvMaxRows: number;
+  trackSaturday: boolean;
+  trackSunday: boolean;
 }
 
 export interface UpdateOrgSettingsPayload {
@@ -19,4 +21,6 @@ export interface UpdateOrgSettingsPayload {
   dateFormat?: DateFormat;
   timeFormat?: TimeFormat;
   csvMaxRows?: number;
+  trackSaturday?: boolean;
+  trackSunday?: boolean;
 }

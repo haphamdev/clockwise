@@ -23,6 +23,7 @@ import { ProjectDetailPage } from '@/pages/project-detail-page';
 import { TimeLogsPage } from '@/pages/time-logs-page';
 import { ImportPage } from '@/pages/import-page';
 import { ManagerRoute } from '@/components/manager-route';
+import { DashboardPage } from '@/pages/dashboard-page';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const PersonalInsightPage = lazy(() =>
@@ -37,17 +38,6 @@ const ProjectInsightPage = lazy(() =>
 
 function ReportFallback() {
   return <Skeleton className="h-[60vh] w-full" />;
-}
-
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Coming soon</p>
-      </div>
-    </div>
-  );
 }
 
 export default function App() {
@@ -70,7 +60,7 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route path="/dashboard" element={<PlaceholderPage title="Dashboard" />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/time-logs" element={<TimeLogsPage />} />
                 <Route path="/import" element={<ImportPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
