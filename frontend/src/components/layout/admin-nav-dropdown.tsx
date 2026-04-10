@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Shield, Users, Mail, Settings } from 'lucide-react';
 import { navLinkClasses } from '@/components/layout/nav-link-classes';
 import {
@@ -15,10 +15,13 @@ const adminLinks = [
 ];
 
 export function AdminNavDropdown() {
+  const { pathname } = useLocation();
+  const isActive = pathname.startsWith('/admin');
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`outline-none ${navLinkClasses(false)}`}
+        className={`outline-none ${navLinkClasses(isActive)}`}
       >
         <Shield className="h-4 w-4" />
         Admin
