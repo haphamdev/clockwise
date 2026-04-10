@@ -11,6 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useAuth } from '@/lib/auth/use-auth';
+import { isAdminOrManager } from '@/lib/auth/role-utils';
 import type { UserTeamMembership } from '@/lib/users/types';
 
 interface ProfileTeamsTableProps {
@@ -18,6 +20,8 @@ interface ProfileTeamsTableProps {
 }
 
 export function ProfileTeamsTable({ memberships }: ProfileTeamsTableProps) {
+  const { user } = useAuth();
+  const canViewTeams = user ? isAdminOrManager(user) : false;
   if (memberships.length === 0) {
     return (
       <EmptyState
@@ -42,12 +46,16 @@ export function ProfileTeamsTable({ memberships }: ProfileTeamsTableProps) {
             <TableRow key={membership.teamId}>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Link
-                    to={`/admin/teams/${membership.teamId}`}
-                    className="text-sm font-medium hover:underline"
-                  >
-                    {membership.teamName}
-                  </Link>
+                  {canViewTeams ? (
+                    <Link
+                      to={`/teams/${membership.teamId}`}
+                      className="text-sm font-medium hover:underline"
+                    >
+                      {membership.teamName}
+                    </Link>
+                  ) : (
+                    <span className="text-sm font-medium">{membership.teamName}</span>
+                  )}
                   {membership.isArchived && <StatusBadge status="archived" />}
                 </div>
               </TableCell>

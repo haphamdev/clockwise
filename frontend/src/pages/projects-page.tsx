@@ -15,9 +15,11 @@ import { useArchiveProject } from '@/lib/projects/use-archive-project';
 import { useUnarchiveProject } from '@/lib/projects/use-unarchive-project';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { Project } from '@/lib/projects/types';
 
 export function ProjectsPage() {
+  useDocumentTitle('Clockwise - Projects');
   const { user } = useAuth();
   const { page, limit, setPage } = usePaginationParams();
   const [showArchived, setShowArchived] = useState(false);

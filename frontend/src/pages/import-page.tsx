@@ -5,9 +5,11 @@ import { ImportHistory } from '@/components/import/import-history';
 import { ImportTypeSelector } from '@/components/import/import-type-selector';
 import { useAuth } from '@/lib/auth/use-auth';
 import { IMPORT_TYPE_CONFIG, isValidImportType } from '@/lib/import/import-type-config';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { ImportType } from '@/lib/import/types';
 
 export function ImportPage() {
+  useDocumentTitle('Clockwise - Import');
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
   const isAdmin = user?.isAdmin ?? false;

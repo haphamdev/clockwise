@@ -19,11 +19,13 @@ import { useReactivateUser } from '@/lib/users/use-reactivate-user';
 import { useUpdateTeamMember } from '@/lib/teams/use-update-team-member';
 import { useRemoveTeamMember } from '@/lib/teams/use-remove-team-member';
 import { usersKeys } from '@/lib/users/users-keys';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { TeamRole } from '@/lib/teams/types';
 
 export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data: user, isLoading } = useUserDetail(id!);
+  useDocumentTitle(user ? `Clockwise - ${user.name}` : 'Clockwise - User');
   const updateUser = useUpdateUser();
   const deactivateUser = useDeactivateUser();
   const reactivateUser = useReactivateUser();

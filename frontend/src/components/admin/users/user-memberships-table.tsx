@@ -75,7 +75,7 @@ export function UserMembershipsTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Link
-                      to={`/admin/teams/${membership.teamId}`}
+                      to={`/teams/${membership.teamId}`}
                       className="text-sm font-medium hover:underline"
                     >
                       {membership.teamName}

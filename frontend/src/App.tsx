@@ -9,8 +9,8 @@ import { AdminRoute } from '@/components/admin-route';
 import { AppLayout } from '@/components/layout/app-layout';
 import { LoginPage } from '@/pages/LoginPage';
 import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
-import { TeamsPage } from '@/pages/admin/teams-page';
-import { TeamDetailPage } from '@/pages/admin/team-detail-page';
+import { TeamsPage } from '@/pages/teams-page';
+import { TeamDetailPage } from '@/pages/team-detail-page';
 import { UsersPage } from '@/pages/admin/users-page';
 import { UserDetailPage } from '@/pages/admin/user-detail-page';
 import { InvitationsPage } from '@/pages/admin/invitations-page';
@@ -97,23 +97,25 @@ export default function App() {
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/profile/settings" element={<UserPreferencesPage />} />
 
-                {/* Admin routes */}
+                {/* Manager+ routes */}
                 <Route
-                  path="/admin/teams"
+                  path="/teams"
                   element={
-                    <AdminRoute>
+                    <ManagerRoute>
                       <TeamsPage />
-                    </AdminRoute>
+                    </ManagerRoute>
                   }
                 />
                 <Route
-                  path="/admin/teams/:id"
+                  path="/teams/:id"
                   element={
-                    <AdminRoute>
+                    <ManagerRoute>
                       <TeamDetailPage />
-                    </AdminRoute>
+                    </ManagerRoute>
                   }
                 />
+
+                {/* Admin routes */}
                 <Route
                   path="/admin/users"
                   element={

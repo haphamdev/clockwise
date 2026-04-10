@@ -396,7 +396,7 @@ export const Default: StoryObj = {
             description="8 members across 3 projects."
             breadcrumbs={[
               { label: 'Admin', href: '/admin' },
-              { label: 'Teams', href: '/admin/teams' },
+              { label: 'Teams', href: '/teams' },
               { label: 'Engineering' },
             ]}
             actions={

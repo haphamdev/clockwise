@@ -16,6 +16,7 @@ import { useTimeLogs } from '@/lib/time-logs/use-time-logs';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
 import { useAuth } from '@/lib/auth/use-auth';
 import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { TimeLog } from '@/lib/time-logs/types';
 
 function parseIds(value: string): string[] {
@@ -23,6 +24,7 @@ function parseIds(value: string): string[] {
 }
 
 export function TimeLogsPage() {
+  useDocumentTitle('Clockwise - Time Logs');
   const { user } = useAuth();
   const { page, limit, setPage, getParam, setParam, setParams } = usePaginationParams();
 

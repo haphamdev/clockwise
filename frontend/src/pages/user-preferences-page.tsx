@@ -4,8 +4,10 @@ import { ThemePreferenceForm } from '@/components/preferences/theme-preference-f
 import { FormatPreferenceForm } from '@/components/preferences/format-preference-form';
 import { WeekStartPreferenceForm } from '@/components/preferences/week-start-preference-form';
 import { useUserPreferences } from '@/lib/user-preferences/use-user-preferences';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export function UserPreferencesPage() {
+  useDocumentTitle('Clockwise - Settings');
   const { data: prefs, isLoading, isError } = useUserPreferences();
 
   if (isLoading) {

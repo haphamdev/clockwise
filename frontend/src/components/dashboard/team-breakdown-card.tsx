@@ -16,16 +16,12 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
   return (
     <Card>
       <CardContent className="p-4">
-        {isAdmin ? (
-          <Link
-            to={`/admin/teams/${team.teamId}`}
-            className="text-base font-semibold text-foreground hover:underline"
-          >
-            {team.teamName}
-          </Link>
-        ) : (
-          <p className="text-base font-semibold text-foreground">{team.teamName}</p>
-        )}
+        <Link
+          to={`/teams/${team.teamId}`}
+          className="text-base font-semibold text-foreground hover:underline"
+        >
+          {team.teamName}
+        </Link>
 
         <div className="mt-3 grid grid-cols-3 gap-6">
           <div className="space-y-3">

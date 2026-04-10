@@ -4,8 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useValidateInvitation } from '@/lib/invitations/use-validate-invitation';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export function InviteLandingPage() {
+  useDocumentTitle('Clockwise - Invitation');
   const { token } = useParams<{ token: string }>();
   const { data, isLoading, isError } = useValidateInvitation(token ?? '');
 
