@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   Form,
   FormField,
@@ -31,6 +32,8 @@ const schema = z.object({
   dateFormat: z.enum(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY']),
   timeFormat: z.enum(['12h', '24h']),
   csvMaxRows: z.number().min(1).max(10000),
+  trackSaturday: z.boolean(),
+  trackSunday: z.boolean(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -182,6 +185,40 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
               </FormControl>
               <FormDescription>Maximum rows in CSV exports (1-10,000).</FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="trackSaturday"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <FormLabel>Track Saturday</FormLabel>
+                <FormDescription>
+                  Include Saturdays in gap detection and expected hours.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="trackSunday"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-3">
+              <div className="space-y-0.5">
+                <FormLabel>Track Sunday</FormLabel>
+                <FormDescription>
+                  Include Sundays in gap detection and expected hours.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
             </FormItem>
           )}
         />

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsIn, Min, Max, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsIn, Min, Max, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class UpdateOrgSettingsDto {
   @ApiProperty({ required: false, example: 'Acme Corp' })
@@ -45,4 +45,14 @@ export class UpdateOrgSettingsDto {
   @Min(1)
   @Max(10000)
   csvMaxRows?: number;
+
+  @ApiProperty({ required: false, example: false })
+  @IsOptional()
+  @IsBoolean()
+  trackSaturday?: boolean;
+
+  @ApiProperty({ required: false, example: false })
+  @IsOptional()
+  @IsBoolean()
+  trackSunday?: boolean;
 }

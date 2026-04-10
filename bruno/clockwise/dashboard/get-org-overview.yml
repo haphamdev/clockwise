@@ -1,0 +1,31 @@
+info:
+  name: get-org-overview
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: http://localhost:3000/api/v1/dashboard/org-overview
+  auth: bearer
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.users
+      operator: isDefined
+    - expression: res.body.teams
+      operator: isDefined
+    - expression: res.body.projects
+      operator: isDefined
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

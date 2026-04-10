@@ -25,6 +25,8 @@ export class OrgService {
       dateFormat?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
       timeFormat?: '12h' | '24h';
       csvMaxRows?: number;
+      trackSaturday?: boolean;
+      trackSunday?: boolean;
     },
   ): Promise<OrgSettingsEntity> {
     const existing = await this.orgRepository.findSettings(orgId);

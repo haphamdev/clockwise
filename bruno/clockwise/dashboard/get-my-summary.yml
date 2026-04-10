@@ -1,0 +1,31 @@
+info:
+  name: get-my-summary
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: http://localhost:3000/api/v1/dashboard/my-summary
+  auth: bearer
+
+auth:
+  bearer:
+    token: "{{accessToken}}"
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.myHours
+      operator: isDefined
+    - expression: res.body.gaps
+      operator: isDefined
+    - expression: res.body.recentLogs
+      operator: isDefined
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
