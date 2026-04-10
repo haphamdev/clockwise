@@ -1,4 +1,7 @@
+import { useDocumentTitle } from '@/hooks/use-document-title';
+
 export function LoginPage() {
+  useDocumentTitle('Clockwise - Sign In');
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 text-center">

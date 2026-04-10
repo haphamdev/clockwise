@@ -20,9 +20,11 @@ import { useInvitations } from '@/lib/invitations/use-invitations';
 import { useRevokeInvitation } from '@/lib/invitations/use-revoke-invitation';
 import { useResendInvitation } from '@/lib/invitations/use-resend-invitation';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { Invitation, InvitationStatus } from '@/lib/invitations/types';
 
 export function InvitationsPage() {
+  useDocumentTitle('Clockwise - Invitations');
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
   const status = getParam('status');
   const [inviteOpen, setInviteOpen] = useState(false);

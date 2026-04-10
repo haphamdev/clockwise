@@ -4,8 +4,10 @@ import { ProfileInfoCard } from '@/components/profile/profile-info-card';
 import { ProfileTeamsTable } from '@/components/profile/profile-teams-table';
 import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
 import { useMyProfile } from '@/lib/users/use-my-profile';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export function ProfilePage() {
+  useDocumentTitle('Clockwise - Profile');
   const { data: user, isLoading, isError } = useMyProfile();
 
   if (isLoading) {

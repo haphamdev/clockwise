@@ -43,7 +43,7 @@ export const IMPORT_TYPE_CONFIG: Record<ImportType, ImportTypeConfig> = {
     pageDescription: 'Upload a CSV file to bulk import teams.',
     uploadDescription: 'Select a CSV file to import teams.',
     importingText: 'Importing teams...',
-    doneLink: '/admin/teams',
+    doneLink: '/teams',
     doneLinkLabel: 'View Teams',
     adminOnly: true,
     columns: [

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, Users, Building2, Mail, Settings } from 'lucide-react';
+import { Shield, Users, Mail, Settings } from 'lucide-react';
 import { navLinkClasses } from '@/components/layout/nav-link-classes';
 import {
   DropdownMenu,
@@ -10,7 +10,6 @@ import {
 
 const adminLinks = [
   { label: 'Users', href: '/admin/users', icon: Users },
-  { label: 'Teams', href: '/admin/teams', icon: Building2 },
   { label: 'Invitations', href: '/admin/invitations', icon: Mail },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -19,7 +18,7 @@ export function AdminNavDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`flex items-center gap-1.5 outline-none ${navLinkClasses(false)}`}
+        className={`outline-none ${navLinkClasses(false)}`}
       >
         <Shield className="h-4 w-4" />
         Admin

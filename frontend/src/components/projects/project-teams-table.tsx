@@ -60,7 +60,7 @@ export function ProjectTeamsTable({
                 <TableCell>
                   {isAdmin ? (
                     <Link
-                      to={`/admin/teams/${team.teamId}`}
+                      to={`/teams/${team.teamId}`}
                       className="font-medium hover:underline"
                     >
                       {team.teamName}

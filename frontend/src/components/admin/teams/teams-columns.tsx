@@ -16,14 +16,15 @@ export function getTeamsColumns(
   onArchive: (team: Team) => void,
   onUnarchive: (team: Team) => void,
   actionPendingId?: string,
+  readOnly?: boolean,
 ): ColumnDef<Team>[] {
-  return [
+  const columns: ColumnDef<Team>[] = [
     {
       accessorKey: 'name',
       header: 'Name',
       cell: ({ row }) => (
         <Link
-          to={`/admin/teams/${row.original.id}`}
+          to={`/teams/${row.original.id}`}
           className="font-medium hover:underline"
         >
           {row.original.name}
@@ -50,7 +51,10 @@ export function getTeamsColumns(
         <StatusBadge status={row.original.isArchived ? 'archived' : 'active'} />
       ),
     },
-    {
+  ];
+
+  if (!readOnly) {
+    columns.push({
       id: 'actions',
       cell: ({ row }) => {
         const team = row.original;
@@ -87,6 +91,8 @@ export function getTeamsColumns(
           </DropdownMenu>
         );
       },
-    },
-  ];
+    });
+  }
+
+  return columns;
 }

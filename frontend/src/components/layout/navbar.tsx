@@ -1,19 +1,22 @@
 import { Link, NavLink } from 'react-router-dom';
+import { LayoutDashboard, Clock, Upload, FolderKanban, Building2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/use-auth';
+import { isAdminOrManager } from '@/lib/auth/role-utils';
 import { AdminNavDropdown } from '@/components/layout/admin-nav-dropdown';
 import { ReportsNavDropdown } from '@/components/layout/reports-nav-dropdown';
 import { navLinkClasses } from '@/components/layout/nav-link-classes';
 import { UserNav } from '@/components/layout/user-nav';
+import type { LucideIcon } from 'lucide-react';
 
-const navLinks = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Time Logs', href: '/time-logs' },
-  { label: 'Import', href: '/import' },
-  { label: 'Projects', href: '/projects' },
+const navLinks: Array<{ label: string; href: string; icon: LucideIcon }> = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Time Logs', href: '/time-logs', icon: Clock },
+  { label: 'Projects', href: '/projects', icon: FolderKanban },
 ];
 
 export function Navbar() {
   const { user } = useAuth();
+  const showTeams = user ? isAdminOrManager(user) : false;
 
   return (
     <header className="sticky top-0 z-40 border-b bg-bg-dark/80 backdrop-blur-sm">
@@ -29,10 +32,21 @@ export function Navbar() {
               to={link.href}
               className={({ isActive }) => navLinkClasses(isActive)}
             >
+              <link.icon className="h-4 w-4" />
               {link.label}
             </NavLink>
           ))}
+          {showTeams && (
+            <NavLink to="/teams" className={({ isActive }) => navLinkClasses(isActive)}>
+              <Building2 className="h-4 w-4" />
+              Teams
+            </NavLink>
+          )}
           <ReportsNavDropdown />
+          <NavLink to="/import" className={({ isActive }) => navLinkClasses(isActive)}>
+            <Upload className="h-4 w-4" />
+            Import
+          </NavLink>
           {user?.isAdmin && <AdminNavDropdown />}
         </nav>
 

@@ -16,11 +16,13 @@ import { useArchiveProject } from '@/lib/projects/use-archive-project';
 import { useUnarchiveProject } from '@/lib/projects/use-unarchive-project';
 import { useRemoveProjectTeam } from '@/lib/projects/use-remove-project-team';
 import { useAuth } from '@/lib/auth/use-auth';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { data: project, isLoading } = useProjectDetail(id!);
+  useDocumentTitle(project ? `Clockwise - ${project.name}` : 'Clockwise - Project');
   const archiveProject = useArchiveProject();
   const unarchiveProject = useUnarchiveProject();
   const removeTeam = useRemoveProjectTeam();

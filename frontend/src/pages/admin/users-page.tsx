@@ -8,9 +8,11 @@ import { getUsersColumns } from '@/components/admin/users/users-columns';
 import { UsersFilterBar } from '@/components/admin/users/users-filter-bar';
 import { useUsers } from '@/lib/users/use-users';
 import { usePaginationParams } from '@/hooks/use-pagination-params';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 import type { User, UserStatus } from '@/lib/users/types';
 
 export function UsersPage() {
+  useDocumentTitle('Clockwise - Users');
   const navigate = useNavigate();
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
   const search = getParam('search');

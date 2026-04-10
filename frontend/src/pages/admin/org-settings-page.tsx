@@ -2,8 +2,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { OrgSettingsForm } from '@/components/admin/org/org-settings-form';
 import { useOrgSettings } from '@/lib/org/use-org-settings';
+import { useDocumentTitle } from '@/hooks/use-document-title';
 
 export function OrgSettingsPage() {
+  useDocumentTitle('Clockwise - Organization Settings');
   const { data: settings, isLoading } = useOrgSettings();
 
   return (

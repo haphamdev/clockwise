@@ -30,7 +30,7 @@ export function ReportsNavDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`flex items-center gap-1.5 outline-none ${navLinkClasses(isActive)}`}
+        className={`outline-none ${navLinkClasses(isActive)}`}
       >
         <BarChart3 className="h-4 w-4" />
         Reports
