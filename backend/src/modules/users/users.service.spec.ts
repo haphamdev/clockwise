@@ -1,5 +1,6 @@
 import { ErrorCode } from "../../common/exceptions/error-codes";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { ProjectsRepository } from "../projects/projects.repository";
 import { UserWithTeams } from "./entities/user.entity";
 import { UsersRepository } from "./users.repository";
 import { UsersService } from "./users.service";
@@ -32,6 +33,7 @@ describe("UsersService", () => {
   let service: UsersService;
   let repo: jest.Mocked<UsersRepository>;
   let auditLogService: jest.Mocked<AuditLogService>;
+  let projectsRepo: jest.Mocked<ProjectsRepository>;
 
   beforeEach(() => {
     repo = {
@@ -59,7 +61,11 @@ describe("UsersService", () => {
       logMany: jest.fn(),
     } as unknown as jest.Mocked<AuditLogService>;
 
-    service = new UsersService(repo, auditLogService);
+    projectsRepo = {
+      findAllForUserId: jest.fn(),
+    } as unknown as jest.Mocked<ProjectsRepository>;
+
+    service = new UsersService(repo, auditLogService, projectsRepo);
   });
 
   describe("findAll", () => {

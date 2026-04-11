@@ -3,17 +3,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-// Canonical type lives in chart-utils; re-exported here so callers can co-import with ChartLayers
-import type { ChartMode } from "@/lib/reports/chart-utils";
-
-export type { ChartMode } from "@/lib/reports/chart-utils";
-
-export interface ChartLayers {
-  values: boolean;
-  trend: boolean;
-}
-
-export const DEFAULT_LAYERS: ChartLayers = { values: true, trend: true };
+import type { ChartLayers, ChartMode } from "@/lib/reports/chart-utils";
+import { DEFAULT_LAYERS } from "@/lib/reports/chart-utils";
 
 interface ChartToolbarProps {
   mode: ChartMode;

@@ -11,17 +11,17 @@ import {
   YAxis,
 } from "recharts";
 import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
+import type { ChartLayers, ChartMode } from "@/lib/reports/chart-utils";
 import {
   buildAvgRows,
   buildChartRows,
   CHART_COLORS,
   collectSeriesKeys,
   computeYMax,
+  DEFAULT_LAYERS,
   mergeChartData,
 } from "@/lib/reports/chart-utils";
 import type { ReportGranularity, TimeSeriesBucket } from "@/lib/reports/types";
-import type { ChartLayers, ChartMode } from "./chart-toolbar";
-import { DEFAULT_LAYERS } from "./chart-toolbar";
 import type { ChartVisibility } from "./chart-tooltip";
 import { ChartTooltip } from "./chart-tooltip";
 import { CustomTick } from "./custom-tick";

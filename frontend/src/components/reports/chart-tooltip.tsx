@@ -1,7 +1,6 @@
 import type { TooltipContentProps } from "recharts/types/component/Tooltip";
-import type { SeriesKey } from "@/lib/reports/chart-utils";
+import type { ChartMode, SeriesKey } from "@/lib/reports/chart-utils";
 import { CHART_COLORS, formatTooltipLabel } from "@/lib/reports/chart-utils";
-import type { ChartMode } from "./chart-toolbar";
 
 export interface ChartVisibility {
   hiddenIds: Set<string>;

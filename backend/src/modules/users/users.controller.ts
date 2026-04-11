@@ -5,7 +5,6 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { UserNotFoundException } from "../../common/exceptions/user.exceptions";
 import { ProjectListResponseDto } from "../projects/dto/project-response.dto";
 import { ProjectListItem } from "../projects/entities/project.entity";
-import { ProjectsService } from "../projects/projects.service";
 import { ListUserProjectsQueryDto } from "./dto/list-user-projects-query.dto";
 import { ListUsersQueryDto } from "./dto/list-users-query.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
@@ -16,10 +15,7 @@ import { UsersService } from "./users.service";
 @ApiTags("Users")
 @Controller("users")
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly projectsService: ProjectsService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   @AdminOnly()
@@ -91,7 +87,7 @@ export class UsersController {
 
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const { data, total } = await this.projectsService.findProjectsForUser(
+    const { data, total } = await this.usersService.findProjectsForUser(
       user.orgId,
       id,
       {

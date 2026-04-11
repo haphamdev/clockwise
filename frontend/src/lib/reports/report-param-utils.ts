@@ -1,4 +1,4 @@
-import type { ChartMode } from "@/components/reports/chart-toolbar";
+import type { ChartMode } from "@/lib/reports/chart-utils";
 import type { ReportGranularity } from "./types";
 
 /**

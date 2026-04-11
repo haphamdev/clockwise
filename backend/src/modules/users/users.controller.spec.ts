@@ -1,6 +1,5 @@
 import { UserNotFoundException } from "../../common/exceptions/user.exceptions";
 import { ProjectListItem } from "../projects/entities/project.entity";
-import { ProjectsService } from "../projects/projects.service";
 import { UserEntity, UserWithTeams } from "./entities/user.entity";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
@@ -65,7 +64,6 @@ function makeProjectListItem(
 describe("UsersController", () => {
   let controller: UsersController;
   let service: jest.Mocked<UsersService>;
-  let projectsService: jest.Mocked<ProjectsService>;
 
   beforeEach(() => {
     service = {
@@ -75,13 +73,10 @@ describe("UsersController", () => {
       deactivateUser: jest.fn(),
       reactivateUser: jest.fn(),
       canViewUserDetails: jest.fn(),
+      findProjectsForUser: jest.fn(),
     } as unknown as jest.Mocked<UsersService>;
 
-    projectsService = {
-      findProjectsForUser: jest.fn(),
-    } as unknown as jest.Mocked<ProjectsService>;
-
-    controller = new UsersController(service, projectsService);
+    controller = new UsersController(service);
   });
 
   describe("list", () => {
@@ -181,7 +176,7 @@ describe("UsersController", () => {
     it("should return paginated projects for admin", async () => {
       service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
-      projectsService.findProjectsForUser.mockResolvedValue({
+      service.findProjectsForUser.mockResolvedValue({
         data: [
           makeProjectListItem(),
           makeProjectListItem({ id: "proj-2", name: "Project Beta" }),
@@ -210,7 +205,7 @@ describe("UsersController", () => {
       const manager = makeAdmin({ id: "manager-1", isAdmin: false });
       service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
-      projectsService.findProjectsForUser.mockResolvedValue({
+      service.findProjectsForUser.mockResolvedValue({
         data: [makeProjectListItem()],
         total: 1,
       });
@@ -237,7 +232,7 @@ describe("UsersController", () => {
     it("should pass includeArchived param to service", async () => {
       service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
-      projectsService.findProjectsForUser.mockResolvedValue({
+      service.findProjectsForUser.mockResolvedValue({
         data: [],
         total: 0,
       });
@@ -248,7 +243,7 @@ describe("UsersController", () => {
         includeArchived: true,
       });
 
-      expect(projectsService.findProjectsForUser).toHaveBeenCalledWith(
+      expect(service.findProjectsForUser).toHaveBeenCalledWith(
         "org-1",
         "user-1",
         {
@@ -262,14 +257,14 @@ describe("UsersController", () => {
     it("should default includeArchived to false", async () => {
       service.canViewUserDetails.mockResolvedValue(true);
       service.getUserDetail.mockResolvedValue(makeUserWithTeams());
-      projectsService.findProjectsForUser.mockResolvedValue({
+      service.findProjectsForUser.mockResolvedValue({
         data: [],
         total: 0,
       });
 
       await controller.listUserProjects("user-1", makeAdmin(), {});
 
-      expect(projectsService.findProjectsForUser).toHaveBeenCalledWith(
+      expect(service.findProjectsForUser).toHaveBeenCalledWith(
         "org-1",
         "user-1",
         {

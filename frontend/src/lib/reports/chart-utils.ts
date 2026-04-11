@@ -203,6 +203,13 @@ export function mergeChartData(
 
 export type ChartMode = "stacked" | "grouped";
 
+export interface ChartLayers {
+  values: boolean;
+  trend: boolean;
+}
+
+export const DEFAULT_LAYERS: ChartLayers = { values: true, trend: true };
+
 /** Compute fixed Y axis max based on full dataset, accounting for chart mode. */
 export function computeYMax(
   rows: ChartRow[],

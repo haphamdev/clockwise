@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from "react";
+import type { ChartLayers, ChartMode } from "@/lib/reports/chart-utils";
 import { parseIds } from "@/lib/reports/report-param-utils";
 import type { ReportGranularity } from "@/lib/reports/types";
 import { useReportSummary } from "@/lib/reports/use-report-summary";
 import { useSectionModes } from "@/lib/reports/use-section-modes";
 import { useTimeSeries } from "@/lib/reports/use-time-series";
-import type { ChartLayers, ChartMode } from "./chart-toolbar";
 import { ChartToolbar } from "./chart-toolbar";
 import { ProjectInsightFilters } from "./project-insight-filters";
 import { SummaryCards } from "./summary-cards";

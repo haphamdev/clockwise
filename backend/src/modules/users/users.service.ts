@@ -10,6 +10,8 @@ import {
 } from "../../common/exceptions/user.exceptions";
 import { CreateAuditLogInput } from "../audit-log/audit-log.repository";
 import { AuditLogService } from "../audit-log/audit-log.service";
+import { ProjectListItem } from "../projects/entities/project.entity";
+import { ProjectsRepository } from "../projects/projects.repository";
 import {
   UserEntity,
   UserWithRefreshToken,
@@ -22,6 +24,7 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly auditLogService: AuditLogService,
+    private readonly projectsRepository: ProjectsRepository,
   ) {}
 
   async findByEmail(email: string): Promise<UserEntity | null> {
@@ -30,6 +33,14 @@ export class UsersService {
 
   async findById(id: string): Promise<UserWithTeams | null> {
     return this.usersRepository.findById(id);
+  }
+
+  async findProjectsForUser(
+    orgId: string,
+    userId: string,
+    options: { includeArchived: boolean; page: number; limit: number },
+  ): Promise<{ data: ProjectListItem[]; total: number }> {
+    return this.projectsRepository.findAllForUserId(orgId, userId, options);
   }
 
   async createPendingUser(

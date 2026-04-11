@@ -120,7 +120,7 @@ describe("TimeLogsController", () => {
       const result = await controller.create(user, dto);
 
       expect(result.warnings).toHaveLength(1);
-      expect(result.warnings?.[0].type).toBe("daily_limit");
+      expect(result.warnings![0].type).toBe("daily_limit");
     });
 
     it("should create on behalf when userId differs and permission granted", async () => {
