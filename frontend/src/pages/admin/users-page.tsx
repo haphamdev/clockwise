@@ -1,23 +1,23 @@
-import { useCallback, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import { getUsersColumns } from '@/components/admin/users/users-columns';
-import { UsersFilterBar } from '@/components/admin/users/users-filter-bar';
-import { useUsers } from '@/lib/users/use-users';
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { User, UserStatus } from '@/lib/users/types';
+import { Mail } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getUsersColumns } from "@/components/admin/users/users-columns";
+import { UsersFilterBar } from "@/components/admin/users/users-filter-bar";
+import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import type { User, UserStatus } from "@/lib/users/types";
+import { useUsers } from "@/lib/users/use-users";
 
 export function UsersPage() {
-  useDocumentTitle('Clockwise - Users');
+  useDocumentTitle("Clockwise - Users");
   const navigate = useNavigate();
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
-  const search = getParam('search');
-  const status = getParam('status');
-  const teamId = getParam('teamId');
+  const search = getParam("search");
+  const status = getParam("status");
+  const teamId = getParam("teamId");
 
   const { data, isLoading } = useUsers({
     page,
@@ -28,23 +28,20 @@ export function UsersPage() {
   });
 
   const handleSearchChange = useCallback(
-    (value: string) => setParam('search', value),
+    (value: string) => setParam("search", value),
     [setParam],
   );
   const handleStatusChange = useCallback(
-    (value: string) => setParam('status', value),
+    (value: string) => setParam("status", value),
     [setParam],
   );
   const handleTeamChange = useCallback(
-    (value: string) => setParam('teamId', value),
+    (value: string) => setParam("teamId", value),
     [setParam],
   );
 
   const columns = useMemo(
-    () =>
-      getUsersColumns(
-        (user: User) => navigate(`/admin/users/${user.id}`),
-      ),
+    () => getUsersColumns((user: User) => navigate(`/admin/users/${user.id}`)),
     [navigate],
   );
 

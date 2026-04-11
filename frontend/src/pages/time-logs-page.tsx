@@ -1,48 +1,55 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Clock, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/ui/page-header';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import { EmptyState } from '@/components/ui/empty-state';
-import { getTimeLogsColumns } from '@/components/time-logs/time-logs-columns';
-import { TimeLogsFilterBar } from '@/components/time-logs/time-logs-filter-bar';
-import { TimeLogsSummary } from '@/components/time-logs/time-logs-summary';
-import { LogTimeSheet } from '@/components/time-logs/log-time-sheet';
-import { EditTimeLogSheet } from '@/components/time-logs/edit-time-log-sheet';
-import { TimeLogDetailSheet } from '@/components/time-logs/time-log-detail-sheet';
-import { ArchiveTimeLogDialog } from '@/components/time-logs/archive-time-log-dialog';
-import { useTimeLogs } from '@/lib/time-logs/use-time-logs';
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useAuth } from '@/lib/auth/use-auth';
-import { defaultTimeWindow, type TimeWindow } from '@/lib/dates/time-window-utils';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { TimeLog } from '@/lib/time-logs/types';
+import { Clock, Plus, Upload } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArchiveTimeLogDialog } from "@/components/time-logs/archive-time-log-dialog";
+import { EditTimeLogSheet } from "@/components/time-logs/edit-time-log-sheet";
+import { LogTimeSheet } from "@/components/time-logs/log-time-sheet";
+import { TimeLogDetailSheet } from "@/components/time-logs/time-log-detail-sheet";
+import { getTimeLogsColumns } from "@/components/time-logs/time-logs-columns";
+import { TimeLogsFilterBar } from "@/components/time-logs/time-logs-filter-bar";
+import { TimeLogsSummary } from "@/components/time-logs/time-logs-summary";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import { useAuth } from "@/lib/auth/use-auth";
+import {
+  defaultTimeWindow,
+  type TimeWindow,
+} from "@/lib/dates/time-window-utils";
+import type { TimeLog } from "@/lib/time-logs/types";
+import { useTimeLogs } from "@/lib/time-logs/use-time-logs";
 
 function parseIds(value: string): string[] {
-  return value ? value.split(',').filter(Boolean) : [];
+  return value ? value.split(",").filter(Boolean) : [];
 }
 
 export function TimeLogsPage() {
-  useDocumentTitle('Clockwise - Time Logs');
+  useDocumentTitle("Clockwise - Time Logs");
   const { user } = useAuth();
-  const { page, limit, setPage, getParam, setParam, setParams } = usePaginationParams();
+  const { page, limit, setPage, getParam, setParam, setParams } =
+    usePaginationParams();
 
   const isAdmin = user?.isAdmin ?? false;
-  const isManager = user?.teams.some((t) => t.role === 'manager') ?? false;
+  const isManager = user?.teams.some((t) => t.role === "manager") ?? false;
   const showUserFilter = isAdmin || isManager;
   const showTeamFilter = isAdmin || isManager;
 
   const defaults = useMemo(() => defaultTimeWindow(), []);
-  const dateFrom = getParam('dateFrom') || defaults.dateFrom;
-  const dateTo = getParam('dateTo') || defaults.dateTo;
-  const projectIds = useMemo(() => parseIds(getParam('projectIds')), [getParam]);
-  const userIds = useMemo(() => parseIds(getParam('userIds')), [getParam]);
-  const teamIds = useMemo(() => parseIds(getParam('teamIds')), [getParam]);
-  const includeArchived = getParam('includeArchived') === 'true';
+  const dateFrom = getParam("dateFrom") || defaults.dateFrom;
+  const dateTo = getParam("dateTo") || defaults.dateTo;
+  const projectIds = useMemo(
+    () => parseIds(getParam("projectIds")),
+    [getParam],
+  );
+  const userIds = useMemo(() => parseIds(getParam("userIds")), [getParam]);
+  const teamIds = useMemo(() => parseIds(getParam("teamIds")), [getParam]);
+  const includeArchived = getParam("includeArchived") === "true";
 
   const setArrayParam = useCallback(
-    (key: string, ids: string[]) => setParam(key, ids.join(',')),
+    (key: string, ids: string[]) => setParam(key, ids.join(",")),
     [setParam],
   );
 
@@ -67,7 +74,7 @@ export function TimeLogsPage() {
   const [viewTimeLog, setViewTimeLog] = useState<TimeLog | null>(null);
   const [archiveState, setArchiveState] = useState<{
     id: string;
-    action: 'archive' | 'unarchive';
+    action: "archive" | "unarchive";
   } | null>(null);
 
   const columns = useMemo(
@@ -75,8 +82,9 @@ export function TimeLogsPage() {
       getTimeLogsColumns({
         onView: (tl) => setViewTimeLog(tl),
         onEdit: (tl) => setEditTimeLog(tl),
-        onArchive: (tl) => setArchiveState({ id: tl.id, action: 'archive' }),
-        onUnarchive: (tl) => setArchiveState({ id: tl.id, action: 'unarchive' }),
+        onArchive: (tl) => setArchiveState({ id: tl.id, action: "archive" }),
+        onUnarchive: (tl) =>
+          setArchiveState({ id: tl.id, action: "unarchive" }),
         showUser: showUserFilter,
       }),
     [showUserFilter],
@@ -115,10 +123,12 @@ export function TimeLogsPage() {
         showUserFilter={showUserFilter}
         showTeamFilter={showTeamFilter}
         onTimeWindowChange={handleTimeWindowChange}
-        onProjectIdsChange={(v) => setArrayParam('projectIds', v)}
-        onUserIdsChange={(v) => setArrayParam('userIds', v)}
-        onTeamIdsChange={(v) => setArrayParam('teamIds', v)}
-        onIncludeArchivedChange={(v) => setParam('includeArchived', v ? 'true' : '')}
+        onProjectIdsChange={(v) => setArrayParam("projectIds", v)}
+        onUserIdsChange={(v) => setArrayParam("userIds", v)}
+        onTeamIdsChange={(v) => setArrayParam("teamIds", v)}
+        onIncludeArchivedChange={(v) =>
+          setParam("includeArchived", v ? "true" : "")
+        }
       />
 
       {data && data.total > 0 && (

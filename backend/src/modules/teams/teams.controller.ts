@@ -1,30 +1,44 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
-import { Auth, AdminOnly } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity } from '../users/entities/user.entity';
-import { TeamsService } from './teams.service';
-import { CreateTeamDto } from './dto/create-team.dto';
-import { UpdateTeamDto } from './dto/update-team.dto';
-import { AddTeamMemberDto } from './dto/add-team-member.dto';
-import { UpdateTeamMemberDto } from './dto/update-team-member.dto';
-import { ListTeamsQueryDto } from './dto/list-teams-query.dto';
 import {
-  TeamResponseDto,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
+import { AdminOnly, Auth } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { UserEntity } from "../users/entities/user.entity";
+import { AddTeamMemberDto } from "./dto/add-team-member.dto";
+import { CreateTeamDto } from "./dto/create-team.dto";
+import { ListTeamsQueryDto } from "./dto/list-teams-query.dto";
+import {
   TeamDetailResponseDto,
   TeamListResponseDto,
   TeamMemberResponseDto,
-} from './dto/team-response.dto';
-import { TeamListItem } from './entities/team.entity';
+  TeamResponseDto,
+} from "./dto/team-response.dto";
+import { UpdateTeamDto } from "./dto/update-team.dto";
+import { UpdateTeamMemberDto } from "./dto/update-team-member.dto";
+import { TeamListItem } from "./entities/team.entity";
+import { TeamsService } from "./teams.service";
 
-@ApiTags('Teams')
-@Controller('teams')
+@ApiTags("Teams")
+@Controller("teams")
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
   @Get()
   @Auth()
-  @ApiOperation({ summary: 'List teams (admin sees all, others see own)' })
+  @ApiOperation({ summary: "List teams (admin sees all, others see own)" })
   @ApiOkResponse({ type: TeamListResponseDto })
   async list(
     @CurrentUser() user: UserEntity,
@@ -51,7 +65,7 @@ export class TeamsController {
 
   @Post()
   @AdminOnly()
-  @ApiOperation({ summary: 'Create a team' })
+  @ApiOperation({ summary: "Create a team" })
   @ApiCreatedResponse({ type: TeamResponseDto })
   async create(
     @CurrentUser() user: UserEntity,
@@ -61,12 +75,12 @@ export class TeamsController {
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
-  @Get(':id')
+  @Get(":id")
   @Auth()
-  @ApiOperation({ summary: 'Get team details with members' })
+  @ApiOperation({ summary: "Get team details with members" })
   @ApiOkResponse({ type: TeamDetailResponseDto })
   async findOne(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<TeamDetailResponseDto> {
     const team = await this.teamsService.findById(id, user.id, user.isAdmin);
@@ -81,12 +95,12 @@ export class TeamsController {
     };
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @AdminOnly()
-  @ApiOperation({ summary: 'Update a team' })
+  @ApiOperation({ summary: "Update a team" })
   @ApiOkResponse({ type: TeamResponseDto })
   async update(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateTeamDto,
   ): Promise<TeamResponseDto> {
@@ -94,67 +108,79 @@ export class TeamsController {
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
-  @Patch(':id/archive')
+  @Patch(":id/archive")
   @AdminOnly()
-  @ApiOperation({ summary: 'Archive a team' })
+  @ApiOperation({ summary: "Archive a team" })
   @ApiOkResponse({ type: TeamResponseDto })
   async archive(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<TeamResponseDto> {
     const team = await this.teamsService.archive(id, user.orgId, user.id);
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
-  @Patch(':id/unarchive')
+  @Patch(":id/unarchive")
   @AdminOnly()
-  @ApiOperation({ summary: 'Unarchive a team' })
+  @ApiOperation({ summary: "Unarchive a team" })
   @ApiOkResponse({ type: TeamResponseDto })
   async unarchive(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<TeamResponseDto> {
     const team = await this.teamsService.unarchive(id, user.orgId, user.id);
     return this.toTeamResponse({ ...team, memberCount: 0 });
   }
 
-  @Post(':id/members')
+  @Post(":id/members")
   @AdminOnly()
-  @ApiOperation({ summary: 'Add a member to a team' })
+  @ApiOperation({ summary: "Add a member to a team" })
   @ApiCreatedResponse({ type: TeamMemberResponseDto })
   async addMember(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: AddTeamMemberDto,
   ): Promise<TeamMemberResponseDto> {
-    const member = await this.teamsService.addMember(id, user.orgId, dto.userId, dto.role, user.id);
+    const member = await this.teamsService.addMember(
+      id,
+      user.orgId,
+      dto.userId,
+      dto.role,
+      user.id,
+    );
     return this.toMemberResponse(member);
   }
 
-  @Patch(':id/members/:userId')
+  @Patch(":id/members/:userId")
   @AdminOnly()
-  @ApiOperation({ summary: 'Change a team member role' })
+  @ApiOperation({ summary: "Change a team member role" })
   @ApiOkResponse({ type: TeamMemberResponseDto })
   async updateMemberRole(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
+    @Param("id") id: string,
+    @Param("userId") userId: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateTeamMemberDto,
   ): Promise<TeamMemberResponseDto> {
-    const member = await this.teamsService.updateMemberRole(id, user.orgId, userId, dto.role, user.id);
+    const member = await this.teamsService.updateMemberRole(
+      id,
+      user.orgId,
+      userId,
+      dto.role,
+      user.id,
+    );
     return this.toMemberResponse(member);
   }
 
-  @Delete(':id/members/:userId')
+  @Delete(":id/members/:userId")
   @AdminOnly()
-  @ApiOperation({ summary: 'Remove a member from a team' })
+  @ApiOperation({ summary: "Remove a member from a team" })
   async removeMember(
-    @Param('id') id: string,
-    @Param('userId') userId: string,
+    @Param("id") id: string,
+    @Param("userId") userId: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
     await this.teamsService.removeMember(id, user.orgId, userId, user.id);
-    return { message: 'Member removed' };
+    return { message: "Member removed" };
   }
 
   private toTeamResponse(team: TeamListItem): TeamResponseDto {

@@ -1,5 +1,5 @@
-import { useSearchParams } from 'react-router-dom';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 
 interface UsePaginationParamsOptions {
   defaultLimit?: number;
@@ -9,17 +9,17 @@ export function usePaginationParams(options: UsePaginationParamsOptions = {}) {
   const { defaultLimit = 10 } = options;
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const page = Number(searchParams.get('page')) || 1;
-  const limit = Number(searchParams.get('limit')) || defaultLimit;
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || defaultLimit;
 
   const setPage = useCallback(
     (newPage: number) => {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         if (newPage <= 1) {
-          next.delete('page');
+          next.delete("page");
         } else {
-          next.set('page', String(newPage));
+          next.set("page", String(newPage));
         }
         return next;
       });
@@ -28,7 +28,7 @@ export function usePaginationParams(options: UsePaginationParamsOptions = {}) {
   );
 
   const getParam = useCallback(
-    (key: string) => searchParams.get(key) ?? '',
+    (key: string) => searchParams.get(key) ?? "",
     [searchParams],
   );
 
@@ -42,7 +42,7 @@ export function usePaginationParams(options: UsePaginationParamsOptions = {}) {
           next.delete(key);
         }
         // Reset to page 1 when filters change
-        next.delete('page');
+        next.delete("page");
         return next;
       });
     },
@@ -60,7 +60,7 @@ export function usePaginationParams(options: UsePaginationParamsOptions = {}) {
             next.delete(key);
           }
         }
-        next.delete('page');
+        next.delete("page");
         return next;
       });
     },

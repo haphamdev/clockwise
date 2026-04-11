@@ -1,6 +1,6 @@
-import type { PaginationParams } from '@/lib/types';
+import type { PaginationParams } from "@/lib/types";
 
-export type ProjectStatus = 'active' | 'archived';
+export type ProjectStatus = "active" | "archived";
 
 export interface Project {
   id: string;

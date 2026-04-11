@@ -1,17 +1,17 @@
-import { StatusBadge } from '@/components/ui/status-badge';
-import { TaskDisplay } from '@/components/ui/task-display';
-import { TimeDisplay } from '@/components/ui/time-display';
-import { ProjectLink } from '@/components/projects/project-link';
-import { UserLink } from '@/components/users/user-link';
-import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
+import { AuditTimeline } from "@/components/audit-logs/audit-timeline";
+import { ProjectLink } from "@/components/projects/project-link";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import type { TimeLog } from '@/lib/time-logs/types';
+} from "@/components/ui/sheet";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { TaskDisplay } from "@/components/ui/task-display";
+import { TimeDisplay } from "@/components/ui/time-display";
+import { UserLink } from "@/components/users/user-link";
+import type { TimeLog } from "@/lib/time-logs/types";
 
 interface TimeLogDetailSheetProps {
   timeLog: TimeLog | null;
@@ -19,7 +19,11 @@ interface TimeLogDetailSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function TimeLogDetailSheet({ timeLog, open, onOpenChange }: TimeLogDetailSheetProps) {
+export function TimeLogDetailSheet({
+  timeLog,
+  open,
+  onOpenChange,
+}: TimeLogDetailSheetProps) {
   if (!timeLog) return null;
 
   return (
@@ -62,9 +66,7 @@ export function TimeLogDetailSheet({ timeLog, open, onOpenChange }: TimeLogDetai
               ))}
             </div>
           </DetailRow>
-          <DetailRow label="Notes">
-            {timeLog.notes || '\u2014'}
-          </DetailRow>
+          <DetailRow label="Notes">{timeLog.notes || "\u2014"}</DetailRow>
           <DetailRow label="Status">
             <StatusBadge status={timeLog.status} />
           </DetailRow>
@@ -81,7 +83,13 @@ export function TimeLogDetailSheet({ timeLog, open, onOpenChange }: TimeLogDetai
   );
 }
 
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex justify-between gap-4">
       <span className="text-sm text-muted-foreground shrink-0">{label}</span>

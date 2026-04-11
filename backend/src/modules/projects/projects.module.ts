@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { TeamsModule } from '../teams/teams.module';
-import { ProjectsRepository } from './projects.repository';
-import { ProjectsService } from './projects.service';
-import { ProjectsController } from './projects.controller';
+import { Module } from "@nestjs/common";
+import { TeamsModule } from "../teams/teams.module";
+import { ProjectsController } from "./projects.controller";
+import { ProjectsRepository } from "./projects.repository";
+import { ProjectsService } from "./projects.service";
 
 @Module({
   imports: [TeamsModule],

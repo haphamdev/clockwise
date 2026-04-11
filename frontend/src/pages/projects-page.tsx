@@ -1,34 +1,37 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { PageHeader } from '@/components/ui/page-header';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import { getProjectsColumns } from '@/components/projects/projects-columns';
-import { CreateProjectSheet } from '@/components/projects/create-project-sheet';
-import { EditProjectSheet } from '@/components/projects/edit-project-sheet';
-import { useProjects } from '@/lib/projects/use-projects';
-import { useArchiveProject } from '@/lib/projects/use-archive-project';
-import { useUnarchiveProject } from '@/lib/projects/use-unarchive-project';
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useAuth } from '@/lib/auth/use-auth';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { Project } from '@/lib/projects/types';
+import { Plus, Upload } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { CreateProjectSheet } from "@/components/projects/create-project-sheet";
+import { EditProjectSheet } from "@/components/projects/edit-project-sheet";
+import { getProjectsColumns } from "@/components/projects/projects-columns";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import { useAuth } from "@/lib/auth/use-auth";
+import type { Project } from "@/lib/projects/types";
+import { useArchiveProject } from "@/lib/projects/use-archive-project";
+import { useProjects } from "@/lib/projects/use-projects";
+import { useUnarchiveProject } from "@/lib/projects/use-unarchive-project";
 
 export function ProjectsPage() {
-  useDocumentTitle('Clockwise - Projects');
+  useDocumentTitle("Clockwise - Projects");
   const { user } = useAuth();
   const { page, limit, setPage } = usePaginationParams();
   const [showArchived, setShowArchived] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
-  const [confirmProject, setConfirmProject] = useState<{ project: Project; action: 'archive' | 'unarchive' } | null>(null);
+  const [confirmProject, setConfirmProject] = useState<{
+    project: Project;
+    action: "archive" | "unarchive";
+  } | null>(null);
 
   const isAdmin = user?.isAdmin ?? false;
-  const isManager = user?.teams.some((t) => t.role === 'manager') ?? false;
+  const isManager = user?.teams.some((t) => t.role === "manager") ?? false;
   const canCreate = isAdmin || isManager;
 
   const { data, isLoading } = useProjects({
@@ -49,8 +52,10 @@ export function ProjectsPage() {
     () =>
       getProjectsColumns({
         onEdit: (project) => setEditProject(project),
-        onArchive: (project) => setConfirmProject({ project, action: 'archive' }),
-        onUnarchive: (project) => setConfirmProject({ project, action: 'unarchive' }),
+        onArchive: (project) =>
+          setConfirmProject({ project, action: "archive" }),
+        onUnarchive: (project) =>
+          setConfirmProject({ project, action: "unarchive" }),
         canEdit: isAdmin || isManager,
         canArchive: isAdmin,
         actionPendingId,
@@ -61,10 +66,14 @@ export function ProjectsPage() {
   const handleConfirm = () => {
     if (!confirmProject) return;
     const { project, action } = confirmProject;
-    if (action === 'archive') {
-      archiveProject.mutate(project.id, { onSuccess: () => setConfirmProject(null) });
+    if (action === "archive") {
+      archiveProject.mutate(project.id, {
+        onSuccess: () => setConfirmProject(null),
+      });
     } else {
-      unarchiveProject.mutate(project.id, { onSuccess: () => setConfirmProject(null) });
+      unarchiveProject.mutate(project.id, {
+        onSuccess: () => setConfirmProject(null),
+      });
     }
   };
 
@@ -76,7 +85,7 @@ export function ProjectsPage() {
         title="Projects"
         description="Manage your organization's projects."
         actions={
-          (isAdmin || canCreate) ? (
+          isAdmin || canCreate ? (
             <div className="flex gap-2">
               {isAdmin && (
                 <Button variant="outline" asChild>
@@ -130,14 +139,22 @@ export function ProjectsPage() {
       <ConfirmDialog
         open={confirmProject !== null}
         onOpenChange={(open) => !open && setConfirmProject(null)}
-        title={confirmProject?.action === 'archive' ? 'Archive Project' : 'Unarchive Project'}
+        title={
+          confirmProject?.action === "archive"
+            ? "Archive Project"
+            : "Unarchive Project"
+        }
         description={
-          confirmProject?.action === 'archive'
+          confirmProject?.action === "archive"
             ? `Are you sure you want to archive ${confirmProject.project.name}? Time logging will be disabled for this project.`
             : `Are you sure you want to unarchive ${confirmProject?.project.name}? Time logging will be re-enabled.`
         }
-        confirmLabel={confirmProject?.action === 'archive' ? 'Archive' : 'Unarchive'}
-        variant={confirmProject?.action === 'archive' ? 'destructive' : 'default'}
+        confirmLabel={
+          confirmProject?.action === "archive" ? "Archive" : "Unarchive"
+        }
+        variant={
+          confirmProject?.action === "archive" ? "destructive" : "default"
+        }
         onConfirm={handleConfirm}
         isPending={archiveProject.isPending || unarchiveProject.isPending}
       />

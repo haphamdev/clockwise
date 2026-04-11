@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
 import {
-  UserPreferencesEntity,
   DEFAULT_USER_PREFERENCES,
   Theme,
+  UserPreferencesEntity,
   WeekStartDay,
-} from './entities/user-preferences.entity';
+} from "./entities/user-preferences.entity";
 
 interface PreferencesJson {
   theme?: string;
@@ -17,8 +17,8 @@ interface PreferencesJson {
   weekStartDay?: string;
 }
 
-const VALID_THEMES: readonly string[] = ['light', 'dark', 'system'];
-const VALID_WEEK_START_DAYS: readonly string[] = ['monday', 'sunday'];
+const VALID_THEMES: readonly string[] = ["light", "dark", "system"];
+const VALID_WEEK_START_DAYS: readonly string[] = ["monday", "sunday"];
 
 @Injectable()
 export class UserPreferencesRepository {
@@ -61,18 +61,22 @@ export class UserPreferencesRepository {
       theme: VALID_THEMES.includes(p.theme as string)
         ? (p.theme as Theme)
         : d.theme,
-      dateFormat: p.dateFormat !== undefined
-        ? (p.dateFormat as UserPreferencesEntity['dateFormat'])
-        : d.dateFormat,
-      timeFormat: p.timeFormat !== undefined
-        ? (p.timeFormat as UserPreferencesEntity['timeFormat'])
-        : d.timeFormat,
-      timezone: typeof p.timezone === 'string' && p.timezone.length > 0
-        ? p.timezone
-        : d.timezone,
-      defaultProjectId: p.defaultProjectId !== undefined
-        ? p.defaultProjectId ?? null
-        : d.defaultProjectId,
+      dateFormat:
+        p.dateFormat !== undefined
+          ? (p.dateFormat as UserPreferencesEntity["dateFormat"])
+          : d.dateFormat,
+      timeFormat:
+        p.timeFormat !== undefined
+          ? (p.timeFormat as UserPreferencesEntity["timeFormat"])
+          : d.timeFormat,
+      timezone:
+        typeof p.timezone === "string" && p.timezone.length > 0
+          ? p.timezone
+          : d.timezone,
+      defaultProjectId:
+        p.defaultProjectId !== undefined
+          ? (p.defaultProjectId ?? null)
+          : d.defaultProjectId,
       weekStartDay: VALID_WEEK_START_DAYS.includes(p.weekStartDay as string)
         ? (p.weekStartDay as WeekStartDay)
         : d.weekStartDay,

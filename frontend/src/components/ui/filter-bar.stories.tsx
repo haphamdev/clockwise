@@ -1,17 +1,17 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { FilterBar } from '@/components/ui/filter-bar';
-import { Input } from '@/components/ui/input';
+import { FilterBar } from "@/components/ui/filter-bar";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 const meta: Meta<typeof FilterBar> = {
-  title: 'UI/FilterBar',
+  title: "UI/FilterBar",
   component: FilterBar,
 };
 

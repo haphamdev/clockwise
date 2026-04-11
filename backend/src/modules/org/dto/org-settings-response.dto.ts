@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class OrgSettingsResponseDto {
-  @ApiProperty({ example: 'Acme Corp' })
+  @ApiProperty({ example: "Acme Corp" })
   orgName: string;
 
   @ApiProperty({ example: 40 })
@@ -13,10 +13,13 @@ export class OrgSettingsResponseDto {
   @ApiProperty({ example: 60 })
   weeklyWarningThreshold: number;
 
-  @ApiProperty({ enum: ['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'], example: 'YYYY-MM-DD' })
+  @ApiProperty({
+    enum: ["YYYY-MM-DD", "DD/MM/YYYY", "MM/DD/YYYY"],
+    example: "YYYY-MM-DD",
+  })
   dateFormat: string;
 
-  @ApiProperty({ enum: ['12h', '24h'], example: '12h' })
+  @ApiProperty({ enum: ["12h", "24h"], example: "12h" })
   timeFormat: string;
 
   @ApiProperty({ example: 500 })

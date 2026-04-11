@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, Team, TeamMember } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { TeamAlreadyExistsException } from '../../common/exceptions/team.exceptions';
-import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
+import { Injectable } from "@nestjs/common";
+import { Prisma, Team, TeamMember } from "@prisma/client";
+import { TeamAlreadyExistsException } from "../../common/exceptions/team.exceptions";
+import { PrismaService } from "../../prisma/prisma.service";
+import {
+  TeamEntity,
+  TeamListItem,
+  TeamMemberEntity,
+  TeamWithMembers,
+} from "./entities/team.entity";
 
 type TeamMemberWithUser = TeamMember & {
   user: { id: string; name: string; email: string; status: string };
@@ -29,7 +34,7 @@ export class TeamsRepository {
       this.prisma.team.findMany({
         where,
         include: { _count: { select: { members: true } } },
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -57,7 +62,7 @@ export class TeamsRepository {
       this.prisma.team.findMany({
         where,
         include: { _count: { select: { members: true } } },
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -75,8 +80,12 @@ export class TeamsRepository {
       where: { id },
       include: {
         members: {
-          include: { user: { select: { id: true, name: true, email: true, status: true } } },
-          orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
+          include: {
+            user: {
+              select: { id: true, name: true, email: true, status: true },
+            },
+          },
+          orderBy: [{ role: "asc" }, { createdAt: "asc" }],
         },
       },
     });
@@ -89,16 +98,19 @@ export class TeamsRepository {
     return team ? this.toEntity(team) : null;
   }
 
-  async findByNameInOrg(name: string, orgId: string): Promise<TeamEntity | null> {
+  async findByNameInOrg(
+    name: string,
+    orgId: string,
+  ): Promise<TeamEntity | null> {
     const team = await this.prisma.team.findFirst({
-      where: { orgId, name: { equals: name, mode: 'insensitive' } },
+      where: { orgId, name: { equals: name, mode: "insensitive" } },
     });
     return team ? this.toEntity(team) : null;
   }
 
   async createWithMembers(
     data: { orgId: string; name: string; description?: string },
-    members: Array<{ userId: string; role: 'manager' | 'member' }>,
+    members: Array<{ userId: string; role: "manager" | "member" }>,
   ): Promise<TeamEntity> {
     try {
       const team = await this.prisma.team.create({
@@ -111,31 +123,47 @@ export class TeamsRepository {
       });
       return this.toEntity(team);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new TeamAlreadyExistsException();
       }
       throw error;
     }
   }
 
-  async create(data: { orgId: string; name: string; description?: string }): Promise<TeamEntity> {
+  async create(data: {
+    orgId: string;
+    name: string;
+    description?: string;
+  }): Promise<TeamEntity> {
     try {
       const team = await this.prisma.team.create({ data });
       return this.toEntity(team);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new TeamAlreadyExistsException();
       }
       throw error;
     }
   }
 
-  async update(id: string, data: { name?: string; description?: string }): Promise<TeamEntity> {
+  async update(
+    id: string,
+    data: { name?: string; description?: string },
+  ): Promise<TeamEntity> {
     try {
       const team = await this.prisma.team.update({ where: { id }, data });
       return this.toEntity(team);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new TeamAlreadyExistsException();
       }
       throw error;
@@ -161,19 +189,26 @@ export class TeamsRepository {
   async addMember(
     teamId: string,
     userId: string,
-    role: 'manager' | 'member',
+    role: "manager" | "member",
   ): Promise<TeamMemberEntity> {
     const tm = await this.prisma.teamMember.create({
       data: { teamId, userId, role },
-      include: { user: { select: { id: true, name: true, email: true, status: true } } },
+      include: {
+        user: { select: { id: true, name: true, email: true, status: true } },
+      },
     });
     return this.toMemberEntity(tm);
   }
 
-  async findMember(teamId: string, userId: string): Promise<TeamMemberEntity | null> {
+  async findMember(
+    teamId: string,
+    userId: string,
+  ): Promise<TeamMemberEntity | null> {
     const tm = await this.prisma.teamMember.findUnique({
       where: { teamId_userId: { teamId, userId } },
-      include: { user: { select: { id: true, name: true, email: true, status: true } } },
+      include: {
+        user: { select: { id: true, name: true, email: true, status: true } },
+      },
     });
     return tm ? this.toMemberEntity(tm) : null;
   }
@@ -181,12 +216,14 @@ export class TeamsRepository {
   async updateMemberRole(
     teamId: string,
     userId: string,
-    role: 'manager' | 'member',
+    role: "manager" | "member",
   ): Promise<TeamMemberEntity> {
     const tm = await this.prisma.teamMember.update({
       where: { teamId_userId: { teamId, userId } },
       data: { role },
-      include: { user: { select: { id: true, name: true, email: true, status: true } } },
+      include: {
+        user: { select: { id: true, name: true, email: true, status: true } },
+      },
     });
     return this.toMemberEntity(tm);
   }
@@ -199,11 +236,13 @@ export class TeamsRepository {
 
   async countManagers(teamId: string): Promise<number> {
     return this.prisma.teamMember.count({
-      where: { teamId, role: 'manager' },
+      where: { teamId, role: "manager" },
     });
   }
 
-  private toListItem(team: Team & { _count: { members: number } }): TeamListItem {
+  private toListItem(
+    team: Team & { _count: { members: number } },
+  ): TeamListItem {
     return {
       ...this.toEntity(team),
       memberCount: team._count.members,
@@ -236,7 +275,7 @@ export class TeamsRepository {
       userName: tm.user.name,
       userEmail: tm.user.email,
       userStatus: tm.user.status,
-      role: tm.role as 'manager' | 'member',
+      role: tm.role as "manager" | "member",
       createdAt: tm.createdAt,
     };
   }

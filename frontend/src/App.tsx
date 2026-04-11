@@ -1,39 +1,45 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from 'next-themes';
-import { queryClient } from '@/lib/query-client';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { AdminRoute } from '@/components/admin-route';
-import { AppLayout } from '@/components/layout/app-layout';
-import { LoginPage } from '@/pages/LoginPage';
-import { AuthCallbackPage } from '@/pages/AuthCallbackPage';
-import { TeamsPage } from '@/pages/teams-page';
-import { TeamDetailPage } from '@/pages/team-detail-page';
-import { UsersPage } from '@/pages/admin/users-page';
-import { UserDetailPage } from '@/pages/admin/user-detail-page';
-import { InvitationsPage } from '@/pages/admin/invitations-page';
-import { OrgSettingsPage } from '@/pages/admin/org-settings-page';
-import { InviteLandingPage } from '@/pages/invite-landing-page';
-import { ProfilePage } from '@/pages/profile-page';
-import { UserPreferencesPage } from '@/pages/user-preferences-page';
-import { ProjectsPage } from '@/pages/projects-page';
-import { ProjectDetailPage } from '@/pages/project-detail-page';
-import { TimeLogsPage } from '@/pages/time-logs-page';
-import { ImportPage } from '@/pages/import-page';
-import { ManagerRoute } from '@/components/manager-route';
-import { DashboardPage } from '@/pages/dashboard-page';
-import { Skeleton } from '@/components/ui/skeleton';
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AdminRoute } from "@/components/admin-route";
+import { AppLayout } from "@/components/layout/app-layout";
+import { ManagerRoute } from "@/components/manager-route";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { queryClient } from "@/lib/query-client";
+import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
+import { InvitationsPage } from "@/pages/admin/invitations-page";
+import { OrgSettingsPage } from "@/pages/admin/org-settings-page";
+import { UserDetailPage } from "@/pages/admin/user-detail-page";
+import { UsersPage } from "@/pages/admin/users-page";
+import { DashboardPage } from "@/pages/dashboard-page";
+import { ImportPage } from "@/pages/import-page";
+import { InviteLandingPage } from "@/pages/invite-landing-page";
+import { LoginPage } from "@/pages/LoginPage";
+import { ProfilePage } from "@/pages/profile-page";
+import { ProjectDetailPage } from "@/pages/project-detail-page";
+import { ProjectsPage } from "@/pages/projects-page";
+import { TeamDetailPage } from "@/pages/team-detail-page";
+import { TeamsPage } from "@/pages/teams-page";
+import { TimeLogsPage } from "@/pages/time-logs-page";
+import { UserPreferencesPage } from "@/pages/user-preferences-page";
 
 const PersonalInsightPage = lazy(() =>
-  import('@/pages/reports/personal-insight-page').then((m) => ({ default: m.PersonalInsightPage })),
+  import("@/pages/reports/personal-insight-page").then((m) => ({
+    default: m.PersonalInsightPage,
+  })),
 );
 const TeamInsightPage = lazy(() =>
-  import('@/pages/reports/team-insight-page').then((m) => ({ default: m.TeamInsightPage })),
+  import("@/pages/reports/team-insight-page").then((m) => ({
+    default: m.TeamInsightPage,
+  })),
 );
 const ProjectInsightPage = lazy(() =>
-  import('@/pages/reports/project-insight-page').then((m) => ({ default: m.ProjectInsightPage })),
+  import("@/pages/reports/project-insight-page").then((m) => ({
+    default: m.ProjectInsightPage,
+  })),
 );
 
 function ReportFallback() {
@@ -42,7 +48,11 @@ function ReportFallback() {
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      disableTransitionOnChange
+    >
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
@@ -65,7 +75,10 @@ export default function App() {
                 <Route path="/import" element={<ImportPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                <Route path="/reports" element={<Navigate to="/reports/personal" replace />} />
+                <Route
+                  path="/reports"
+                  element={<Navigate to="/reports/personal" replace />}
+                />
                 <Route
                   path="/reports/personal"
                   element={
@@ -95,7 +108,10 @@ export default function App() {
                   }
                 />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/profile/settings" element={<UserPreferencesPage />} />
+                <Route
+                  path="/profile/settings"
+                  element={<UserPreferencesPage />}
+                />
 
                 {/* Manager+ routes */}
                 <Route

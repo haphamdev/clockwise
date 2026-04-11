@@ -1,7 +1,7 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { reportsKeys } from './reports-keys';
-import { fetchDelayHeatmap } from './reports-api';
-import type { DelayHeatmapParams } from './types';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { fetchDelayHeatmap } from "./reports-api";
+import { reportsKeys } from "./reports-keys";
+import type { DelayHeatmapParams } from "./types";
 
 export function useDelayHeatmap(params: DelayHeatmapParams) {
   return useQuery({

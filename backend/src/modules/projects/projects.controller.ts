@@ -1,31 +1,49 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
-import { Auth, AdminOnly } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity } from '../users/entities/user.entity';
-import { ProjectsService } from './projects.service';
-import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
-import { ListProjectsQueryDto } from './dto/list-projects-query.dto';
-import { AssignTeamDto } from './dto/assign-team.dto';
 import {
-  ProjectResponseDto,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
+import { AdminOnly, Auth } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { UserEntity } from "../users/entities/user.entity";
+import { AssignTeamDto } from "./dto/assign-team.dto";
+import { CreateProjectDto } from "./dto/create-project.dto";
+import { ListProjectsQueryDto } from "./dto/list-projects-query.dto";
+import {
   ProjectDetailResponseDto,
   ProjectListResponseDto,
+  ProjectResponseDto,
   ProjectTeamResponseDto,
-} from './dto/project-response.dto';
-import { ProjectSettingsResponseDto } from './dto/project-settings-response.dto';
-import { UpdateProjectSettingsDto } from './dto/update-project-settings.dto';
-import { ProjectListItem, ProjectWithTeams, ProjectTeamEntity } from './entities/project.entity';
+} from "./dto/project-response.dto";
+import { ProjectSettingsResponseDto } from "./dto/project-settings-response.dto";
+import { UpdateProjectDto } from "./dto/update-project.dto";
+import { UpdateProjectSettingsDto } from "./dto/update-project-settings.dto";
+import {
+  ProjectListItem,
+  ProjectTeamEntity,
+  ProjectWithTeams,
+} from "./entities/project.entity";
+import { ProjectsService } from "./projects.service";
 
-@ApiTags('Projects')
-@Controller('projects')
+@ApiTags("Projects")
+@Controller("projects")
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Get()
   @Auth()
-  @ApiOperation({ summary: 'List projects (admin sees all, others see own)' })
+  @ApiOperation({ summary: "List projects (admin sees all, others see own)" })
   @ApiOkResponse({ type: ProjectListResponseDto })
   async list(
     @CurrentUser() user: UserEntity,
@@ -53,7 +71,7 @@ export class ProjectsController {
 
   @Post()
   @Auth()
-  @ApiOperation({ summary: 'Create a project' })
+  @ApiOperation({ summary: "Create a project" })
   @ApiCreatedResponse({ type: ProjectDetailResponseDto })
   async create(
     @CurrentUser() user: UserEntity,
@@ -68,24 +86,29 @@ export class ProjectsController {
     return this.toDetailResponse(project);
   }
 
-  @Get(':id')
+  @Get(":id")
   @Auth()
-  @ApiOperation({ summary: 'Get project details with teams' })
+  @ApiOperation({ summary: "Get project details with teams" })
   @ApiOkResponse({ type: ProjectDetailResponseDto })
   async findOne(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<ProjectDetailResponseDto> {
-    const project = await this.projectsService.findById(id, user.orgId, user.id, user.isAdmin);
+    const project = await this.projectsService.findById(
+      id,
+      user.orgId,
+      user.id,
+      user.isAdmin,
+    );
     return this.toDetailResponse(project);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @Auth()
-  @ApiOperation({ summary: 'Update a project' })
+  @ApiOperation({ summary: "Update a project" })
   @ApiOkResponse({ type: ProjectResponseDto })
   async update(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateProjectDto,
   ): Promise<ProjectResponseDto> {
@@ -99,47 +122,56 @@ export class ProjectsController {
     return this.toProjectResponse(project);
   }
 
-  @Patch(':id/archive')
+  @Patch(":id/archive")
   @AdminOnly()
-  @ApiOperation({ summary: 'Archive a project' })
+  @ApiOperation({ summary: "Archive a project" })
   @ApiOkResponse({ type: ProjectResponseDto })
   async archive(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<ProjectResponseDto> {
     const project = await this.projectsService.archive(id, user.orgId, user.id);
     return this.toProjectResponse(project);
   }
 
-  @Patch(':id/unarchive')
+  @Patch(":id/unarchive")
   @AdminOnly()
-  @ApiOperation({ summary: 'Unarchive a project' })
+  @ApiOperation({ summary: "Unarchive a project" })
   @ApiOkResponse({ type: ProjectResponseDto })
   async unarchive(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<ProjectResponseDto> {
-    const project = await this.projectsService.unarchive(id, user.orgId, user.id);
+    const project = await this.projectsService.unarchive(
+      id,
+      user.orgId,
+      user.id,
+    );
     return this.toProjectResponse(project);
   }
 
-  @Get(':id/settings')
+  @Get(":id/settings")
   @Auth()
-  @ApiOperation({ summary: 'Get project settings' })
+  @ApiOperation({ summary: "Get project settings" })
   @ApiOkResponse({ type: ProjectSettingsResponseDto })
   async getSettings(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<ProjectSettingsResponseDto> {
-    return this.projectsService.getSettings(id, user.orgId, user.id, user.isAdmin);
+    return this.projectsService.getSettings(
+      id,
+      user.orgId,
+      user.id,
+      user.isAdmin,
+    );
   }
 
-  @Patch(':id/settings')
+  @Patch(":id/settings")
   @Auth()
-  @ApiOperation({ summary: 'Update project settings' })
+  @ApiOperation({ summary: "Update project settings" })
   @ApiOkResponse({ type: ProjectSettingsResponseDto })
   async updateSettings(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateProjectSettingsDto,
   ): Promise<ProjectSettingsResponseDto> {
@@ -152,12 +184,12 @@ export class ProjectsController {
     );
   }
 
-  @Post(':id/teams')
+  @Post(":id/teams")
   @Auth()
-  @ApiOperation({ summary: 'Assign a team to a project' })
+  @ApiOperation({ summary: "Assign a team to a project" })
   @ApiCreatedResponse({ type: ProjectTeamResponseDto })
   async assignTeam(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: AssignTeamDto,
   ): Promise<ProjectTeamResponseDto> {
@@ -171,16 +203,22 @@ export class ProjectsController {
     return this.toTeamResponse(projectTeam);
   }
 
-  @Delete(':id/teams/:teamId')
+  @Delete(":id/teams/:teamId")
   @Auth()
-  @ApiOperation({ summary: 'Remove a team from a project' })
+  @ApiOperation({ summary: "Remove a team from a project" })
   async removeTeam(
-    @Param('id') id: string,
-    @Param('teamId') teamId: string,
+    @Param("id") id: string,
+    @Param("teamId") teamId: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
-    await this.projectsService.removeTeam(id, user.orgId, teamId, user.id, user.isAdmin);
-    return { message: 'Team removed from project' };
+    await this.projectsService.removeTeam(
+      id,
+      user.orgId,
+      teamId,
+      user.id,
+      user.isAdmin,
+    );
+    return { message: "Team removed from project" };
   }
 
   private toProjectResponse(project: ProjectListItem): ProjectResponseDto {
@@ -196,7 +234,9 @@ export class ProjectsController {
     };
   }
 
-  private toDetailResponse(project: ProjectWithTeams): ProjectDetailResponseDto {
+  private toDetailResponse(
+    project: ProjectWithTeams,
+  ): ProjectDetailResponseDto {
     return {
       id: project.id,
       name: project.name,

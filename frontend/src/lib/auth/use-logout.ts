@@ -1,7 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
-import { queryClient } from '@/lib/query-client';
-import { authKeys } from './auth-keys';
-import { logoutUser } from './auth-api';
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/query-client";
+import { logoutUser } from "./auth-api";
+import { authKeys } from "./auth-keys";
 
 export function useLogout() {
   return useMutation({

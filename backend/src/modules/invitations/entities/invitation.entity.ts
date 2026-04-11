@@ -1,7 +1,7 @@
 export interface InvitationTeamAssignmentEntity {
   teamId: string;
   teamName: string;
-  role: 'manager' | 'member';
+  role: "manager" | "member";
 }
 
 export interface InvitationEntity {
@@ -12,7 +12,7 @@ export interface InvitationEntity {
   invitedByName: string;
   token: string;
   expiresAt: Date;
-  status: 'initiated' | 'sending' | 'sent' | 'accepted' | 'revoked' | 'failed';
+  status: "initiated" | "sending" | "sent" | "accepted" | "revoked" | "failed";
   createdAt: Date;
   teamAssignments: InvitationTeamAssignmentEntity[];
 }

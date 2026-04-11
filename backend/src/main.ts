@@ -1,13 +1,13 @@
-import { NestFactory } from '@nestjs/core';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import * as cookieParser from 'cookie-parser';
-import { json, urlencoded } from 'express';
-import { AppModule } from './app.module';
-import { AppExceptionFilter } from './common/exceptions/app-exception.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { ValidationException } from './common/exceptions/validation.exception';
+import { Logger, ValidationPipe } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as cookieParser from "cookie-parser";
+import { json, urlencoded } from "express";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
+import { AppModule } from "./app.module";
+import { AppExceptionFilter } from "./common/exceptions/app-exception.filter";
+import { ValidationException } from "./common/exceptions/validation.exception";
+import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -17,13 +17,13 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   // 6MB transport limit: allows 5MB CSV file content + ~1MB overhead for
   // JSON envelope, field names, and encoding.
-  app.use(json({ limit: '6mb' }));
-  app.use(urlencoded({ limit: '6mb', extended: true }));
+  app.use(json({ limit: "6mb" }));
+  app.use(urlencoded({ limit: "6mb", extended: true }));
   app.use(cookieParser());
-  const logger = new Logger('Bootstrap');
+  const logger = new Logger("Bootstrap");
 
   // Global API prefix
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix("api/v1");
 
   // Global interceptors & filters
   app.useGlobalInterceptors(new LoggingInterceptor());
@@ -40,22 +40,22 @@ async function bootstrap() {
   );
 
   // CORS
-  const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost';
+  const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost";
   app.enableCors({
-    origin: [frontendUrl, 'http://localhost:5173'],
+    origin: [frontendUrl, "http://localhost:5173"],
     credentials: true,
   });
 
   // Swagger (dev only)
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.NODE_ENV !== "production") {
     const config = new DocumentBuilder()
-      .setTitle('Clockwise API')
-      .setDescription('Time tracking application API')
-      .setVersion('1.0')
+      .setTitle("Clockwise API")
+      .setDescription("Time tracking application API")
+      .setVersion("1.0")
       .addBearerAuth()
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
+    SwaggerModule.setup("api/docs", app, document);
   }
 
   const port = process.env.PORT ?? 3000;
@@ -64,6 +64,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  console.error('Failed to start application:', err);
+  console.error("Failed to start application:", err);
   process.exit(1);
 });

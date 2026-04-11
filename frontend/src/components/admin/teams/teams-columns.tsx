@@ -1,15 +1,15 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { Link } from 'react-router-dom';
-import { Loader2, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/ui/status-badge';
+import type { ColumnDef } from "@tanstack/react-table";
+import { Loader2, MoreHorizontal } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import type { Team } from '@/lib/teams/types';
+} from "@/components/ui/dropdown-menu";
+import { StatusBadge } from "@/components/ui/status-badge";
+import type { Team } from "@/lib/teams/types";
 
 export function getTeamsColumns(
   onEdit: (team: Team) => void,
@@ -20,8 +20,8 @@ export function getTeamsColumns(
 ): ColumnDef<Team>[] {
   const columns: ColumnDef<Team>[] = [
     {
-      accessorKey: 'name',
-      header: 'Name',
+      accessorKey: "name",
+      header: "Name",
       cell: ({ row }) => (
         <Link
           to={`/teams/${row.original.id}`}
@@ -32,30 +32,30 @@ export function getTeamsColumns(
       ),
     },
     {
-      accessorKey: 'description',
-      header: 'Description',
+      accessorKey: "description",
+      header: "Description",
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {row.original.description || '—'}
+          {row.original.description || "—"}
         </span>
       ),
     },
     {
-      accessorKey: 'memberCount',
-      header: 'Members',
+      accessorKey: "memberCount",
+      header: "Members",
     },
     {
-      id: 'status',
-      header: 'Status',
+      id: "status",
+      header: "Status",
       cell: ({ row }) => (
-        <StatusBadge status={row.original.isArchived ? 'archived' : 'active'} />
+        <StatusBadge status={row.original.isArchived ? "archived" : "active"} />
       ),
     },
   ];
 
   if (!readOnly) {
     columns.push({
-      id: 'actions',
+      id: "actions",
       cell: ({ row }) => {
         const team = row.original;
         if (actionPendingId === team.id) {

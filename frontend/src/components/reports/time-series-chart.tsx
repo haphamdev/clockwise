@@ -1,30 +1,30 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 import {
-  ResponsiveContainer,
-  ComposedChart,
   Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
   Line,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-} from 'recharts';
-import type { LegendPayload } from 'recharts/types/component/DefaultLegendContent';
-import type { ReportGranularity, TimeSeriesBucket } from '@/lib/reports/types';
-import { DEFAULT_LAYERS } from './chart-toolbar';
-import type { ChartMode, ChartLayers } from './chart-toolbar';
+} from "recharts";
+import type { LegendPayload } from "recharts/types/component/DefaultLegendContent";
 import {
+  buildAvgRows,
+  buildChartRows,
   CHART_COLORS,
   collectSeriesKeys,
-  buildChartRows,
-  buildAvgRows,
-  mergeChartData,
   computeYMax,
-} from '@/lib/reports/chart-utils';
-import { CustomTick } from './custom-tick';
-import { ChartTooltip } from './chart-tooltip';
-import type { ChartVisibility } from './chart-tooltip';
+  mergeChartData,
+} from "@/lib/reports/chart-utils";
+import type { ReportGranularity, TimeSeriesBucket } from "@/lib/reports/types";
+import type { ChartLayers, ChartMode } from "./chart-toolbar";
+import { DEFAULT_LAYERS } from "./chart-toolbar";
+import type { ChartVisibility } from "./chart-tooltip";
+import { ChartTooltip } from "./chart-tooltip";
+import { CustomTick } from "./custom-tick";
 
 interface TimeSeriesChartProps {
   buckets: TimeSeriesBucket[];
@@ -54,7 +54,7 @@ export function TimeSeriesChart({
   );
 
   const handleLegendClick = useCallback((entry: LegendPayload) => {
-    const id = String(entry.dataKey ?? '');
+    const id = String(entry.dataKey ?? "");
     if (!id) return;
     setHiddenIds((prev) => {
       const next = new Set(prev);
@@ -81,7 +81,10 @@ export function TimeSeriesChart({
     [rows, avgRows, seriesKeys, hiddenIds],
   );
 
-  const yMax = useMemo(() => computeYMax(rows, seriesKeys, mode), [rows, seriesKeys, mode]);
+  const yMax = useMemo(
+    () => computeYMax(rows, seriesKeys, mode),
+    [rows, seriesKeys, mode],
+  );
 
   if (seriesKeys.length === 0) {
     return (
@@ -99,35 +102,51 @@ export function TimeSeriesChart({
     );
   }
 
-  const stackId = mode === 'stacked' ? 'stack' : undefined;
+  const stackId = mode === "stacked" ? "stack" : undefined;
 
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <ComposedChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: -8 }}>
+      <ComposedChart
+        data={data}
+        margin={{ top: 4, right: 4, bottom: 4, left: -8 }}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border-muted)" />
-        <XAxis dataKey="label" tick={CustomTick} tickLine={false} axisLine={false} />
+        <XAxis
+          dataKey="label"
+          tick={CustomTick}
+          tickLine={false}
+          axisLine={false}
+        />
         <YAxis
-          tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
+          tick={{ fontSize: 11, fill: "var(--text-muted)" }}
           tickLine={false}
           axisLine={false}
           width={40}
-          domain={[0, yMax > 0 ? yMax : 'auto']}
+          domain={[0, yMax > 0 ? yMax : "auto"]}
           allowDataOverflow
         />
         <Tooltip
           content={
-            <ChartTooltip seriesKeys={seriesKeys} mode={mode} visibility={visibility} />
+            <ChartTooltip
+              seriesKeys={seriesKeys}
+              mode={mode}
+              visibility={visibility}
+            />
           }
         />
         <Legend
-          wrapperStyle={{ fontSize: 12, cursor: 'pointer' }}
+          wrapperStyle={{ fontSize: 12, cursor: "pointer" }}
           iconType="square"
           iconSize={10}
           onClick={handleLegendClick}
           formatter={(_value: unknown, entry: LegendPayload) => {
-            const id = String(entry.dataKey ?? '');
+            const id = String(entry.dataKey ?? "");
             const hidden = hiddenIds.has(id);
-            return <span style={{ opacity: hidden ? 0.35 : 1 }}>{String(entry.value ?? '')}</span>;
+            return (
+              <span style={{ opacity: hidden ? 0.35 : 1 }}>
+                {String(entry.value ?? "")}
+              </span>
+            );
           }}
         />
         {seriesKeys.map((sk, i) => (

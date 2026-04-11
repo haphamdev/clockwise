@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { teamsKeys } from './teams-keys';
-import { fetchTeams } from './teams-api';
-import type { ListTeamsParams } from './types';
+import { useQuery } from "@tanstack/react-query";
+import { fetchTeams } from "./teams-api";
+import { teamsKeys } from "./teams-keys";
+import type { ListTeamsParams } from "./types";
 
 export function useTeams(params: ListTeamsParams = {}) {
   return useQuery({

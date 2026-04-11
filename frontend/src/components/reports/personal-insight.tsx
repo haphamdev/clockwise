@@ -1,20 +1,20 @@
-import { useMemo, useCallback, useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Combobox } from '@/components/ui/combobox';
-import { useTimeSeries } from '@/lib/reports/use-time-series';
-import { useReportSummary } from '@/lib/reports/use-report-summary';
-import { useProjects } from '@/lib/projects/use-projects';
-import { useSectionModes } from '@/lib/reports/use-section-modes';
-import { parseIds } from '@/lib/reports/report-param-utils';
-import { SummaryCards } from './summary-cards';
-import { ChartToolbar } from './chart-toolbar';
-import { TimeSeriesChart } from './time-series-chart';
-import type { ChartMode, ChartLayers } from './chart-toolbar';
-import type { ComboboxOption } from '@/components/ui/combobox';
-import type { ReportGranularity } from '@/lib/reports/types';
+import { useCallback, useMemo, useState } from "react";
+import type { ComboboxOption } from "@/components/ui/combobox";
+import { Combobox } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
+import { useProjects } from "@/lib/projects/use-projects";
+import { parseIds } from "@/lib/reports/report-param-utils";
+import type { ReportGranularity } from "@/lib/reports/types";
+import { useReportSummary } from "@/lib/reports/use-report-summary";
+import { useSectionModes } from "@/lib/reports/use-section-modes";
+import { useTimeSeries } from "@/lib/reports/use-time-series";
+import type { ChartLayers, ChartMode } from "./chart-toolbar";
+import { ChartToolbar } from "./chart-toolbar";
+import { SummaryCards } from "./summary-cards";
+import { TimeSeriesChart } from "./time-series-chart";
 
 // Default chart modes by position. Currently one chart (Hours by Project).
-const PI_MODE_DEFAULTS: ChartMode[] = ['stacked'];
+const PI_MODE_DEFAULTS: ChartMode[] = ["stacked"];
 
 interface PersonalInsightProps {
   dateFrom: string;
@@ -34,20 +34,32 @@ export function PersonalInsight({
   setParam,
 }: PersonalInsightProps) {
   // Section-specific URL params
-  const projectIdsParam = getParam('projectIds');
-  const projectIds = useMemo(() => parseIds(projectIdsParam), [projectIdsParam]);
-  const [modes, setMode] = useSectionModes('mode', PI_MODE_DEFAULTS, getParam, setParam);
-  const [layers, setLayers] = useState<ChartLayers>({ values: true, trend: true });
+  const projectIdsParam = getParam("projectIds");
+  const projectIds = useMemo(
+    () => parseIds(projectIdsParam),
+    [projectIdsParam],
+  );
+  const [modes, setMode] = useSectionModes(
+    "mode",
+    PI_MODE_DEFAULTS,
+    getParam,
+    setParam,
+  );
+  const [layers, setLayers] = useState<ChartLayers>({
+    values: true,
+    trend: true,
+  });
 
   // Project options for inline filter
   const { data: projectsData } = useProjects({ limit: 100 });
   const projectOptions: ComboboxOption[] = useMemo(
-    () => (projectsData?.data ?? []).map((p) => ({ value: p.id, label: p.name })),
+    () =>
+      (projectsData?.data ?? []).map((p) => ({ value: p.id, label: p.name })),
     [projectsData],
   );
 
   const handleProjectIdsChange = useCallback(
-    (ids: string[]) => setParam('projectIds', ids.join(',')),
+    (ids: string[]) => setParam("projectIds", ids.join(",")),
     [setParam],
   );
 
@@ -66,16 +78,16 @@ export function PersonalInsight({
   const { data: timeSeriesData } = useTimeSeries({
     ...filters,
     granularity,
-    groupBy: 'project',
+    groupBy: "project",
   });
 
   const summaryCards = useMemo(() => {
     if (!summaryData) return [];
     return [
-      { label: 'Total hours', value: summaryData.totalHours, unit: 'h' },
-      { label: 'Avg / day', value: summaryData.avgHoursPerDay, unit: 'h' },
-      { label: 'Projects', value: summaryData.uniqueProjects },
-      { label: 'Entries', value: summaryData.totalEntries },
+      { label: "Total hours", value: summaryData.totalHours, unit: "h" },
+      { label: "Avg / day", value: summaryData.avgHoursPerDay, unit: "h" },
+      { label: "Projects", value: summaryData.uniqueProjects },
+      { label: "Entries", value: summaryData.totalEntries },
     ];
   }, [summaryData]);
 
@@ -99,7 +111,9 @@ export function PersonalInsight({
       <SummaryCards cards={summaryCards} />
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">
+            Hours by Project
+          </h3>
           <ChartToolbar
             mode={modes[0]}
             onModeChange={(m) => setMode(0, m)}

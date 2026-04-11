@@ -1,55 +1,71 @@
-import { useEffect, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Combobox } from '@/components/ui/combobox';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import type { ComboboxOption } from "@/components/ui/combobox";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
-import { TaskAutocomplete } from './task-autocomplete';
-import { WarningAlert } from './warning-alert';
-import { useCreateTimeLog } from '@/lib/time-logs/use-create-time-log';
-import { useWarningsPreview } from '@/lib/time-logs/use-warnings-preview';
-import { useLoggableUsers } from '@/lib/time-logs/use-loggable-users';
-import { useProjects } from '@/lib/projects/use-projects';
-import { useUserProjects } from '@/lib/projects/use-user-projects';
-import { useAuth } from '@/lib/auth/use-auth';
-import type { ComboboxOption } from '@/components/ui/combobox';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth/use-auth";
+import { useProjects } from "@/lib/projects/use-projects";
+import { useUserProjects } from "@/lib/projects/use-user-projects";
+import { useCreateTimeLog } from "@/lib/time-logs/use-create-time-log";
+import { useLoggableUsers } from "@/lib/time-logs/use-loggable-users";
+import { useWarningsPreview } from "@/lib/time-logs/use-warnings-preview";
+import { TaskAutocomplete } from "./task-autocomplete";
+import { WarningAlert } from "./warning-alert";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 const schema = z.object({
   userId: z.string().optional(),
-  projectId: z.string().min(1, 'Project is required'),
-  taskLabels: z.array(z.string().min(1)).min(1, 'At least one task is required'),
-  date: z.string().min(1, 'Date is required'),
-  hours: z.string().min(1, 'Hours is required')
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, 'Hours must be greater than 0')
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) <= 24, 'Maximum 24')
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) % 0.25 === 0, 'Must be in 0.25 increments'),
+  projectId: z.string().min(1, "Project is required"),
+  taskLabels: z
+    .array(z.string().min(1))
+    .min(1, "At least one task is required"),
+  date: z.string().min(1, "Date is required"),
+  hours: z
+    .string()
+    .min(1, "Hours is required")
+    .refine(
+      (v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) > 0,
+      "Hours must be greater than 0",
+    )
+    .refine(
+      (v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) <= 24,
+      "Maximum 24",
+    )
+    .refine(
+      (v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) % 0.25 === 0,
+      "Must be in 0.25 increments",
+    ),
   notes: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-function isAdminOrManager(user: { isAdmin: boolean; teams: Array<{ role: string }> }): boolean {
-  return user.isAdmin || user.teams.some((t) => t.role === 'manager');
+function isAdminOrManager(user: {
+  isAdmin: boolean;
+  teams: Array<{ role: string }>;
+}): boolean {
+  return user.isAdmin || user.teams.some((t) => t.role === "manager");
 }
 
 interface LogTimeSheetProps {
@@ -58,29 +74,36 @@ interface LogTimeSheetProps {
   defaultProjectId?: string;
 }
 
-export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSheetProps) {
+export function LogTimeSheet({
+  open,
+  onOpenChange,
+  defaultProjectId,
+}: LogTimeSheetProps) {
   const { user: currentUser } = useAuth();
   const showUserSelector = currentUser ? isAdminOrManager(currentUser) : false;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    mode: 'onSubmit',
-    reValidateMode: 'onBlur',
+    mode: "onSubmit",
+    reValidateMode: "onBlur",
     defaultValues: {
-      userId: currentUser?.id ?? '',
-      projectId: defaultProjectId ?? '',
+      userId: currentUser?.id ?? "",
+      projectId: defaultProjectId ?? "",
       taskLabels: [],
       date: today(),
-      hours: '',
-      notes: '',
+      hours: "",
+      notes: "",
     },
   });
   const createTimeLog = useCreateTimeLog();
 
-  const { data: loggableUsers } = useLoggableUsers({ enabled: showUserSelector });
+  const { data: loggableUsers } = useLoggableUsers({
+    enabled: showUserSelector,
+  });
 
-  const selectedUserId = form.watch('userId');
-  const isLoggingForSelf = !selectedUserId || selectedUserId === currentUser?.id;
+  const selectedUserId = form.watch("userId");
+  const isLoggingForSelf =
+    !selectedUserId || selectedUserId === currentUser?.id;
   const prevUserIdRef = useRef(selectedUserId);
 
   const { data: ownProjectsData } = useProjects(
@@ -94,7 +117,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
 
   const projectsData = isLoggingForSelf ? ownProjectsData : otherProjectsData;
   const projectOptions: ComboboxOption[] = (projectsData?.data ?? [])
-    .filter((p) => p.status === 'active')
+    .filter((p) => p.status === "active")
     .map((p) => ({ value: p.id, label: p.name }));
 
   const userOptions: ComboboxOption[] = (loggableUsers ?? [])
@@ -106,20 +129,21 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
     })
     .map((u) => ({
       value: u.id,
-      label: u.id === currentUser?.id ? `${u.name} (you)` : `${u.name} (${u.email})`,
+      label:
+        u.id === currentUser?.id ? `${u.name} (you)` : `${u.name} (${u.email})`,
     }));
 
   useEffect(() => {
     if (open) {
-      const resetUserId = currentUser?.id ?? '';
+      const resetUserId = currentUser?.id ?? "";
       prevUserIdRef.current = resetUserId;
       form.reset({
         userId: resetUserId,
-        projectId: defaultProjectId ?? '',
+        projectId: defaultProjectId ?? "",
         taskLabels: [],
         date: today(),
-        hours: '',
-        notes: '',
+        hours: "",
+        notes: "",
       });
     }
   }, [open, defaultProjectId, currentUser?.id, form]);
@@ -128,15 +152,15 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
   useEffect(() => {
     if (prevUserIdRef.current !== selectedUserId) {
       prevUserIdRef.current = selectedUserId;
-      form.setValue('projectId', '');
-      form.setValue('taskLabels', []);
+      form.setValue("projectId", "");
+      form.setValue("taskLabels", []);
     }
   }, [selectedUserId, form]);
 
-  const projectId = form.watch('projectId');
-  const taskLabels = form.watch('taskLabels');
-  const date = form.watch('date');
-  const hoursStr = form.watch('hours');
+  const projectId = form.watch("projectId");
+  const taskLabels = form.watch("taskLabels");
+  const date = form.watch("date");
+  const hoursStr = form.watch("hours");
   const hoursNum = hoursStr ? parseFloat(hoursStr) || 0 : 0;
   const prevProjectIdRef = useRef(projectId);
 
@@ -151,7 +175,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
   useEffect(() => {
     if (prevProjectIdRef.current !== projectId) {
       prevProjectIdRef.current = projectId;
-      form.setValue('taskLabels', []);
+      form.setValue("taskLabels", []);
     }
   }, [projectId, form]);
 
@@ -162,7 +186,8 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
       date: values.date,
       hours: parseFloat(values.hours),
       notes: values.notes,
-      ...(values.userId && values.userId !== currentUser?.id && { userId: values.userId }),
+      ...(values.userId &&
+        values.userId !== currentUser?.id && { userId: values.userId }),
     };
     createTimeLog.mutate(payload, {
       onSuccess: () => {
@@ -171,8 +196,8 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
           projectId: values.projectId,
           taskLabels: [],
           date: values.date,
-          hours: '',
-          notes: '',
+          hours: "",
+          notes: "",
         });
       },
     });
@@ -187,7 +212,10 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-6 space-y-4"
+          >
             {showUserSelector && (
               <Controller
                 control={form.control}
@@ -197,7 +225,7 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                     <Label>User</Label>
                     <Combobox
                       options={userOptions}
-                      value={field.value ?? ''}
+                      value={field.value ?? ""}
                       onChange={field.onChange}
                       placeholder="Select user..."
                       searchPlaceholder="Search users..."
@@ -275,8 +303,8 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
                       placeholder="0"
                       {...field}
                       onChange={(e) => {
-                        const v = e.target.value.replace(',', '.');
-                        if (v === '' || /^(0|[1-9]\d*)?(\.\d*)?$/.test(v)) {
+                        const v = e.target.value.replace(",", ".");
+                        if (v === "" || /^(0|[1-9]\d*)?(\.\d*)?$/.test(v)) {
                           field.onChange(v);
                         }
                       }}
@@ -306,8 +334,14 @@ export function LogTimeSheet({ open, onOpenChange, defaultProjectId }: LogTimeSh
             {previewWarnings && previewWarnings.length > 0 && (
               <WarningAlert warnings={previewWarnings} />
             )}
-            <Button type="submit" disabled={createTimeLog.isPending || !projectId || taskLabels.length === 0} className="w-full">
-              {createTimeLog.isPending ? 'Logging...' : 'Log Time'}
+            <Button
+              type="submit"
+              disabled={
+                createTimeLog.isPending || !projectId || taskLabels.length === 0
+              }
+              className="w-full"
+            >
+              {createTimeLog.isPending ? "Logging..." : "Log Time"}
             </Button>
           </form>
         </Form>

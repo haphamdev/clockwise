@@ -1,17 +1,17 @@
 import {
+  endOfMonth,
+  endOfQuarter,
+  endOfWeek,
   format,
+  isSameDay,
+  startOfMonth,
+  startOfQuarter,
+  startOfWeek,
   subDays,
-  subWeeks,
   subMonths,
   subQuarters,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-  startOfQuarter,
-  endOfQuarter,
-  isSameDay,
-} from 'date-fns';
+  subWeeks,
+} from "date-fns";
 
 export interface TimeWindow {
   dateFrom: string; // YYYY-MM-DD
@@ -20,26 +20,26 @@ export interface TimeWindow {
 }
 
 export type TimeWindowPreset =
-  | 'today'
-  | 'yesterday'
-  | 'this-week'
-  | 'last-week'
-  | 'this-month'
-  | 'last-month'
-  | 'this-quarter'
-  | 'last-quarter';
+  | "today"
+  | "yesterday"
+  | "this-week"
+  | "last-week"
+  | "this-month"
+  | "last-month"
+  | "this-quarter"
+  | "last-quarter";
 
-export type RollingUnit = 'days' | 'weeks' | 'months';
+export type RollingUnit = "days" | "weeks" | "months";
 
 export function formatDateISO(d: Date): string {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
 
 export function parseDateISO(s: string): Date {
-  const [y, m, d] = s.split('-').map(Number);
+  const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 }
 
@@ -50,15 +50,23 @@ export function resolvePreset(
   today = new Date(),
 ): TimeWindow {
   switch (preset) {
-    case 'today':
-      return { dateFrom: formatDateISO(today), dateTo: formatDateISO(today), preset };
-    case 'yesterday': {
+    case "today":
+      return {
+        dateFrom: formatDateISO(today),
+        dateTo: formatDateISO(today),
+        preset,
+      };
+    case "yesterday": {
       const d = subDays(today, 1);
       return { dateFrom: formatDateISO(d), dateTo: formatDateISO(d), preset };
     }
-    case 'this-week':
-      return { dateFrom: formatDateISO(startOfWeek(today, weekOpts)), dateTo: formatDateISO(today), preset };
-    case 'last-week': {
+    case "this-week":
+      return {
+        dateFrom: formatDateISO(startOfWeek(today, weekOpts)),
+        dateTo: formatDateISO(today),
+        preset,
+      };
+    case "last-week": {
       const prev = subWeeks(today, 1);
       return {
         dateFrom: formatDateISO(startOfWeek(prev, weekOpts)),
@@ -66,9 +74,13 @@ export function resolvePreset(
         preset,
       };
     }
-    case 'this-month':
-      return { dateFrom: formatDateISO(startOfMonth(today)), dateTo: formatDateISO(today), preset };
-    case 'last-month': {
+    case "this-month":
+      return {
+        dateFrom: formatDateISO(startOfMonth(today)),
+        dateTo: formatDateISO(today),
+        preset,
+      };
+    case "last-month": {
       const prev = subMonths(today, 1);
       return {
         dateFrom: formatDateISO(startOfMonth(prev)),
@@ -76,9 +88,13 @@ export function resolvePreset(
         preset,
       };
     }
-    case 'this-quarter':
-      return { dateFrom: formatDateISO(startOfQuarter(today)), dateTo: formatDateISO(today), preset };
-    case 'last-quarter': {
+    case "this-quarter":
+      return {
+        dateFrom: formatDateISO(startOfQuarter(today)),
+        dateTo: formatDateISO(today),
+        preset,
+      };
+    case "last-quarter": {
       const prev = subQuarters(today, 1);
       return {
         dateFrom: formatDateISO(startOfQuarter(prev)),
@@ -90,14 +106,14 @@ export function resolvePreset(
 }
 
 export const PRESET_LABELS: Record<TimeWindowPreset, string> = {
-  today: 'Today',
-  yesterday: 'Yesterday',
-  'this-week': 'This week',
-  'last-week': 'Last week',
-  'this-month': 'This month',
-  'last-month': 'Last month',
-  'this-quarter': 'This quarter',
-  'last-quarter': 'Last quarter',
+  today: "Today",
+  yesterday: "Yesterday",
+  "this-week": "This week",
+  "last-week": "Last week",
+  "this-month": "This month",
+  "last-month": "Last month",
+  "this-quarter": "This quarter",
+  "last-quarter": "Last quarter",
 };
 
 export const ALL_PRESETS = Object.keys(PRESET_LABELS) as TimeWindowPreset[];
@@ -113,8 +129,12 @@ export function resolveRolling(
   unit: RollingUnit,
   today = new Date(),
 ): TimeWindow {
-  const sub = unit === 'days' ? subDays : unit === 'weeks' ? subWeeks : subMonths;
-  return { dateFrom: formatDateISO(sub(today, n)), dateTo: formatDateISO(today) };
+  const sub =
+    unit === "days" ? subDays : unit === "weeks" ? subWeeks : subMonths;
+  return {
+    dateFrom: formatDateISO(sub(today, n)),
+    dateTo: formatDateISO(today),
+  };
 }
 
 export function isPresetMatch(window: TimeWindow): boolean {
@@ -129,8 +149,8 @@ export function detectRolling(
 
   // Try months first (1-24)
   for (let n = 1; n <= ROLLING_MAX.months; n++) {
-    if (resolveRolling(n, 'months', today).dateFrom === window.dateFrom) {
-      return { n, unit: 'months' };
+    if (resolveRolling(n, "months", today).dateFrom === window.dateFrom) {
+      return { n, unit: "months" };
     }
   }
 
@@ -142,18 +162,18 @@ export function detectRolling(
   );
 
   if (diffDays > 0 && diffDays % 7 === 0) {
-    return { n: diffDays / 7, unit: 'weeks' };
+    return { n: diffDays / 7, unit: "weeks" };
   }
 
   if (diffDays > 0) {
-    return { n: diffDays, unit: 'days' };
+    return { n: diffDays, unit: "days" };
   }
 
   return null;
 }
 
 export function defaultTimeWindow(today = new Date()): TimeWindow {
-  return resolveRolling(30, 'days', today);
+  return resolveRolling(30, "days", today);
 }
 
 export function formatTimeWindowLabel(window: TimeWindow): string {
@@ -165,12 +185,12 @@ export function formatTimeWindowLabel(window: TimeWindow): string {
   const to = parseDateISO(window.dateTo);
 
   if (isSameDay(from, to)) {
-    return format(from, 'MMM d, yyyy');
+    return format(from, "MMM d, yyyy");
   }
 
   if (from.getFullYear() === to.getFullYear()) {
-    return `${format(from, 'MMM d')} – ${format(to, 'MMM d, yyyy')}`;
+    return `${format(from, "MMM d")} – ${format(to, "MMM d, yyyy")}`;
   }
 
-  return `${format(from, 'MMM d, yyyy')} – ${format(to, 'MMM d, yyyy')}`;
+  return `${format(from, "MMM d, yyyy")} – ${format(to, "MMM d, yyyy")}`;
 }

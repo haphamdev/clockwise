@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { timeLogsKeys } from './time-logs-keys';
-import { fetchWarningsPreview } from './time-logs-api';
-import type { WarningsPreviewParams } from './types';
+import { useQuery } from "@tanstack/react-query";
+import { fetchWarningsPreview } from "./time-logs-api";
+import { timeLogsKeys } from "./time-logs-keys";
+import type { WarningsPreviewParams } from "./types";
 
 export function useWarningsPreview(params: WarningsPreviewParams) {
   return useQuery({

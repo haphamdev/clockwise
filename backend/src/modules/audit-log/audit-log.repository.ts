@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AuditLogEntity, AuditLogPerformer } from './entities/audit-log.entity';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import { AuditLogEntity, AuditLogPerformer } from "./entities/audit-log.entity";
 
 export interface CreateAuditLogInput {
   orgId: string;
@@ -25,7 +25,10 @@ export class AuditLogRepository {
 
   async createMany(inputs: CreateAuditLogInput[]): Promise<void> {
     await this.prisma.auditLog.createMany({
-      data: inputs.map((i) => ({ ...i, metadata: i.metadata as Prisma.InputJsonValue })),
+      data: inputs.map((i) => ({
+        ...i,
+        metadata: i.metadata as Prisma.InputJsonValue,
+      })),
     });
   }
 
@@ -34,7 +37,10 @@ export class AuditLogRepository {
     inputs: CreateAuditLogInput[],
   ): Promise<void> {
     await tx.auditLog.createMany({
-      data: inputs.map((i) => ({ ...i, metadata: i.metadata as Prisma.InputJsonValue })),
+      data: inputs.map((i) => ({
+        ...i,
+        metadata: i.metadata as Prisma.InputJsonValue,
+      })),
     });
   }
 
@@ -49,7 +55,7 @@ export class AuditLogRepository {
     const [logs, total] = await Promise.all([
       this.prisma.auditLog.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -57,7 +63,9 @@ export class AuditLogRepository {
     ]);
 
     const performerIds = [
-      ...new Set(logs.map((l) => l.performedBy).filter((id) => id !== 'system')),
+      ...new Set(
+        logs.map((l) => l.performedBy).filter((id) => id !== "system"),
+      ),
     ];
 
     const performers = performerIds.length
@@ -78,9 +86,13 @@ export class AuditLogRepository {
         entityType: log.entityType,
         entityId: log.entityId,
         action: log.action,
-        performedBy: log.performedBy === 'system'
-          ? { id: 'system', name: 'System' }
-          : performerMap.get(log.performedBy) ?? { id: log.performedBy, name: 'Unknown' },
+        performedBy:
+          log.performedBy === "system"
+            ? { id: "system", name: "System" }
+            : (performerMap.get(log.performedBy) ?? {
+                id: log.performedBy,
+                name: "Unknown",
+              }),
         metadata: log.metadata as Record<string, unknown>,
         reason: log.reason,
         createdAt: log.createdAt,

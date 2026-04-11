@@ -1,31 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { TeamsService } from "../../teams/teams.service";
+import { UsersService } from "../../users/users.service";
 import {
+  ImportCallerContext,
+  ImportPreviewResult,
   ImportProcessor,
+  ImportProgressCallback,
+  ImportResult,
   ImportRow,
   ImportValidationError,
-  ImportPreviewResult,
-  ImportResult,
-  ImportCallerContext,
-  ImportProgressCallback,
-} from '../interfaces/import-processor.interface';
-import { parseCsv, validateHeadersWithOptional, parseCommaSeparated } from '../utils/csv-parser';
-import { TeamsService } from '../../teams/teams.service';
-import { UsersService } from '../../users/users.service';
+} from "../interfaces/import-processor.interface";
+import {
+  parseCommaSeparated,
+  parseCsv,
+  validateHeadersWithOptional,
+} from "../utils/csv-parser";
 
-const REQUIRED_HEADERS = ['name', 'description'];
-const OPTIONAL_HEADERS = ['members', 'managers'];
+const REQUIRED_HEADERS = ["name", "description"];
+const OPTIONAL_HEADERS = ["members", "managers"];
 const ALL_HEADERS = [...REQUIRED_HEADERS, ...OPTIONAL_HEADERS];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ValidateRowResult {
   errors: ImportValidationError[];
   warnings: ImportValidationError[];
-  resolvedMembers?: Array<{ userId: string; role: 'manager' | 'member' }>;
+  resolvedMembers?: Array<{ userId: string; role: "manager" | "member" }>;
 }
 
 @Injectable()
 export class TeamImportProcessor implements ImportProcessor {
-  readonly type = 'team';
+  readonly type = "team";
   readonly adminOnly = true;
 
   constructor(
@@ -42,9 +46,18 @@ export class TeamImportProcessor implements ImportProcessor {
       return { validRows: [], executableRows: [], errors: [], totalRows: 0 };
     }
 
-    const headerResult = validateHeadersWithOptional(rows[0], REQUIRED_HEADERS, OPTIONAL_HEADERS);
-    if ('error' in headerResult) {
-      return { validRows: [], executableRows: [], errors: [headerResult.error], totalRows: 0 };
+    const headerResult = validateHeadersWithOptional(
+      rows[0],
+      REQUIRED_HEADERS,
+      OPTIONAL_HEADERS,
+    );
+    if ("error" in headerResult) {
+      return {
+        validRows: [],
+        executableRows: [],
+        errors: [headerResult.error],
+        totalRows: 0,
+      };
     }
     const columnMap = headerResult.columnMap;
 
@@ -52,8 +65,14 @@ export class TeamImportProcessor implements ImportProcessor {
     const executableRows: ImportRow[] = [];
     const errors: ImportValidationError[] = [];
 
-    const teamNameCache = new Map<string, { exists: boolean; isArchived: boolean }>();
-    const userCache = new Map<string, { id: string; orgId: string; status: string } | null>();
+    const teamNameCache = new Map<
+      string,
+      { exists: boolean; isArchived: boolean }
+    >();
+    const userCache = new Map<
+      string,
+      { id: string; orgId: string; status: string } | null
+    >();
     const seenNames = new Set<string>();
 
     const minFieldCount = Math.max(...columnMap.values()) + 1;
@@ -63,24 +82,28 @@ export class TeamImportProcessor implements ImportProcessor {
       const rowNumber = i + 2;
       const fields = dataRows[i];
 
-      if (fields.length === 1 && fields[0].trim() === '') {
+      if (fields.length === 1 && fields[0].trim() === "") {
         continue;
       }
 
       dataRowCount++;
 
       if (fields.length < minFieldCount) {
-        errors.push({ row: rowNumber, field: '', message: 'Row has too few columns' });
+        errors.push({
+          row: rowNumber,
+          field: "",
+          message: "Row has too few columns",
+        });
         continue;
       }
 
       const data: Record<string, string> = {};
       for (const header of ALL_HEADERS) {
         if (columnMap.has(header)) {
-          const idx = columnMap.get(header)!;
-          data[header] = (fields[idx] ?? '').trim();
+          const idx = columnMap.get(header) as number;
+          data[header] = (fields[idx] ?? "").trim();
         } else {
-          data[header] = '';
+          data[header] = "";
         }
       }
 
@@ -95,7 +118,7 @@ export class TeamImportProcessor implements ImportProcessor {
 
       const cleanData: Record<string, string> = {};
       for (const key of ALL_HEADERS) {
-        cleanData[key] = data[key] ?? '';
+        cleanData[key] = data[key] ?? "";
       }
 
       // Warnings are non-fatal: row is still valid but user is informed
@@ -110,7 +133,10 @@ export class TeamImportProcessor implements ImportProcessor {
         }
         errors.push(...result.errors);
       } else {
-        const execData = { ...data, _resolved_members: JSON.stringify(result.resolvedMembers) };
+        const execData = {
+          ...data,
+          _resolved_members: JSON.stringify(result.resolvedMembers),
+        };
         executableRows.push({ rowNumber, data: execData });
       }
     }
@@ -118,7 +144,7 @@ export class TeamImportProcessor implements ImportProcessor {
     const validRows = executableRows.map((r) => {
       const cleanData: Record<string, string> = {};
       for (const key of ALL_HEADERS) {
-        cleanData[key] = r.data[key] ?? '';
+        cleanData[key] = r.data[key] ?? "";
       }
       return { rowNumber: r.rowNumber, data: cleanData };
     });
@@ -136,9 +162,8 @@ export class TeamImportProcessor implements ImportProcessor {
 
     for (const row of validRows) {
       try {
-        const members: Array<{ userId: string; role: 'manager' | 'member' }> = JSON.parse(
-          row.data._resolved_members,
-        );
+        const members: Array<{ userId: string; role: "manager" | "member" }> =
+          JSON.parse(row.data._resolved_members);
 
         await this.teamsService.createForImport(
           ctx.orgId,
@@ -152,8 +177,9 @@ export class TeamImportProcessor implements ImportProcessor {
 
         imported++;
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        errors.push({ row: row.rowNumber, field: '', message });
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        errors.push({ row: row.rowNumber, field: "", message });
       }
       onProgress?.(imported, errors.length);
     }
@@ -166,7 +192,10 @@ export class TeamImportProcessor implements ImportProcessor {
     rowNumber: number,
     ctx: ImportCallerContext,
     teamNameCache: Map<string, { exists: boolean; isArchived: boolean }>,
-    userCache: Map<string, { id: string; orgId: string; status: string } | null>,
+    userCache: Map<
+      string,
+      { id: string; orgId: string; status: string } | null
+    >,
     seenNames: Set<string>,
   ): Promise<ValidateRowResult> {
     const errors: ImportValidationError[] = [];
@@ -174,14 +203,18 @@ export class TeamImportProcessor implements ImportProcessor {
 
     // Name
     if (!data.name) {
-      errors.push({ row: rowNumber, field: 'name', message: 'Name is required' });
+      errors.push({
+        row: rowNumber,
+        field: "name",
+        message: "Name is required",
+      });
       return { errors, warnings };
     }
     if (data.name.length > 255) {
       errors.push({
         row: rowNumber,
-        field: 'name',
-        message: 'Name must be 255 characters or less',
+        field: "name",
+        message: "Name must be 255 characters or less",
       });
       return { errors, warnings };
     }
@@ -189,18 +222,22 @@ export class TeamImportProcessor implements ImportProcessor {
     // Duplicate: DB
     const nameLower = data.name.toLowerCase();
     if (!teamNameCache.has(nameLower)) {
-      const existing = await this.teamsService.findByNameInOrg(data.name, ctx.orgId);
+      const existing = await this.teamsService.findByNameInOrg(
+        data.name,
+        ctx.orgId,
+      );
       teamNameCache.set(nameLower, {
         exists: existing !== null,
         isArchived: existing?.isArchived ?? false,
       });
     }
+    // biome-ignore lint/style/noNonNullAssertion: value was just set above
     const cached = teamNameCache.get(nameLower)!;
     if (cached.exists) {
-      const suffix = cached.isArchived ? ' (archived)' : '';
+      const suffix = cached.isArchived ? " (archived)" : "";
       errors.push({
         row: rowNumber,
-        field: 'name',
+        field: "name",
         message: `Team "${data.name}" already exists${suffix}`,
       });
       return { errors, warnings };
@@ -210,7 +247,7 @@ export class TeamImportProcessor implements ImportProcessor {
     if (seenNames.has(nameLower)) {
       errors.push({
         row: rowNumber,
-        field: 'name',
+        field: "name",
         message: `Duplicate team name "${data.name}" in CSV`,
       });
       return { errors, warnings };
@@ -220,13 +257,16 @@ export class TeamImportProcessor implements ImportProcessor {
     const memberEmails = parseCommaSeparated(data.members);
     const managerEmails = parseCommaSeparated(data.managers);
 
-    const resolvedMembers: Array<{ userId: string; role: 'manager' | 'member' }> = [];
+    const resolvedMembers: Array<{
+      userId: string;
+      role: "manager" | "member";
+    }> = [];
 
     for (const email of managerEmails) {
       if (!EMAIL_REGEX.test(email)) {
         warnings.push({
           row: rowNumber,
-          field: 'managers',
+          field: "managers",
           message: `"${email}" is not a valid email, skipped`,
         });
         continue;
@@ -235,11 +275,11 @@ export class TeamImportProcessor implements ImportProcessor {
       if (!user) {
         warnings.push({
           row: rowNumber,
-          field: 'managers',
+          field: "managers",
           message: `User "${email}" not found, skipped`,
         });
       } else {
-        resolvedMembers.push({ userId: user.id, role: 'manager' });
+        resolvedMembers.push({ userId: user.id, role: "manager" });
       }
     }
 
@@ -247,7 +287,7 @@ export class TeamImportProcessor implements ImportProcessor {
       if (!EMAIL_REGEX.test(email)) {
         warnings.push({
           row: rowNumber,
-          field: 'members',
+          field: "members",
           message: `"${email}" is not a valid email, skipped`,
         });
         continue;
@@ -256,13 +296,13 @@ export class TeamImportProcessor implements ImportProcessor {
       if (!user) {
         warnings.push({
           row: rowNumber,
-          field: 'members',
+          field: "members",
           message: `User "${email}" not found, skipped`,
         });
       } else {
         // Don't add if already in managers list
         if (!resolvedMembers.some((m) => m.userId === user.id)) {
-          resolvedMembers.push({ userId: user.id, role: 'member' });
+          resolvedMembers.push({ userId: user.id, role: "member" });
         }
       }
     }
@@ -279,10 +319,13 @@ export class TeamImportProcessor implements ImportProcessor {
   ): Promise<{ id: string } | null> {
     if (!cache.has(email)) {
       const user = await this.usersService.findByEmail(email);
-      cache.set(email, user ? { id: user.id, orgId: user.orgId, status: user.status } : null);
+      cache.set(
+        email,
+        user ? { id: user.id, orgId: user.orgId, status: user.status } : null,
+      );
     }
     const user = cache.get(email);
-    if (!user || user.orgId !== orgId || user.status !== 'active') {
+    if (!user || user.orgId !== orgId || user.status !== "active") {
       return null;
     }
     return { id: user.id };

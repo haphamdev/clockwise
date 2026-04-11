@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
   --bg-dark: oklch(0.1 0 20);
@@ -21,14 +21,14 @@
   --border-card: solid 1px var(--border);
   --shadow: 0px 2px 2px oklch(0 0 0 / 0.07), 0px 4px 4px oklch(0 0 0 / 0.15);
   --chart-1: oklch(0.75 0.18 33);
-  --chart-2: oklch(0.70 0.15 200);
+  --chart-2: oklch(0.7 0.15 200);
   --chart-3: oklch(0.75 0.15 140);
-  --chart-4: oklch(0.70 0.15 280);
+  --chart-4: oklch(0.7 0.15 280);
   --chart-5: oklch(0.75 0.15 60);
   --chart-6: oklch(0.65 0.12 340);
-  --chart-7: oklch(0.70 0.12 170);
+  --chart-7: oklch(0.7 0.12 170);
   --chart-8: oklch(0.65 0.15 240);
-  --chart-9: oklch(0.70 0.12 100);
+  --chart-9: oklch(0.7 0.12 100);
   --chart-10: oklch(0.65 0.12 310);
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -58,15 +58,15 @@
   --border-card: solid 0px var(--bg);
   --gradient: linear-gradient(0deg, var(--bg), 95%, var(--bg-light));
   --gradient-hover: linear-gradient(0deg, var(--bg), var(--bg-light));
-  --chart-1: oklch(0.55 0.20 33);
-  --chart-2: oklch(0.50 0.15 200);
+  --chart-1: oklch(0.55 0.2 33);
+  --chart-2: oklch(0.5 0.15 200);
   --chart-3: oklch(0.55 0.15 140);
-  --chart-4: oklch(0.50 0.15 280);
+  --chart-4: oklch(0.5 0.15 280);
   --chart-5: oklch(0.55 0.15 60);
   --chart-6: oklch(0.45 0.12 340);
-  --chart-7: oklch(0.50 0.12 170);
+  --chart-7: oklch(0.5 0.12 170);
   --chart-8: oklch(0.45 0.15 240);
-  --chart-9: oklch(0.50 0.12 100);
+  --chart-9: oklch(0.5 0.12 100);
   --chart-10: oklch(0.45 0.12 310);
 }
 
@@ -151,19 +151,19 @@ body {
    hover events on the sonner toaster and prevents the auto-dismiss timer
    from pausing on hover. */
 [data-sonner-toaster] {
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
 
 /* Color toast icons by variant */
-[data-sonner-toast][data-type='success'] [data-icon] {
+[data-sonner-toast][data-type="success"] [data-icon] {
   color: var(--success);
 }
-[data-sonner-toast][data-type='error'] [data-icon] {
+[data-sonner-toast][data-type="error"] [data-icon] {
   color: var(--danger);
 }
-[data-sonner-toast][data-type='warning'] [data-icon] {
+[data-sonner-toast][data-type="warning"] [data-icon] {
   color: var(--warning);
 }
-[data-sonner-toast][data-type='info'] [data-icon] {
+[data-sonner-toast][data-type="info"] [data-icon] {
   color: var(--info);
 }

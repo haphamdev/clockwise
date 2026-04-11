@@ -1,31 +1,35 @@
-import { Job } from 'bullmq';
-import { InvitationEmailProcessor } from './invitation-email.processor';
-import { InvitationEmailJobData } from './invitation-email.constants';
-import { InvitationsService } from './invitations.service';
-import { InvitationsRepository } from './invitations.repository';
-import { InvitationEntity } from './entities/invitation.entity';
+import { Job } from "bullmq";
+import { InvitationEntity } from "./entities/invitation.entity";
+import { InvitationEmailJobData } from "./invitation-email.constants";
+import { InvitationEmailProcessor } from "./invitation-email.processor";
+import { InvitationsRepository } from "./invitations.repository";
+import { InvitationsService } from "./invitations.service";
 
-function makeInvitation(overrides?: Partial<InvitationEntity>): InvitationEntity {
+function makeInvitation(
+  overrides?: Partial<InvitationEntity>,
+): InvitationEntity {
   return {
-    id: 'inv-1',
-    orgId: 'org-1',
-    email: 'new@example.com',
-    invitedBy: 'admin-1',
-    invitedByName: 'Admin',
-    token: 'abc123',
+    id: "inv-1",
+    orgId: "org-1",
+    email: "new@example.com",
+    invitedBy: "admin-1",
+    invitedByName: "Admin",
+    token: "abc123",
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    status: 'initiated',
+    status: "initiated",
     createdAt: new Date(),
-    teamAssignments: [{ teamId: 'team-1', teamName: 'Engineering', role: 'member' }],
+    teamAssignments: [
+      { teamId: "team-1", teamName: "Engineering", role: "member" },
+    ],
     ...overrides,
   };
 }
 
 function makeJob(data: InvitationEmailJobData): Job<InvitationEmailJobData> {
-  return { id: 'job-1', data } as unknown as Job<InvitationEmailJobData>;
+  return { id: "job-1", data } as unknown as Job<InvitationEmailJobData>;
 }
 
-describe('InvitationEmailProcessor', () => {
+describe("InvitationEmailProcessor", () => {
   let processor: InvitationEmailProcessor;
   let service: jest.Mocked<InvitationsService>;
   let repo: jest.Mocked<InvitationsRepository>;
@@ -41,28 +45,41 @@ describe('InvitationEmailProcessor', () => {
     } as unknown as jest.Mocked<InvitationsRepository>;
 
     processor = new InvitationEmailProcessor(service, repo);
-    jest.spyOn(processor['logger'], 'error').mockImplementation();
-    jest.spyOn(processor['logger'], 'warn').mockImplementation();
+    // biome-ignore lint/complexity/useLiteralKeys: bracket notation needed to access private property in tests
+    jest.spyOn(processor["logger"], "error").mockImplementation();
+    // biome-ignore lint/complexity/useLiteralKeys: bracket notation needed to access private property in tests
+    jest.spyOn(processor["logger"], "warn").mockImplementation();
   });
 
-  describe('process', () => {
-    it('should send email and transition initiated → sending → sent', async () => {
-      const invitation = makeInvitation({ status: 'sending' });
+  describe("process", () => {
+    it("should send email and transition initiated → sending → sent", async () => {
+      const invitation = makeInvitation({ status: "sending" });
       repo.updateStatusIf.mockResolvedValue(true);
       repo.findById.mockResolvedValue(invitation);
-      const job = makeJob({ invitationId: 'inv-1' });
+      const job = makeJob({ invitationId: "inv-1" });
 
       await processor.process(job);
 
-      expect(repo.updateStatusIf).toHaveBeenCalledWith('inv-1', 'initiated', 'sending');
-      expect(repo.findById).toHaveBeenCalledWith('inv-1');
-      expect(service.sendInvitationEmail).toHaveBeenCalledWith('org-1', invitation);
-      expect(repo.updateStatusIf).toHaveBeenCalledWith('inv-1', 'sending', 'sent');
+      expect(repo.updateStatusIf).toHaveBeenCalledWith(
+        "inv-1",
+        "initiated",
+        "sending",
+      );
+      expect(repo.findById).toHaveBeenCalledWith("inv-1");
+      expect(service.sendInvitationEmail).toHaveBeenCalledWith(
+        "org-1",
+        invitation,
+      );
+      expect(repo.updateStatusIf).toHaveBeenCalledWith(
+        "inv-1",
+        "sending",
+        "sent",
+      );
     });
 
-    it('should skip if CAS initiated → sending fails (concurrent modification)', async () => {
+    it("should skip if CAS initiated → sending fails (concurrent modification)", async () => {
       repo.updateStatusIf.mockResolvedValue(false);
-      const job = makeJob({ invitationId: 'inv-1' });
+      const job = makeJob({ invitationId: "inv-1" });
 
       await processor.process(job);
 
@@ -70,56 +87,67 @@ describe('InvitationEmailProcessor', () => {
       expect(service.sendInvitationEmail).not.toHaveBeenCalled();
     });
 
-    it('should skip if invitation not found after claiming', async () => {
+    it("should skip if invitation not found after claiming", async () => {
       repo.updateStatusIf.mockResolvedValue(true);
       repo.findById.mockResolvedValue(null);
-      const job = makeJob({ invitationId: 'inv-1' });
+      const job = makeJob({ invitationId: "inv-1" });
 
       await processor.process(job);
 
       expect(service.sendInvitationEmail).not.toHaveBeenCalled();
     });
 
-    it('should skip if status changed between CAS and re-read', async () => {
+    it("should skip if status changed between CAS and re-read", async () => {
       repo.updateStatusIf.mockResolvedValue(true);
-      repo.findById.mockResolvedValue(makeInvitation({ status: 'initiated' }));
-      const job = makeJob({ invitationId: 'inv-1' });
+      repo.findById.mockResolvedValue(makeInvitation({ status: "initiated" }));
+      const job = makeJob({ invitationId: "inv-1" });
 
       await processor.process(job);
 
       expect(service.sendInvitationEmail).not.toHaveBeenCalled();
     });
 
-    it('should not mark as sent if revoked during email send', async () => {
-      const invitation = makeInvitation({ status: 'sending' });
+    it("should not mark as sent if revoked during email send", async () => {
+      const invitation = makeInvitation({ status: "sending" });
       repo.updateStatusIf
-        .mockResolvedValueOnce(true)   // initiated → sending
+        .mockResolvedValueOnce(true) // initiated → sending
         .mockResolvedValueOnce(false); // sending → sent fails (was revoked)
       repo.findById.mockResolvedValue(invitation);
-      const job = makeJob({ invitationId: 'inv-1' });
+      const job = makeJob({ invitationId: "inv-1" });
 
       await processor.process(job);
 
-      expect(service.sendInvitationEmail).toHaveBeenCalledWith('org-1', invitation);
-      expect(repo.updateStatusIf).toHaveBeenCalledWith('inv-1', 'sending', 'sent');
+      expect(service.sendInvitationEmail).toHaveBeenCalledWith(
+        "org-1",
+        invitation,
+      );
+      expect(repo.updateStatusIf).toHaveBeenCalledWith(
+        "inv-1",
+        "sending",
+        "sent",
+      );
     });
   });
 
-  describe('onFailed', () => {
-    it('should set invitation status to failed via CAS', async () => {
+  describe("onFailed", () => {
+    it("should set invitation status to failed via CAS", async () => {
       repo.updateStatusIf.mockResolvedValue(true);
-      const job = makeJob({ invitationId: 'inv-1' });
-      const error = new Error('SMTP error');
+      const job = makeJob({ invitationId: "inv-1" });
+      const error = new Error("SMTP error");
 
       await processor.onFailed(job, error);
 
-      expect(repo.updateStatusIf).toHaveBeenCalledWith('inv-1', 'sending', 'failed');
+      expect(repo.updateStatusIf).toHaveBeenCalledWith(
+        "inv-1",
+        "sending",
+        "failed",
+      );
     });
 
-    it('should not throw when updateStatusIf fails', async () => {
-      repo.updateStatusIf.mockRejectedValue(new Error('DB connection lost'));
-      const job = makeJob({ invitationId: 'inv-1' });
-      const error = new Error('SMTP error');
+    it("should not throw when updateStatusIf fails", async () => {
+      repo.updateStatusIf.mockRejectedValue(new Error("DB connection lost"));
+      const job = makeJob({ invitationId: "inv-1" });
+      const error = new Error("SMTP error");
 
       await expect(processor.onFailed(job, error)).resolves.not.toThrow();
     });

@@ -1,12 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface UserLinkProps {
   id: string;
@@ -16,15 +16,15 @@ interface UserLinkProps {
 }
 
 export function UserLink({ id, name, email, status }: UserLinkProps) {
-  const isDeactivated = status === 'deactivated';
+  const isDeactivated = status === "deactivated";
   const hasTooltip = !!email || isDeactivated;
 
   const link = (
     <Link
       to={`/admin/users/${id}`}
       className={cn(
-        'text-sm font-medium hover:underline',
-        isDeactivated && 'line-through text-muted-foreground',
+        "text-sm font-medium hover:underline",
+        isDeactivated && "line-through text-muted-foreground",
       )}
     >
       {name}

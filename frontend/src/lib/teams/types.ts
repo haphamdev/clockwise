@@ -1,6 +1,6 @@
-import type { PaginationParams } from '@/lib/types';
+import type { PaginationParams } from "@/lib/types";
 
-export type TeamRole = 'manager' | 'member';
+export type TeamRole = "manager" | "member";
 
 export interface Team {
   id: string;
@@ -17,7 +17,7 @@ export interface TeamMember {
   userId: string;
   userName: string;
   userEmail: string;
-  userStatus: 'pending' | 'active' | 'deactivated';
+  userStatus: "pending" | "active" | "deactivated";
   role: TeamRole;
   createdAt: string;
 }

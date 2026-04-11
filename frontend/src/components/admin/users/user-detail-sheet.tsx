@@ -1,18 +1,18 @@
-import { useNavigate } from 'react-router-dom';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { StatusBadge, type Status } from '@/components/ui/status-badge';
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import { useUserDetail } from '@/lib/users/use-user-detail';
-import { TimeDisplay } from '@/components/ui/time-display';
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+import { type Status, StatusBadge } from "@/components/ui/status-badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import { useUserDetail } from "@/lib/users/use-user-detail";
 
 interface UserDetailSheetProps {
   userId: string | null;
@@ -20,7 +20,11 @@ interface UserDetailSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetProps) {
+export function UserDetailSheet({
+  userId,
+  open,
+  onOpenChange,
+}: UserDetailSheetProps) {
   const navigate = useNavigate();
   const { data: user, isLoading } = useUserDetail(userId);
   const handleViewDetails = () => {
@@ -52,8 +56,13 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarImage
+                    src={user.avatarUrl ?? undefined}
+                    alt={user.name}
+                  />
+                  <AvatarFallback>
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-medium">{user.name}</p>
@@ -71,9 +80,11 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
               <dl className="flex flex-col gap-4 text-sm">
                 <div>
                   <dt className="text-muted-foreground">
-                    Teams ({user.teamMemberships.filter((t) => !t.isArchived).length}
+                    Teams (
+                    {user.teamMemberships.filter((t) => !t.isArchived).length}
                     {user.teamMemberships.some((t) => t.isArchived) &&
-                      `, ${user.teamMemberships.filter((t) => t.isArchived).length} archived`})
+                      `, ${user.teamMemberships.filter((t) => t.isArchived).length} archived`}
+                    )
                   </dt>
                   <dd>
                     {user.teamMemberships.length === 0 ? (
@@ -81,12 +92,27 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
                     ) : (
                       <ul className="mt-1 space-y-1">
                         {user.teamMemberships.map((t) => (
-                          <li key={t.teamId} className="flex items-center gap-2">
-                            <span className={t.isArchived ? 'text-muted-foreground line-through' : 'font-medium'}>
+                          <li
+                            key={t.teamId}
+                            className="flex items-center gap-2"
+                          >
+                            <span
+                              className={
+                                t.isArchived
+                                  ? "text-muted-foreground line-through"
+                                  : "font-medium"
+                              }
+                            >
                               {t.teamName}
                             </span>
-                            <Badge variant="outline" className="text-xs">{t.role}</Badge>
-                            {t.isArchived && <Badge variant="outline" className="text-xs">archived</Badge>}
+                            <Badge variant="outline" className="text-xs">
+                              {t.role}
+                            </Badge>
+                            {t.isArchived && (
+                              <Badge variant="outline" className="text-xs">
+                                archived
+                              </Badge>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -101,7 +127,9 @@ export function UserDetailSheet({ userId, open, onOpenChange }: UserDetailSheetP
                 </div>
                 <div>
                   <dt className="text-muted-foreground">Created</dt>
-                  <dd className="font-medium"><TimeDisplay value={user.createdAt} /></dd>
+                  <dd className="font-medium">
+                    <TimeDisplay value={user.createdAt} />
+                  </dd>
                 </div>
               </dl>
 

@@ -1,12 +1,12 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
-import { PrismaService } from '../../prisma/prisma.service';
-import { NotAuthenticatedException } from '../exceptions/auth.exceptions';
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { PrismaService } from "../../prisma/prisma.service";
+import { ROLES_KEY } from "../decorators/roles.decorator";
+import { NotAuthenticatedException } from "../exceptions/auth.exceptions";
 import {
   TeamContextRequiredException,
   TeamInsufficientRoleException,
-} from '../exceptions/team.exceptions';
+} from "../exceptions/team.exceptions";
 
 /**
  * Guard that checks if the current user has one of the required roles
@@ -23,10 +23,9 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredRoles = this.reflector.getAllAndOverride<string[] | undefined>(
-      ROLES_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<
+      string[] | undefined
+    >(ROLES_KEY, [context.getHandler(), context.getClass()]);
 
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;

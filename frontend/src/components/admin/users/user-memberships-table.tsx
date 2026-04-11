@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { Trash2, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -18,11 +20,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Trash2, Users } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
-import type { UserTeamMembership } from '@/lib/users/types';
-import type { TeamRole } from '@/lib/teams/types';
+} from "@/components/ui/table";
+import type { TeamRole } from "@/lib/teams/types";
+import type { UserTeamMembership } from "@/lib/users/types";
 
 interface UserMembershipsTableProps {
   memberships: UserTeamMembership[];
@@ -80,9 +80,7 @@ export function UserMembershipsTable({
                     >
                       {membership.teamName}
                     </Link>
-                    {membership.isArchived && (
-                      <StatusBadge status="archived" />
-                    )}
+                    {membership.isArchived && <StatusBadge status="archived" />}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -93,7 +91,9 @@ export function UserMembershipsTable({
                   ) : (
                     <Select
                       value={membership.role}
-                      onValueChange={(value) => onChangeRole(membership.teamId, value as TeamRole)}
+                      onValueChange={(value) =>
+                        onChangeRole(membership.teamId, value as TeamRole)
+                      }
                       disabled={membership.teamId === roleChangePendingTeamId}
                     >
                       <SelectTrigger className="h-8 w-[120px]">
@@ -141,7 +141,7 @@ export function UserMembershipsTable({
         description={
           removingTeam
             ? `Are you sure you want to remove this user from ${removingTeam.teamName}?`
-            : ''
+            : ""
         }
         confirmLabel="Remove"
         variant="destructive"

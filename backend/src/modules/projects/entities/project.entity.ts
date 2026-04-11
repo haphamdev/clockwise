@@ -3,7 +3,7 @@ export interface ProjectEntity {
   orgId: string;
   name: string;
   description: string | null;
-  status: 'active' | 'archived';
+  status: "active" | "archived";
   createdAt: Date;
   updatedAt: Date;
 }

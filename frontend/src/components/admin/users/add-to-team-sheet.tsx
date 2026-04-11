@@ -1,26 +1,26 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Combobox } from '@/components/ui/combobox';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import { queryClient } from '@/lib/query-client';
-import { useTeams } from '@/lib/teams/use-teams';
-import { useAddTeamMember } from '@/lib/teams/use-add-team-member';
-import { usersKeys } from '@/lib/users/users-keys';
-import type { TeamRole } from '@/lib/teams/types';
+} from "@/components/ui/sheet";
+import { queryClient } from "@/lib/query-client";
+import type { TeamRole } from "@/lib/teams/types";
+import { useAddTeamMember } from "@/lib/teams/use-add-team-member";
+import { useTeams } from "@/lib/teams/use-teams";
+import { usersKeys } from "@/lib/users/users-keys";
 
 interface AddToTeamSheetProps {
   userId: string;
@@ -35,8 +35,8 @@ export function AddToTeamSheet({
   open,
   onOpenChange,
 }: AddToTeamSheetProps) {
-  const [selectedTeamId, setSelectedTeamId] = useState('');
-  const [role, setRole] = useState<TeamRole>('member');
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [role, setRole] = useState<TeamRole>("member");
 
   const { data: teamsData } = useTeams({ limit: 100 });
   const addMember = useAddTeamMember();
@@ -55,8 +55,8 @@ export function AddToTeamSheet({
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: usersKeys.all });
-          setSelectedTeamId('');
-          setRole('member');
+          setSelectedTeamId("");
+          setRole("member");
           onOpenChange(false);
         },
       },
@@ -99,7 +99,7 @@ export function AddToTeamSheet({
             disabled={!selectedTeamId || addMember.isPending}
             className="w-full"
           >
-            {addMember.isPending ? 'Adding...' : 'Add to Team'}
+            {addMember.isPending ? "Adding..." : "Add to Team"}
           </Button>
         </form>
       </SheetContent>

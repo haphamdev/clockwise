@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { orgKeys } from './org-keys';
-import { fetchOrgSettings } from './org-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchOrgSettings } from "./org-api";
+import { orgKeys } from "./org-keys";
 
 export function useOrgSettings() {
   return useQuery({

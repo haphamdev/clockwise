@@ -1,35 +1,38 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { PageHeader } from '@/components/ui/page-header';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Mail, Upload } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { EditInvitationTeamsSheet } from "@/components/admin/invitations/edit-invitation-teams-sheet";
+import { getInvitationsColumns } from "@/components/admin/invitations/invitations-columns";
+import { InviteUserSheet } from "@/components/admin/invitations/invite-user-sheet";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import { getInvitationsColumns } from '@/components/admin/invitations/invitations-columns';
-import { InviteUserSheet } from '@/components/admin/invitations/invite-user-sheet';
-import { EditInvitationTeamsSheet } from '@/components/admin/invitations/edit-invitation-teams-sheet';
-import { useInvitations } from '@/lib/invitations/use-invitations';
-import { useRevokeInvitation } from '@/lib/invitations/use-revoke-invitation';
-import { useResendInvitation } from '@/lib/invitations/use-resend-invitation';
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { Invitation, InvitationStatus } from '@/lib/invitations/types';
+} from "@/components/ui/select";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import type { Invitation, InvitationStatus } from "@/lib/invitations/types";
+import { useInvitations } from "@/lib/invitations/use-invitations";
+import { useResendInvitation } from "@/lib/invitations/use-resend-invitation";
+import { useRevokeInvitation } from "@/lib/invitations/use-revoke-invitation";
 
 export function InvitationsPage() {
-  useDocumentTitle('Clockwise - Invitations');
+  useDocumentTitle("Clockwise - Invitations");
   const { page, limit, setPage, getParam, setParam } = usePaginationParams();
-  const status = getParam('status');
+  const status = getParam("status");
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [editingInvitation, setEditingInvitation] = useState<Invitation | null>(null);
-  const [revokingInvitation, setRevokingInvitation] = useState<Invitation | null>(null);
+  const [editingInvitation, setEditingInvitation] = useState<Invitation | null>(
+    null,
+  );
+  const [revokingInvitation, setRevokingInvitation] =
+    useState<Invitation | null>(null);
 
   const { data, isLoading } = useInvitations({
     page,
@@ -41,12 +44,16 @@ export function InvitationsPage() {
   const resendInvitation = useResendInvitation();
 
   const handleStatusChange = useCallback(
-    (value: string) => setParam('status', value === 'all' ? '' : value),
+    (value: string) => setParam("status", value === "all" ? "" : value),
     [setParam],
   );
 
-  const resendingId = resendInvitation.isPending ? resendInvitation.variables : undefined;
-  const revokingId = revokeInvitation.isPending ? revokeInvitation.variables : undefined;
+  const resendingId = resendInvitation.isPending
+    ? resendInvitation.variables
+    : undefined;
+  const revokingId = revokeInvitation.isPending
+    ? revokeInvitation.variables
+    : undefined;
 
   const columns = useMemo(
     () =>
@@ -86,7 +93,7 @@ export function InvitationsPage() {
       <div className="flex items-end gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs">Status</Label>
-          <Select value={status || 'all'} onValueChange={handleStatusChange}>
+          <Select value={status || "all"} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[150px]">
               <SelectValue />
             </SelectTrigger>
@@ -116,7 +123,9 @@ export function InvitationsPage() {
       <InviteUserSheet open={inviteOpen} onOpenChange={setInviteOpen} />
       <EditInvitationTeamsSheet
         invitation={editingInvitation}
-        onOpenChange={(open) => { if (!open) setEditingInvitation(null); }}
+        onOpenChange={(open) => {
+          if (!open) setEditingInvitation(null);
+        }}
       />
 
       <ConfirmDialog

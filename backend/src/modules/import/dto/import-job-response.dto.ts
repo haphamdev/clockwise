@@ -1,12 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ImportJobStatus } from '../interfaces/import-job.interface';
-import { ImportValidationErrorDto } from './import-preview.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { ImportJobStatus } from "../interfaces/import-job.interface";
+import { ImportValidationErrorDto } from "./import-preview.dto";
 
 export class ImportJobResponseDto {
   @ApiProperty()
   jobId: string;
 
-  @ApiProperty({ enum: ['pending', 'processing', 'completed', 'failed'] })
+  @ApiProperty({ enum: ["pending", "processing", "completed", "failed"] })
   status: ImportJobStatus;
 
   @ApiProperty()
@@ -24,7 +24,7 @@ export class ImportJobResponseDto {
   @ApiProperty({
     required: false,
     description:
-      'ISO-8601 timestamp. Completed jobs are removed after 1 hour; failed jobs after 2 hours.',
+      "ISO-8601 timestamp. Completed jobs are removed after 1 hour; failed jobs after 2 hours.",
   })
   completedAt?: string;
 }

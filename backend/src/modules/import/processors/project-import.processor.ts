@@ -1,30 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { ProjectsService } from "../../projects/projects.service";
+import { TeamsService } from "../../teams/teams.service";
 import {
+  ImportCallerContext,
+  ImportPreviewResult,
   ImportProcessor,
+  ImportProgressCallback,
+  ImportResult,
   ImportRow,
   ImportValidationError,
-  ImportPreviewResult,
-  ImportResult,
-  ImportCallerContext,
-  ImportProgressCallback,
-} from '../interfaces/import-processor.interface';
-import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-parser';
-import { ProjectsService } from '../../projects/projects.service';
-import { TeamsService } from '../../teams/teams.service';
+} from "../interfaces/import-processor.interface";
+import {
+  parseCommaSeparated,
+  parseCsv,
+  validateHeaders,
+} from "../utils/csv-parser";
 
 const EXPECTED_HEADERS = [
-  'name',
-  'description',
-  'status',
-  'teams',
-  'daily_hour_limit',
-  'weekly_hour_limit',
+  "name",
+  "description",
+  "status",
+  "teams",
+  "daily_hour_limit",
+  "weekly_hour_limit",
 ];
-const VALID_STATUSES = ['active', 'archived'];
+const VALID_STATUSES = ["active", "archived"];
 
 @Injectable()
 export class ProjectImportProcessor implements ImportProcessor {
-  readonly type = 'project';
+  readonly type = "project";
   readonly adminOnly = true;
 
   constructor(
@@ -42,8 +46,13 @@ export class ProjectImportProcessor implements ImportProcessor {
     }
 
     const headerResult = validateHeaders(rows[0], EXPECTED_HEADERS);
-    if ('error' in headerResult) {
-      return { validRows: [], executableRows: [], errors: [headerResult.error], totalRows: 0 };
+    if ("error" in headerResult) {
+      return {
+        validRows: [],
+        executableRows: [],
+        errors: [headerResult.error],
+        totalRows: 0,
+      };
     }
     const columnMap = headerResult.columnMap;
 
@@ -51,8 +60,14 @@ export class ProjectImportProcessor implements ImportProcessor {
     const executableRows: ImportRow[] = [];
     const errors: ImportValidationError[] = [];
 
-    const projectNameCache = new Map<string, { exists: boolean; isArchived: boolean }>();
-    const teamCache = new Map<string, { id: string; isArchived: boolean } | null>();
+    const projectNameCache = new Map<
+      string,
+      { exists: boolean; isArchived: boolean }
+    >();
+    const teamCache = new Map<
+      string,
+      { id: string; isArchived: boolean } | null
+    >();
     const seenNames = new Set<string>();
 
     const minFieldCount = Math.max(...columnMap.values()) + 1;
@@ -62,26 +77,30 @@ export class ProjectImportProcessor implements ImportProcessor {
       const rowNumber = i + 2;
       const fields = dataRows[i];
 
-      if (fields.length === 1 && fields[0].trim() === '') {
+      if (fields.length === 1 && fields[0].trim() === "") {
         continue;
       }
 
       dataRowCount++;
 
       if (fields.length < minFieldCount) {
-        errors.push({ row: rowNumber, field: '', message: 'Row has too few columns' });
+        errors.push({
+          row: rowNumber,
+          field: "",
+          message: "Row has too few columns",
+        });
         continue;
       }
 
       const data: Record<string, string> = {};
       for (const header of EXPECTED_HEADERS) {
-        const idx = columnMap.get(header)!;
-        data[header] = (fields[idx] ?? '').trim();
+        const idx = columnMap.get(header) as number;
+        data[header] = (fields[idx] ?? "").trim();
       }
 
       // Default empty status to 'active'
       if (!data.status) {
-        data.status = 'active';
+        data.status = "active";
       }
 
       const rowErrors = await this.validateRow(
@@ -95,7 +114,7 @@ export class ProjectImportProcessor implements ImportProcessor {
 
       const cleanData: Record<string, string> = {};
       for (const key of EXPECTED_HEADERS) {
-        cleanData[key] = data[key] ?? '';
+        cleanData[key] = data[key] ?? "";
       }
 
       if (rowErrors.length > 0) {
@@ -105,7 +124,10 @@ export class ProjectImportProcessor implements ImportProcessor {
         errors.push(...rowErrors);
       } else {
         const resolvedTeamIds = this.resolveTeamIds(data, teamCache);
-        const execData = { ...data, _resolved_team_ids: JSON.stringify(resolvedTeamIds) };
+        const execData = {
+          ...data,
+          _resolved_team_ids: JSON.stringify(resolvedTeamIds),
+        };
         executableRows.push({ rowNumber, data: execData });
       }
     }
@@ -113,7 +135,7 @@ export class ProjectImportProcessor implements ImportProcessor {
     const validRows = executableRows.map((r) => {
       const cleanData: Record<string, string> = {};
       for (const key of EXPECTED_HEADERS) {
-        cleanData[key] = r.data[key] ?? '';
+        cleanData[key] = r.data[key] ?? "";
       }
       return { rowNumber: r.rowNumber, data: cleanData };
     });
@@ -133,16 +155,20 @@ export class ProjectImportProcessor implements ImportProcessor {
       try {
         const teamIds: string[] = JSON.parse(row.data._resolved_team_ids);
         const dailyHourLimit =
-          row.data.daily_hour_limit !== '' ? parseFloat(row.data.daily_hour_limit) : undefined;
+          row.data.daily_hour_limit !== ""
+            ? parseFloat(row.data.daily_hour_limit)
+            : undefined;
         const weeklyHourLimit =
-          row.data.weekly_hour_limit !== '' ? parseFloat(row.data.weekly_hour_limit) : undefined;
+          row.data.weekly_hour_limit !== ""
+            ? parseFloat(row.data.weekly_hour_limit)
+            : undefined;
 
         await this.projectsService.createForImport(
           ctx.orgId,
           {
             name: row.data.name,
             description: row.data.description || undefined,
-            status: (row.data.status as 'active' | 'archived') || undefined,
+            status: (row.data.status as "active" | "archived") || undefined,
             teamIds,
             settings: { dailyHourLimit, weeklyHourLimit },
           },
@@ -151,8 +177,9 @@ export class ProjectImportProcessor implements ImportProcessor {
 
         imported++;
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        errors.push({ row: row.rowNumber, field: '', message });
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        errors.push({ row: row.rowNumber, field: "", message });
       }
       onProgress?.(imported, errors.length);
     }
@@ -172,14 +199,18 @@ export class ProjectImportProcessor implements ImportProcessor {
 
     // Name
     if (!data.name) {
-      errors.push({ row: rowNumber, field: 'name', message: 'Name is required' });
+      errors.push({
+        row: rowNumber,
+        field: "name",
+        message: "Name is required",
+      });
       return errors;
     }
     if (data.name.length > 255) {
       errors.push({
         row: rowNumber,
-        field: 'name',
-        message: 'Name must be 255 characters or less',
+        field: "name",
+        message: "Name must be 255 characters or less",
       });
       return errors;
     }
@@ -188,7 +219,7 @@ export class ProjectImportProcessor implements ImportProcessor {
     if (!VALID_STATUSES.includes(data.status)) {
       errors.push({
         row: rowNumber,
-        field: 'status',
+        field: "status",
         message: `Status must be "active" or "archived"`,
       });
       return errors;
@@ -197,18 +228,22 @@ export class ProjectImportProcessor implements ImportProcessor {
     // Duplicate: DB
     const nameLower = data.name.toLowerCase();
     if (!projectNameCache.has(nameLower)) {
-      const existing = await this.projectsService.findByNameInOrg(data.name, ctx.orgId);
+      const existing = await this.projectsService.findByNameInOrg(
+        data.name,
+        ctx.orgId,
+      );
       projectNameCache.set(nameLower, {
         exists: existing !== null,
-        isArchived: existing?.status === 'archived',
+        isArchived: existing?.status === "archived",
       });
     }
+    // biome-ignore lint/style/noNonNullAssertion: value was just set above
     const cached = projectNameCache.get(nameLower)!;
     if (cached.exists) {
-      const suffix = cached.isArchived ? ' (archived)' : '';
+      const suffix = cached.isArchived ? " (archived)" : "";
       errors.push({
         row: rowNumber,
-        field: 'name',
+        field: "name",
         message: `Project "${data.name}" already exists${suffix}`,
       });
       return errors;
@@ -218,7 +253,7 @@ export class ProjectImportProcessor implements ImportProcessor {
     if (seenNames.has(nameLower)) {
       errors.push({
         row: rowNumber,
-        field: 'name',
+        field: "name",
         message: `Duplicate project name "${data.name}" in CSV`,
       });
       return errors;
@@ -229,30 +264,37 @@ export class ProjectImportProcessor implements ImportProcessor {
     if (teamNames.length === 0) {
       errors.push({
         row: rowNumber,
-        field: 'teams',
-        message: 'At least one team is required',
+        field: "teams",
+        message: "At least one team is required",
       });
       return errors;
     }
 
     const uniqueTeamNames = [...new Set(teamNames.map((n) => n.toLowerCase()))];
     for (const teamName of uniqueTeamNames) {
-      const originalName = teamNames.find((n) => n.toLowerCase() === teamName) ?? teamName;
+      const originalName =
+        teamNames.find((n) => n.toLowerCase() === teamName) ?? teamName;
       if (!teamCache.has(teamName)) {
-        const team = await this.teamsService.findByNameInOrg(originalName, ctx.orgId);
-        teamCache.set(teamName, team ? { id: team.id, isArchived: team.isArchived } : null);
+        const team = await this.teamsService.findByNameInOrg(
+          originalName,
+          ctx.orgId,
+        );
+        teamCache.set(
+          teamName,
+          team ? { id: team.id, isArchived: team.isArchived } : null,
+        );
       }
       const team = teamCache.get(teamName);
       if (!team) {
         errors.push({
           row: rowNumber,
-          field: 'teams',
+          field: "teams",
           message: `Team "${originalName}" not found`,
         });
       } else if (team.isArchived) {
         errors.push({
           row: rowNumber,
-          field: 'teams',
+          field: "teams",
           message: `Team "${originalName}" is archived`,
         });
       }
@@ -265,22 +307,22 @@ export class ProjectImportProcessor implements ImportProcessor {
     // Hour limits
     if (data.daily_hour_limit) {
       const val = parseFloat(data.daily_hour_limit);
-      if (isNaN(val) || val < 0.01 || val > 24) {
+      if (Number.isNaN(val) || val < 0.01 || val > 24) {
         errors.push({
           row: rowNumber,
-          field: 'daily_hour_limit',
-          message: 'Daily hour limit must be between 0.01 and 24',
+          field: "daily_hour_limit",
+          message: "Daily hour limit must be between 0.01 and 24",
         });
       }
     }
 
     if (data.weekly_hour_limit) {
       const val = parseFloat(data.weekly_hour_limit);
-      if (isNaN(val) || val < 0.01 || val > 168) {
+      if (Number.isNaN(val) || val < 0.01 || val > 168) {
         errors.push({
           row: rowNumber,
-          field: 'weekly_hour_limit',
-          message: 'Weekly hour limit must be between 0.01 and 168',
+          field: "weekly_hour_limit",
+          message: "Weekly hour limit must be between 0.01 and 168",
         });
       }
     }

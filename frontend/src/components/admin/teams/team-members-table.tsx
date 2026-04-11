@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { UserLink } from '@/components/users/user-link';
+import { Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -18,9 +18,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Trash2 } from 'lucide-react';
-import type { TeamMember, TeamRole } from '@/lib/teams/types';
+} from "@/components/ui/table";
+import { UserLink } from "@/components/users/user-link";
+import type { TeamMember, TeamRole } from "@/lib/teams/types";
 
 interface TeamMembersTableProps {
   members: TeamMember[];
@@ -47,7 +47,11 @@ export function TeamMembersTable({
   }, [removingUserId, removingMember]);
 
   if (members.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">No members yet.</p>;
+    return (
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        No members yet.
+      </p>
+    );
   }
 
   return (
@@ -77,17 +81,23 @@ export function TeamMembersTable({
                         name={member.userName}
                         status={member.userStatus}
                       />
-                      <p className="text-xs text-muted-foreground">{member.userEmail}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {member.userEmail}
+                      </p>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  {readOnly || member.userStatus === 'deactivated' ? (
-                    <Badge variant="outline" className="capitalize">{member.role}</Badge>
+                  {readOnly || member.userStatus === "deactivated" ? (
+                    <Badge variant="outline" className="capitalize">
+                      {member.role}
+                    </Badge>
                   ) : (
                     <Select
                       value={member.role}
-                      onValueChange={(value) => onChangeRole(member.userId, value as TeamRole)}
+                      onValueChange={(value) =>
+                        onChangeRole(member.userId, value as TeamRole)
+                      }
                       disabled={member.userId === roleChangePendingUserId}
                     >
                       <SelectTrigger className="h-8 w-[120px]">
@@ -95,10 +105,14 @@ export function TeamMembersTable({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="manager">
-                          <Badge variant="outline" className="border-0">Manager</Badge>
+                          <Badge variant="outline" className="border-0">
+                            Manager
+                          </Badge>
                         </SelectItem>
                         <SelectItem value="member">
-                          <Badge variant="outline" className="border-0">Member</Badge>
+                          <Badge variant="outline" className="border-0">
+                            Member
+                          </Badge>
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -129,7 +143,7 @@ export function TeamMembersTable({
         description={
           removingMember
             ? `Are you sure you want to remove ${removingMember.userName} from this team?`
-            : ''
+            : ""
         }
         confirmLabel="Remove"
         variant="destructive"

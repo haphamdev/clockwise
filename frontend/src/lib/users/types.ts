@@ -1,11 +1,11 @@
-import type { PaginationParams } from '@/lib/types';
+import type { PaginationParams } from "@/lib/types";
 
-export type UserStatus = 'pending' | 'active' | 'deactivated';
+export type UserStatus = "pending" | "active" | "deactivated";
 
 export interface UserTeamMembership {
   teamId: string;
   teamName: string;
-  role: 'manager' | 'member';
+  role: "manager" | "member";
   isArchived: boolean;
 }
 
@@ -23,7 +23,7 @@ export interface User {
 
 export interface TeamAssignment {
   teamId: string;
-  role: 'manager' | 'member';
+  role: "manager" | "member";
 }
 
 export interface UpdateUserPayload {

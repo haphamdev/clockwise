@@ -1,9 +1,9 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge, type Status } from '@/components/ui/status-badge';
-import { TimeDisplay } from '@/components/ui/time-display';
-import type { User } from '@/lib/users/types';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { type Status, StatusBadge } from "@/components/ui/status-badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import type { User } from "@/lib/users/types";
 
 interface ProfileInfoCardProps {
   user: User;
@@ -51,7 +51,9 @@ export function ProfileInfoCard({ user }: ProfileInfoCardProps) {
           </div>
           <div>
             <dt className="text-muted-foreground">Member Since</dt>
-            <dd className="font-medium"><TimeDisplay value={user.createdAt} /></dd>
+            <dd className="font-medium">
+              <TimeDisplay value={user.createdAt} />
+            </dd>
           </div>
         </dl>
       </CardContent>

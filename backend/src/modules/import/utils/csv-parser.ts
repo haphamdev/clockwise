@@ -1,9 +1,9 @@
-import { ImportValidationError } from '../interfaces/import-processor.interface';
+import { ImportValidationError } from "../interfaces/import-processor.interface";
 
 /** Parse CSV content handling quoted fields with commas, escaped quotes, and newlines per RFC 4180. */
 export function parseCsv(content: string): string[][] {
   const rows: string[][] = [];
-  let current = '';
+  let current = "";
   let inQuotes = false;
   let fields: string[] = [];
   let i = 0;
@@ -28,16 +28,16 @@ export function parseCsv(content: string): string[][] {
       if (ch === '"') {
         inQuotes = true;
         i++;
-      } else if (ch === ',') {
+      } else if (ch === ",") {
         fields.push(current);
-        current = '';
+        current = "";
         i++;
-      } else if (ch === '\r' || ch === '\n') {
+      } else if (ch === "\r" || ch === "\n") {
         fields.push(current);
-        current = '';
+        current = "";
         rows.push(fields);
         fields = [];
-        if (ch === '\r' && i + 1 < content.length && content[i + 1] === '\n') {
+        if (ch === "\r" && i + 1 < content.length && content[i + 1] === "\n") {
           i += 2;
         } else {
           i++;
@@ -58,7 +58,7 @@ export function parseCsv(content: string): string[][] {
   // Filter out completely empty trailing rows
   while (rows.length > 0) {
     const last = rows[rows.length - 1];
-    if (last.length === 1 && last[0].trim() === '') {
+    if (last.length === 1 && last[0].trim() === "") {
       rows.pop();
     } else {
       break;
@@ -86,8 +86,8 @@ export function validateHeadersWithOptional(
     return {
       error: {
         row: 1,
-        field: '',
-        message: `CSV headers must include: ${requiredHeaders.join(', ')}. Missing: ${missing.join(', ')}`,
+        field: "",
+        message: `CSV headers must include: ${requiredHeaders.join(", ")}. Missing: ${missing.join(", ")}`,
       },
     };
   }
@@ -107,5 +107,8 @@ export function validateHeadersWithOptional(
 /** Split a comma-separated string into trimmed, non-empty values. */
 export function parseCommaSeparated(value: string): string[] {
   if (!value) return [];
-  return value.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 }

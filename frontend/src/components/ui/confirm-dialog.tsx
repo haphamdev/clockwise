@@ -7,8 +7,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { buttonVariants } from '@/components/ui/button';
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -16,7 +16,7 @@ interface ConfirmDialogProps {
   title: string;
   description: string;
   confirmLabel?: string;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
   onConfirm: () => void;
   isPending?: boolean;
 }
@@ -26,8 +26,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = 'Confirm',
-  variant = 'default',
+  confirmLabel = "Confirm",
+  variant = "default",
   onConfirm,
   isPending,
 }: ConfirmDialogProps) {
@@ -48,7 +48,7 @@ export function ConfirmDialog({
             }}
             disabled={isPending}
           >
-            {isPending ? 'Processing...' : confirmLabel}
+            {isPending ? "Processing..." : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

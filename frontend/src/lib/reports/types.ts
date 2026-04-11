@@ -1,5 +1,5 @@
-export type ReportGroupBy = 'user' | 'project' | 'team';
-export type ReportGranularity = 'day' | 'week' | 'month' | 'quarter';
+export type ReportGroupBy = "user" | "project" | "team";
+export type ReportGranularity = "day" | "week" | "month" | "quarter";
 
 export interface ReportBaseParams {
   dateFrom: string;
@@ -81,7 +81,7 @@ export interface SummaryResponse {
 
 export type AnomaliesParams = ReportBaseParams;
 
-export type AnomalySeverity = 'warning' | 'critical';
+export type AnomalySeverity = "warning" | "critical";
 
 export interface AnomalyEntry {
   userId: string;

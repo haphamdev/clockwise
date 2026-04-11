@@ -1,16 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
-import { format, formatDistanceToNow, differenceInDays, isToday, isYesterday } from 'date-fns';
+import {
+  differenceInDays,
+  format,
+  formatDistanceToNow,
+  isToday,
+  isYesterday,
+} from "date-fns";
+import { useEffect, useMemo, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useEffectiveFormats } from '@/lib/user-preferences/use-effective-formats';
-import { DATE_TOKENS, TIME_TOKENS, toDate } from '@/lib/org/format-date';
-import type { DateFormat, TimeFormat } from '@/lib/org/types';
+} from "@/components/ui/tooltip";
+import { DATE_TOKENS, TIME_TOKENS, toDate } from "@/lib/org/format-date";
+import type { DateFormat, TimeFormat } from "@/lib/org/types";
+import { useEffectiveFormats } from "@/lib/user-preferences/use-effective-formats";
 
-type TimeDisplayMode = 'date' | 'datetime';
+type TimeDisplayMode = "date" | "datetime";
 
 interface TimeDisplayProps {
   value: string | Date | null | undefined;
@@ -27,6 +33,7 @@ function useRelativeTime(date: Date | null, enabled: boolean) {
     if (!date || !enabled) return;
 
     function schedule() {
+      // biome-ignore lint/style/noNonNullAssertion: date is checked non-null before schedule is defined
       const ageMs = Date.now() - date!.getTime();
       let delay: number;
       if (ageMs < 60 * 60 * 1000) delay = 30_000;
@@ -55,16 +62,19 @@ function computeDisplay(
   const showRelative = !absolute && daysDiff < 7;
 
   if (showRelative) {
-    if (mode === 'date') {
-      if (isToday(date)) return { text: 'Today', isRelative: true };
-      if (isYesterday(date)) return { text: 'Yesterday', isRelative: true };
+    if (mode === "date") {
+      if (isToday(date)) return { text: "Today", isRelative: true };
+      if (isYesterday(date)) return { text: "Yesterday", isRelative: true };
     }
-    return { text: formatDistanceToNow(date, { addSuffix: true }), isRelative: true };
+    return {
+      text: formatDistanceToNow(date, { addSuffix: true }),
+      isRelative: true,
+    };
   }
 
   const dateToken = DATE_TOKENS[dateFormat];
   const text =
-    mode === 'datetime'
+    mode === "datetime"
       ? format(date, `${dateToken} ${TIME_TOKENS[timeFormat]}`)
       : format(date, dateToken);
   return { text, isRelative: false };
@@ -77,14 +87,14 @@ function computeTooltip(
   timeFormat: TimeFormat,
 ): string {
   const dateToken = DATE_TOKENS[dateFormat];
-  return mode === 'date'
+  return mode === "date"
     ? format(date, dateToken)
     : format(date, `${dateToken} ${TIME_TOKENS[timeFormat]}`);
 }
 
 export function TimeDisplay({
   value,
-  mode = 'date',
+  mode = "date",
   absolute = false,
   fallback,
   className,
@@ -98,7 +108,13 @@ export function TimeDisplay({
     return fallback ? <span className={className}>{fallback}</span> : null;
   }
 
-  const { text, isRelative } = computeDisplay(date, mode, dateFormat, timeFormat, absolute);
+  const { text, isRelative } = computeDisplay(
+    date,
+    mode,
+    dateFormat,
+    timeFormat,
+    absolute,
+  );
 
   if (!isRelative) {
     return <span className={className}>{text}</span>;

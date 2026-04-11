@@ -1,31 +1,46 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
-import { AdminOnly } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity } from '../users/entities/user.entity';
-import { InvitationsService } from './invitations.service';
-import { CreateInvitationDto } from './dto/create-invitation.dto';
-import { UpdateInvitationTeamAssignmentsDto } from './dto/update-invitation-team-assignments.dto';
-import { ListInvitationsQueryDto } from './dto/list-invitations-query.dto';
 import {
-  InvitationResponseDto,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
+import { AdminOnly } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { UserEntity } from "../users/entities/user.entity";
+import { CreateInvitationDto } from "./dto/create-invitation.dto";
+import {
   InvitationListResponseDto,
-} from './dto/invitation-response.dto';
-import { ValidateInvitationResponseDto } from './dto/validate-invitation-response.dto';
-import { InvitationEntity } from './entities/invitation.entity';
+  InvitationResponseDto,
+} from "./dto/invitation-response.dto";
+import { ListInvitationsQueryDto } from "./dto/list-invitations-query.dto";
+import { UpdateInvitationTeamAssignmentsDto } from "./dto/update-invitation-team-assignments.dto";
+import { ValidateInvitationResponseDto } from "./dto/validate-invitation-response.dto";
+import { InvitationEntity } from "./entities/invitation.entity";
+import { InvitationsService } from "./invitations.service";
 
-@ApiTags('Invitations')
-@Controller('invitations')
+@ApiTags("Invitations")
+@Controller("invitations")
 export class InvitationsController {
   constructor(private readonly invitationsService: InvitationsService) {}
 
-  @Get('validate/:token')
-  @ApiOperation({ summary: 'Validate an invitation token (public, no auth)' })
+  @Get("validate/:token")
+  @ApiOperation({ summary: "Validate an invitation token (public, no auth)" })
   @ApiOkResponse({ type: ValidateInvitationResponseDto })
   async validateToken(
-    @Param('token') token: string,
+    @Param("token") token: string,
   ): Promise<ValidateInvitationResponseDto> {
-    const { invitation, orgName } = await this.invitationsService.validateTokenWithOrgName(token);
+    const { invitation, orgName } =
+      await this.invitationsService.validateTokenWithOrgName(token);
     return {
       email: invitation.email,
       orgName,
@@ -40,19 +55,23 @@ export class InvitationsController {
 
   @Post()
   @AdminOnly()
-  @ApiOperation({ summary: 'Send an invitation' })
+  @ApiOperation({ summary: "Send an invitation" })
   @ApiCreatedResponse({ type: InvitationResponseDto })
   async create(
     @CurrentUser() user: UserEntity,
     @Body() dto: CreateInvitationDto,
   ): Promise<InvitationResponseDto> {
-    const invitation = await this.invitationsService.create(user.orgId, user.id, dto);
+    const invitation = await this.invitationsService.create(
+      user.orgId,
+      user.id,
+      dto,
+    );
     return this.toResponse(invitation);
   }
 
   @Get()
   @AdminOnly()
-  @ApiOperation({ summary: 'List invitations' })
+  @ApiOperation({ summary: "List invitations" })
   @ApiOkResponse({ type: InvitationListResponseDto })
   async list(
     @CurrentUser() user: UserEntity,
@@ -72,12 +91,12 @@ export class InvitationsController {
     };
   }
 
-  @Patch(':id/team-assignments')
+  @Patch(":id/team-assignments")
   @AdminOnly()
-  @ApiOperation({ summary: 'Update team assignments for an invitation' })
+  @ApiOperation({ summary: "Update team assignments for an invitation" })
   @ApiOkResponse({ type: InvitationResponseDto })
   async updateTeamAssignments(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateInvitationTeamAssignmentsDto,
   ): Promise<InvitationResponseDto> {
@@ -89,23 +108,23 @@ export class InvitationsController {
     return this.toResponse(invitation);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @AdminOnly()
-  @ApiOperation({ summary: 'Revoke an invitation' })
+  @ApiOperation({ summary: "Revoke an invitation" })
   async revoke(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
     await this.invitationsService.revoke(id, user.orgId);
-    return { message: 'Invitation revoked' };
+    return { message: "Invitation revoked" };
   }
 
-  @Post(':id/resend')
+  @Post(":id/resend")
   @AdminOnly()
-  @ApiOperation({ summary: 'Resend an invitation' })
+  @ApiOperation({ summary: "Resend an invitation" })
   @ApiOkResponse({ type: InvitationResponseDto })
   async resend(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<InvitationResponseDto> {
     const invitation = await this.invitationsService.resend(id, user.orgId);
@@ -119,7 +138,9 @@ export class InvitationsController {
       invitedByName: invitation.invitedByName,
       status: invitation.status,
       expiresAt: invitation.expiresAt,
-      isExpired: !['accepted', 'revoked'].includes(invitation.status) && new Date() > invitation.expiresAt,
+      isExpired:
+        !["accepted", "revoked"].includes(invitation.status) &&
+        new Date() > invitation.expiresAt,
       createdAt: invitation.createdAt,
       teamAssignments: invitation.teamAssignments.map((ta) => ({
         teamId: ta.teamId,

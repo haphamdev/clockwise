@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { teamsKeys } from './teams-keys';
-import { fetchTeamDetail } from './teams-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchTeamDetail } from "./teams-api";
+import { teamsKeys } from "./teams-keys";
 
 export function useTeamDetail(id: string) {
   return useQuery({

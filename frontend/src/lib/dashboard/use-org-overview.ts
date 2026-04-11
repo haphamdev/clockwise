@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { dashboardKeys } from './dashboard-keys';
-import { fetchOrgOverview } from './dashboard-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchOrgOverview } from "./dashboard-api";
+import { dashboardKeys } from "./dashboard-keys";
 
 export function useOrgOverview(enabled: boolean) {
   return useQuery({

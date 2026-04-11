@@ -1,20 +1,23 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 import {
-  IsString,
+  ArrayMinSize,
+  IsArray,
+  IsDateString,
   IsNumber,
   IsOptional,
-  IsArray,
-  ArrayMinSize,
-  MinLength,
+  IsString,
+  IsUUID,
+  Max,
   MaxLength,
   Min,
-  Max,
-  IsDateString,
-  IsUUID,
-} from 'class-validator';
+  MinLength,
+} from "class-validator";
 
 export class CreateTimeLogDto {
-  @ApiProperty({ required: false, description: 'Target user ID (for logging on behalf of another user)' })
+  @ApiProperty({
+    required: false,
+    description: "Target user ID (for logging on behalf of another user)",
+  })
   @IsOptional()
   @IsUUID()
   userId?: string;
@@ -31,7 +34,7 @@ export class CreateTimeLogDto {
   @MaxLength(100, { each: true })
   taskLabels: string[];
 
-  @ApiProperty({ description: 'YYYY-MM-DD' })
+  @ApiProperty({ description: "YYYY-MM-DD" })
   @IsDateString()
   date: string;
 

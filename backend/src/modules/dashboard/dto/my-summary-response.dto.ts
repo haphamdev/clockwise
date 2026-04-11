@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 class MyHoursDto {
   @ApiProperty() today: number;
@@ -34,5 +34,6 @@ export class MySummaryResponseDto {
   @ApiProperty({ type: MyHoursDto }) myHours: MyHoursDto;
   @ApiProperty({ type: [GapDto] }) gaps: GapDto[];
   @ApiProperty({ type: [RecentLogDto] }) recentLogs: RecentLogDto[];
-  @ApiProperty({ type: [ProjectSummaryDto] }) projectSummaries: ProjectSummaryDto[];
+  @ApiProperty({ type: [ProjectSummaryDto] })
+  projectSummaries: ProjectSummaryDto[];
 }

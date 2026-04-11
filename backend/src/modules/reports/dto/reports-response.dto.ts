@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class TimeSeriesBreakdownItemDto {
   @ApiProperty()
@@ -59,7 +59,10 @@ export class WeekdayRowDto {
   @ApiProperty()
   label: string;
 
-  @ApiProperty({ type: [Number], description: 'Hours per weekday, index 0=Mon, 6=Sun' })
+  @ApiProperty({
+    type: [Number],
+    description: "Hours per weekday, index 0=Mon, 6=Sun",
+  })
   weekdays: number[];
 }
 
@@ -125,17 +128,17 @@ export class AnomalyEntryDto {
   @ApiProperty()
   userName: string;
 
-  @ApiProperty({ description: 'YYYY-MM-DD' })
+  @ApiProperty({ description: "YYYY-MM-DD" })
   date: string;
 
-  @ApiProperty({ description: '0=Mon, 6=Sun' })
+  @ApiProperty({ description: "0=Mon, 6=Sun" })
   weekday: number;
 
   @ApiProperty()
   totalHours: number;
 
-  @ApiProperty({ enum: ['warning', 'critical'] })
-  severity: 'warning' | 'critical';
+  @ApiProperty({ enum: ["warning", "critical"] })
+  severity: "warning" | "critical";
 }
 
 export class AnomaliesResponseDto {
@@ -153,7 +156,7 @@ export class DelayHeatmapCellDto {
   @ApiProperty()
   userName: string;
 
-  @ApiProperty({ description: '0=Mon, 6=Sun' })
+  @ApiProperty({ description: "0=Mon, 6=Sun" })
   weekday: number;
 
   @ApiProperty()
@@ -167,6 +170,8 @@ export class LoggingDelayHeatmapResponseDto {
   @ApiProperty({ type: [DelayHeatmapCellDto] })
   cells: DelayHeatmapCellDto[];
 
-  @ApiProperty({ description: 'Minimum entries required for a cell to be considered valid' })
+  @ApiProperty({
+    description: "Minimum entries required for a cell to be considered valid",
+  })
   minEntries: number;
 }

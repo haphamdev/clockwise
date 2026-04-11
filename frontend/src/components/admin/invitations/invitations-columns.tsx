@@ -1,16 +1,16 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { Loader2, MoreHorizontal } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/ui/status-badge';
+import type { ColumnDef } from "@tanstack/react-table";
+import { Loader2, MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { TimeDisplay } from '@/components/ui/time-display';
-import type { Invitation } from '@/lib/invitations/types';
+} from "@/components/ui/dropdown-menu";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import type { Invitation } from "@/lib/invitations/types";
 
 export function getInvitationsColumns(
   onResend: (invitation: Invitation) => void,
@@ -21,13 +21,15 @@ export function getInvitationsColumns(
 ): ColumnDef<Invitation>[] {
   return [
     {
-      accessorKey: 'email',
-      header: 'Email',
-      cell: ({ row }) => <span className="font-medium">{row.original.email}</span>,
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => (
+        <span className="font-medium">{row.original.email}</span>
+      ),
     },
     {
-      id: 'teams',
-      header: 'Teams & Roles',
+      id: "teams",
+      header: "Teams & Roles",
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.teamAssignments.map((ta) => (
@@ -39,38 +41,40 @@ export function getInvitationsColumns(
       ),
     },
     {
-      id: 'status',
-      header: 'Status',
+      id: "status",
+      header: "Status",
       cell: ({ row }) => {
         const inv = row.original;
         const statusLabel =
-          inv.status === 'sent'
+          inv.status === "sent"
             ? inv.isExpired
-              ? 'expired'
-              : 'sent'
-            : inv.status === 'initiated'
-              ? 'initiated'
-              : inv.status === 'sending'
-                ? 'sending'
-                : inv.status === 'accepted'
-                  ? 'accepted'
-                  : inv.status === 'failed'
-                    ? 'failed'
-                    : 'revoked';
+              ? "expired"
+              : "sent"
+            : inv.status === "initiated"
+              ? "initiated"
+              : inv.status === "sending"
+                ? "sending"
+                : inv.status === "accepted"
+                  ? "accepted"
+                  : inv.status === "failed"
+                    ? "failed"
+                    : "revoked";
         return <StatusBadge status={statusLabel} />;
       },
     },
     {
-      accessorKey: 'invitedByName',
-      header: 'Invited By',
+      accessorKey: "invitedByName",
+      header: "Invited By",
     },
     {
-      accessorKey: 'createdAt',
-      header: 'Invited At',
-      cell: ({ row }) => <TimeDisplay value={row.original.createdAt} mode="datetime" />,
+      accessorKey: "createdAt",
+      header: "Invited At",
+      cell: ({ row }) => (
+        <TimeDisplay value={row.original.createdAt} mode="datetime" />
+      ),
     },
     {
-      id: 'actions',
+      id: "actions",
       cell: ({ row }) => {
         const inv = row.original;
         if (resendingId === inv.id || revokingId === inv.id) {
@@ -80,7 +84,7 @@ export function getInvitationsColumns(
             </div>
           );
         }
-        if (inv.status === 'failed') {
+        if (inv.status === "failed") {
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -89,13 +93,17 @@ export function getInvitationsColumns(
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onResend(inv)}>
+                  Resend
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRevoke(inv)}>
+                  Revoke
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
         }
-        if (inv.status === 'initiated' || inv.status === 'sending') {
+        if (inv.status === "initiated" || inv.status === "sending") {
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -104,12 +112,14 @@ export function getInvitationsColumns(
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRevoke(inv)}>
+                  Revoke
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
         }
-        if (inv.status !== 'sent') return null;
+        if (inv.status !== "sent") return null;
         if (inv.isExpired) {
           return (
             <DropdownMenu>
@@ -119,8 +129,12 @@ export function getInvitationsColumns(
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onEditTeams(inv)}>Edit Teams</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onEditTeams(inv)}>
+                  Edit Teams
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onResend(inv)}>
+                  Resend
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           );
@@ -133,9 +147,15 @@ export function getInvitationsColumns(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEditTeams(inv)}>Edit Teams</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onResend(inv)}>Resend</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRevoke(inv)}>Revoke</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onEditTeams(inv)}>
+                Edit Teams
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onResend(inv)}>
+                Resend
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onRevoke(inv)}>
+                Revoke
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );

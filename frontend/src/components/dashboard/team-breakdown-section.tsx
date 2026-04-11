@@ -1,21 +1,24 @@
-import { useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState } from "react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useTeamBreakdown } from '@/lib/dashboard/use-team-breakdown';
-import { TeamBreakdownCard } from './team-breakdown-card';
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTeamBreakdown } from "@/lib/dashboard/use-team-breakdown";
+import { TeamBreakdownCard } from "./team-breakdown-card";
 
 interface TeamBreakdownSectionProps {
   enabled: boolean;
   isAdmin: boolean;
 }
 
-export function TeamBreakdownSection({ enabled, isAdmin }: TeamBreakdownSectionProps) {
+export function TeamBreakdownSection({
+  enabled,
+  isAdmin,
+}: TeamBreakdownSectionProps) {
   const { data, isLoading, isError } = useTeamBreakdown(enabled);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
@@ -35,7 +38,9 @@ export function TeamBreakdownSection({ enabled, isAdmin }: TeamBreakdownSectionP
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Team Breakdown</h2>
-        <p className="text-sm text-destructive">Failed to load team breakdown.</p>
+        <p className="text-sm text-destructive">
+          Failed to load team breakdown.
+        </p>
       </div>
     );
   }
@@ -62,7 +67,9 @@ export function TeamBreakdownSection({ enabled, isAdmin }: TeamBreakdownSectionP
           </SelectContent>
         </Select>
       </div>
-      {selectedTeam && <TeamBreakdownCard team={selectedTeam} isAdmin={isAdmin} />}
+      {selectedTeam && (
+        <TeamBreakdownCard team={selectedTeam} isAdmin={isAdmin} />
+      )}
     </div>
   );
 }

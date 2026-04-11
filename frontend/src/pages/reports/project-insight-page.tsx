@@ -1,7 +1,7 @@
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useReportDateRange } from '@/lib/reports/use-report-date-range';
-import { ReportPageShell } from '@/components/reports/report-page-shell';
-import { ProjectInsight } from '@/components/reports/project-insight';
+import { ProjectInsight } from "@/components/reports/project-insight";
+import { ReportPageShell } from "@/components/reports/report-page-shell";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import { useReportDateRange } from "@/lib/reports/use-report-date-range";
 
 export function ProjectInsightPage() {
   const { getParam, setParam, setParams } = usePaginationParams();

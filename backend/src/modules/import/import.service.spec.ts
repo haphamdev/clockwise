@@ -1,11 +1,13 @@
-import { ImportService } from './import.service';
-import { ImportJobRepository } from './import-job.repository';
-import { ImportJobStatus } from '@prisma/client';
-import { ImportProcessor, ImportCallerContext } from './interfaces/import-processor.interface';
+import { ImportJobStatus } from "@prisma/client";
+import { ImportService } from "./import.service";
+import {
+  ImportCallerContext,
+  ImportProcessor,
+} from "./interfaces/import-processor.interface";
 
 function makeQueue(overrides?: Record<string, unknown>) {
   return {
-    add: jest.fn().mockResolvedValue({ id: 'bull-job-1' }),
+    add: jest.fn().mockResolvedValue({ id: "bull-job-1" }),
     getJob: jest.fn(),
     client: Promise.resolve({
       set: jest.fn(),
@@ -18,10 +20,10 @@ function makeQueue(overrides?: Record<string, unknown>) {
 function makeRepository(overrides?: Record<string, unknown>) {
   return {
     create: jest.fn().mockResolvedValue({
-      id: 'import-job-1',
-      orgId: 'org-1',
-      userId: 'user-1',
-      type: 'time-log',
+      id: "import-job-1",
+      orgId: "org-1",
+      userId: "user-1",
+      type: "time-log",
       status: ImportJobStatus.pending,
       totalRows: 3,
       imported: 0,
@@ -36,26 +38,28 @@ function makeRepository(overrides?: Record<string, unknown>) {
   };
 }
 
-function makeCtx(overrides?: Partial<ImportCallerContext>): ImportCallerContext {
-  return { userId: 'user-1', orgId: 'org-1', isAdmin: false, ...overrides };
+function makeCtx(
+  overrides?: Partial<ImportCallerContext>,
+): ImportCallerContext {
+  return { userId: "user-1", orgId: "org-1", isAdmin: false, ...overrides };
 }
 
 function makeCachedPreview(overrides?: Record<string, unknown>) {
   return JSON.stringify({
-    type: 'time-log',
+    type: "time-log",
     executableRows: [
-      { rowNumber: 1, data: { date: '2026-01-01' } },
-      { rowNumber: 2, data: { date: '2026-01-02' } },
-      { rowNumber: 3, data: { date: '2026-01-03' } },
+      { rowNumber: 1, data: { date: "2026-01-01" } },
+      { rowNumber: 2, data: { date: "2026-01-02" } },
+      { rowNumber: 3, data: { date: "2026-01-03" } },
     ],
-    userId: 'user-1',
-    orgId: 'org-1',
+    userId: "user-1",
+    orgId: "org-1",
     isAdmin: false,
     ...overrides,
   });
 }
 
-describe('ImportService', () => {
+describe("ImportService", () => {
   let service: ImportService;
   let queue: ReturnType<typeof makeQueue>;
   let repo: ReturnType<typeof makeRepository>;
@@ -68,19 +72,19 @@ describe('ImportService', () => {
     service = new ImportService(queue as never, repo as never);
 
     processor = {
-      type: 'time-log',
+      type: "time-log",
       parseAndValidate: jest.fn(),
       execute: jest.fn(),
     };
     service.registerProcessor(processor);
   });
 
-  describe('admin-only guard', () => {
+  describe("admin-only guard", () => {
     let adminProcessor: jest.Mocked<ImportProcessor>;
 
     beforeEach(() => {
       adminProcessor = {
-        type: 'team',
+        type: "team",
         adminOnly: true,
         parseAndValidate: jest.fn(),
         execute: jest.fn(),
@@ -88,110 +92,118 @@ describe('ImportService', () => {
       service.registerProcessor(adminProcessor);
     });
 
-    it('should throw 403 on preview when non-admin uses admin-only type', async () => {
+    it("should throw 403 on preview when non-admin uses admin-only type", async () => {
       await expect(
-        service.preview('team', 'csv content', makeCtx({ isAdmin: false })),
-      ).rejects.toThrow('requires admin access');
+        service.preview("team", "csv content", makeCtx({ isAdmin: false })),
+      ).rejects.toThrow("requires admin access");
     });
 
-    it('should allow admin to preview admin-only type', async () => {
+    it("should allow admin to preview admin-only type", async () => {
       adminProcessor.parseAndValidate.mockResolvedValue({
-        validRows: [], executableRows: [], errors: [], totalRows: 0,
+        validRows: [],
+        executableRows: [],
+        errors: [],
+        totalRows: 0,
       });
       await expect(
-        service.preview('team', 'csv content', makeCtx({ isAdmin: true })),
+        service.preview("team", "csv content", makeCtx({ isAdmin: true })),
       ).resolves.toBeDefined();
     });
 
-    it('should throw 403 on execute when non-admin uses admin-only type', async () => {
+    it("should throw 403 on execute when non-admin uses admin-only type", async () => {
       const redisClient = await queue.client;
-      redisClient.getdel.mockResolvedValue(JSON.stringify({
-        type: 'team',
-        executableRows: [{ rowNumber: 1, data: {} }],
-        userId: 'user-1',
-        orgId: 'org-1',
-        isAdmin: false,
-      }));
+      redisClient.getdel.mockResolvedValue(
+        JSON.stringify({
+          type: "team",
+          executableRows: [{ rowNumber: 1, data: {} }],
+          userId: "user-1",
+          orgId: "org-1",
+          isAdmin: false,
+        }),
+      );
 
       await expect(
-        service.execute('team', 'token', makeCtx({ isAdmin: false })),
-      ).rejects.toThrow('requires admin access');
+        service.execute("team", "token", makeCtx({ isAdmin: false })),
+      ).rejects.toThrow("requires admin access");
     });
 
-    it('should not block non-admin-only types', async () => {
+    it("should not block non-admin-only types", async () => {
       processor.parseAndValidate.mockResolvedValue({
-        validRows: [], executableRows: [], errors: [], totalRows: 0,
+        validRows: [],
+        executableRows: [],
+        errors: [],
+        totalRows: 0,
       });
       await expect(
-        service.preview('time-log', 'csv content', makeCtx({ isAdmin: false })),
+        service.preview("time-log", "csv content", makeCtx({ isAdmin: false })),
       ).resolves.toBeDefined();
     });
   });
 
-  describe('execute', () => {
+  describe("execute", () => {
     beforeEach(async () => {
       const redisClient = await queue.client;
       redisClient.getdel.mockResolvedValue(makeCachedPreview());
     });
 
-    it('should create a DB row before queuing to BullMQ', async () => {
-      await service.execute('time-log', 'preview-token', makeCtx());
+    it("should create a DB row before queuing to BullMQ", async () => {
+      await service.execute("time-log", "preview-token", makeCtx());
 
       expect(repo.create).toHaveBeenCalledWith({
-        orgId: 'org-1',
-        userId: 'user-1',
-        type: 'time-log',
+        orgId: "org-1",
+        userId: "user-1",
+        type: "time-log",
         totalRows: 3,
       });
 
       expect(queue.add).toHaveBeenCalledWith(
-        'import',
-        expect.objectContaining({ importJobId: 'import-job-1' }),
+        "import",
+        expect.objectContaining({ importJobId: "import-job-1" }),
         expect.any(Object),
       );
     });
 
-    it('should store bullJobId after successful queuing', async () => {
-      await service.execute('time-log', 'token', makeCtx());
+    it("should store bullJobId after successful queuing", async () => {
+      await service.execute("time-log", "token", makeCtx());
 
-      expect(repo.updateStatus).toHaveBeenCalledWith('import-job-1', {
-        bullJobId: 'bull-job-1',
+      expect(repo.updateStatus).toHaveBeenCalledWith("import-job-1", {
+        bullJobId: "bull-job-1",
       });
     });
 
-    it('should mark DB row as failed when queue.add throws', async () => {
-      queue.add.mockRejectedValue(new Error('Redis connection lost'));
+    it("should mark DB row as failed when queue.add throws", async () => {
+      queue.add.mockRejectedValue(new Error("Redis connection lost"));
 
       await expect(
-        service.execute('time-log', 'token', makeCtx()),
-      ).rejects.toThrow('Redis connection lost');
+        service.execute("time-log", "token", makeCtx()),
+      ).rejects.toThrow("Redis connection lost");
 
-      expect(repo.updateStatus).toHaveBeenCalledWith('import-job-1', {
+      expect(repo.updateStatus).toHaveBeenCalledWith("import-job-1", {
         status: ImportJobStatus.failed,
         completedAt: expect.any(Date),
       });
     });
 
-    it('should mark DB row as failed when queue.add returns no job ID', async () => {
+    it("should mark DB row as failed when queue.add returns no job ID", async () => {
       queue.add.mockResolvedValue({ id: undefined });
 
       await expect(
-        service.execute('time-log', 'token', makeCtx()),
-      ).rejects.toThrow('Failed to create import job');
+        service.execute("time-log", "token", makeCtx()),
+      ).rejects.toThrow("Failed to create import job");
 
-      expect(repo.updateStatus).toHaveBeenCalledWith('import-job-1', {
+      expect(repo.updateStatus).toHaveBeenCalledWith("import-job-1", {
         status: ImportJobStatus.failed,
         completedAt: expect.any(Date),
       });
     });
   });
 
-  describe('listJobs', () => {
-    it('should delegate to repository and append pagination info', async () => {
+  describe("listJobs", () => {
+    it("should delegate to repository and append pagination info", async () => {
       const jobs = [
         {
-          id: 'j1',
-          type: 'time-log',
+          id: "j1",
+          type: "time-log",
           status: ImportJobStatus.completed,
           totalRows: 5,
           imported: 5,
@@ -202,57 +214,57 @@ describe('ImportService', () => {
       ];
       repo.findByUser.mockResolvedValue({ data: jobs, total: 1 });
 
-      const result = await service.listJobs('user-1', 'org-1', false, {
+      const result = await service.listJobs("user-1", "org-1", false, {
         page: 1,
         limit: 20,
       });
 
-      expect(repo.findByUser).toHaveBeenCalledWith('user-1', 'org-1', false, {
+      expect(repo.findByUser).toHaveBeenCalledWith("user-1", "org-1", false, {
         page: 1,
         limit: 20,
       });
       expect(result).toEqual({ data: jobs, total: 1, page: 1, limit: 20 });
     });
 
-    it('should pass type filter when provided', async () => {
+    it("should pass type filter when provided", async () => {
       repo.findByUser.mockResolvedValue({ data: [], total: 0 });
 
-      await service.listJobs('user-1', 'org-1', false, {
+      await service.listJobs("user-1", "org-1", false, {
         page: 1,
         limit: 20,
-        type: 'time-log',
+        type: "time-log",
       });
 
-      expect(repo.findByUser).toHaveBeenCalledWith('user-1', 'org-1', false, {
+      expect(repo.findByUser).toHaveBeenCalledWith("user-1", "org-1", false, {
         page: 1,
         limit: 20,
-        type: 'time-log',
+        type: "time-log",
       });
     });
 
-    it('should pass isAdmin=true to repository for admin users', async () => {
+    it("should pass isAdmin=true to repository for admin users", async () => {
       repo.findByUser.mockResolvedValue({ data: [], total: 0 });
 
-      await service.listJobs('user-1', 'org-1', true, { page: 1, limit: 10 });
+      await service.listJobs("user-1", "org-1", true, { page: 1, limit: 10 });
 
-      expect(repo.findByUser).toHaveBeenCalledWith('user-1', 'org-1', true, {
+      expect(repo.findByUser).toHaveBeenCalledWith("user-1", "org-1", true, {
         page: 1,
         limit: 10,
       });
     });
   });
 
-  describe('updateJobRecord', () => {
-    it('should delegate to repository', async () => {
+  describe("updateJobRecord", () => {
+    it("should delegate to repository", async () => {
       const completedAt = new Date();
-      await service.updateJobRecord('job-1', {
+      await service.updateJobRecord("job-1", {
         status: ImportJobStatus.completed,
         imported: 5,
         errorCount: 1,
         completedAt,
       });
 
-      expect(repo.updateStatus).toHaveBeenCalledWith('job-1', {
+      expect(repo.updateStatus).toHaveBeenCalledWith("job-1", {
         status: ImportJobStatus.completed,
         imported: 5,
         errorCount: 1,

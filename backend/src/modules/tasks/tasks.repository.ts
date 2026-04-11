@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { TaskEntity } from './entities/task.entity';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import { TaskEntity } from "./entities/task.entity";
 
 @Injectable()
 export class TasksRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByLabel(projectId: string, labelNormalized: string): Promise<TaskEntity | null> {
+  async findByLabel(
+    projectId: string,
+    labelNormalized: string,
+  ): Promise<TaskEntity | null> {
     const task = await this.prisma.task.findUnique({
       where: { projectId_labelNormalized: { projectId, labelNormalized } },
     });
@@ -31,16 +34,14 @@ export class TasksRepository {
     const where: Prisma.TaskWhereInput = {
       projectId,
       ...(options.q && {
-        label: { contains: options.q, mode: 'insensitive' as const },
+        label: { contains: options.q, mode: "insensitive" as const },
       }),
     };
 
     const [tasks, total] = await Promise.all([
       this.prisma.task.findMany({
         where,
-        orderBy: [
-          { createdAt: 'desc' },
-        ],
+        orderBy: [{ createdAt: "desc" }],
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),

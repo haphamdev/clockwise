@@ -1,35 +1,35 @@
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Combobox } from '@/components/ui/combobox';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import type { ComboboxOption } from "@/components/ui/combobox";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
-import { useCreateProject } from '@/lib/projects/use-create-project';
-import { useTeams } from '@/lib/teams/use-teams';
-import { useAuth } from '@/lib/auth/use-auth';
-import type { ComboboxOption } from '@/components/ui/combobox';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/lib/auth/use-auth";
+import { useCreateProject } from "@/lib/projects/use-create-project";
+import { useTeams } from "@/lib/teams/use-teams";
 
 const schema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
+  name: z.string().min(1, "Name is required").max(255),
   description: z.string().optional(),
-  teamIds: z.array(z.string()).min(1, 'At least one team is required'),
+  teamIds: z.array(z.string()).min(1, "At least one team is required"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -39,11 +39,14 @@ interface CreateProjectSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetProps) {
+export function CreateProjectSheet({
+  open,
+  onOpenChange,
+}: CreateProjectSheetProps) {
   const { user } = useAuth();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', description: '', teamIds: [] },
+    defaultValues: { name: "", description: "", teamIds: [] },
   });
   const createProject = useCreateProject();
   const { data: teamsData } = useTeams({ limit: 100 });
@@ -52,8 +55,9 @@ export function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetPro
     .filter((t) => {
       if (user?.isAdmin) return !t.isArchived;
       // Manager: only teams they manage
-      return !t.isArchived && user?.teams.some(
-        (tm) => tm.teamId === t.id && tm.role === 'manager',
+      return (
+        !t.isArchived &&
+        user?.teams.some((tm) => tm.teamId === t.id && tm.role === "manager")
       );
     })
     .map((t) => ({ value: t.id, label: t.name }));
@@ -72,10 +76,15 @@ export function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetPro
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Create Project</SheetTitle>
-          <SheetDescription>Add a new project to your organization.</SheetDescription>
+          <SheetDescription>
+            Add a new project to your organization.
+          </SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-6 space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -125,8 +134,12 @@ export function CreateProjectSheet({ open, onOpenChange }: CreateProjectSheetPro
                 </div>
               )}
             />
-            <Button type="submit" disabled={createProject.isPending} className="w-full">
-              {createProject.isPending ? 'Creating...' : 'Create Project'}
+            <Button
+              type="submit"
+              disabled={createProject.isPending}
+              className="w-full"
+            >
+              {createProject.isPending ? "Creating..." : "Create Project"}
             </Button>
           </form>
         </Form>

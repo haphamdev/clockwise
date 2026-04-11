@@ -1,5 +1,5 @@
-import { Loader2 } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export function ImportingStep({
   importingText,

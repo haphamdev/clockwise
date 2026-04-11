@@ -3,19 +3,19 @@ export interface OrgSettingsEntity {
   expectedHoursPerWeek: number;
   dailyWarningThreshold: number;
   weeklyWarningThreshold: number;
-  dateFormat: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
-  timeFormat: '12h' | '24h';
+  dateFormat: "YYYY-MM-DD" | "DD/MM/YYYY" | "MM/DD/YYYY";
+  timeFormat: "12h" | "24h";
   csvMaxRows: number;
   trackSaturday: boolean;
   trackSunday: boolean;
 }
 
-export const DEFAULT_ORG_SETTINGS: Omit<OrgSettingsEntity, 'orgName'> = {
+export const DEFAULT_ORG_SETTINGS: Omit<OrgSettingsEntity, "orgName"> = {
   expectedHoursPerWeek: 40,
   dailyWarningThreshold: 12,
   weeklyWarningThreshold: 60,
-  dateFormat: 'YYYY-MM-DD',
-  timeFormat: '12h',
+  dateFormat: "YYYY-MM-DD",
+  timeFormat: "12h",
   csvMaxRows: 500,
   trackSaturday: false,
   trackSunday: false,

@@ -1,14 +1,14 @@
-import { useMemo } from 'react';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Combobox } from '@/components/ui/combobox';
-import { FilterBar } from '@/components/ui/filter-bar';
-import { TimeWindowPicker } from '@/components/ui/time-window-picker';
-import { useProjects } from '@/lib/projects/use-projects';
-import { useTeams } from '@/lib/teams/use-teams';
-import { useUsers } from '@/lib/users/use-users';
-import type { ComboboxOption } from '@/components/ui/combobox';
-import type { TimeWindow } from '@/lib/dates/time-window-utils';
+import { useMemo } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ComboboxOption } from "@/components/ui/combobox";
+import { Combobox } from "@/components/ui/combobox";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { Label } from "@/components/ui/label";
+import { TimeWindowPicker } from "@/components/ui/time-window-picker";
+import type { TimeWindow } from "@/lib/dates/time-window-utils";
+import { useProjects } from "@/lib/projects/use-projects";
+import { useTeams } from "@/lib/teams/use-teams";
+import { useUsers } from "@/lib/users/use-users";
 
 interface TimeLogsFilterBarProps {
   dateFrom: string;
@@ -45,10 +45,12 @@ export function TimeLogsFilterBar({
   const { data: teamsData } = useTeams({ limit: 100 });
   const { data: usersData } = useUsers({ limit: 100 });
 
-  const projectOptions: ComboboxOption[] = (projectsData?.data ?? []).map((p) => ({
-    value: p.id,
-    label: p.name,
-  }));
+  const projectOptions: ComboboxOption[] = (projectsData?.data ?? []).map(
+    (p) => ({
+      value: p.id,
+      label: p.name,
+    }),
+  );
 
   const teamOptions: ComboboxOption[] = (teamsData?.data ?? [])
     .filter((t) => !t.isArchived)
@@ -73,7 +75,9 @@ export function TimeLogsFilterBar({
     if (value.length > 0 && userIds.length > 0) {
       const allUsers = usersData?.data ?? [];
       const validUserIds = allUsers
-        .filter((u) => u.teamMemberships.some((tm) => value.includes(tm.teamId)))
+        .filter((u) =>
+          u.teamMemberships.some((tm) => value.includes(tm.teamId)),
+        )
         .map((u) => u.id);
       const filtered = userIds.filter((id) => validUserIds.includes(id));
       if (filtered.length !== userIds.length) {
@@ -138,7 +142,9 @@ export function TimeLogsFilterBar({
         <Checkbox
           id="includeArchived"
           checked={includeArchived}
-          onCheckedChange={(checked) => onIncludeArchivedChange(checked === true)}
+          onCheckedChange={(checked) =>
+            onIncludeArchivedChange(checked === true)
+          }
         />
         <Label htmlFor="includeArchived" className="text-xs cursor-pointer">
           Show archived

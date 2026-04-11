@@ -1,22 +1,22 @@
-import type { ReportGranularity } from './types';
-import type { ChartMode } from '@/components/reports/chart-toolbar';
+import type { ChartMode } from "@/components/reports/chart-toolbar";
+import type { ReportGranularity } from "./types";
 
 /**
  * Granularity ↔ single-char URL codes.
  * URL uses compact codes (d, w, m, q) to keep params short.
  */
 const GRAN_TO_CODE: Record<ReportGranularity, string> = {
-  day: 'd',
-  week: 'w',
-  month: 'm',
-  quarter: 'q',
+  day: "d",
+  week: "w",
+  month: "m",
+  quarter: "q",
 };
 
 const CODE_TO_GRAN: Record<string, ReportGranularity> = {
-  d: 'day',
-  w: 'week',
-  m: 'month',
-  q: 'quarter',
+  d: "day",
+  w: "week",
+  m: "month",
+  q: "quarter",
 };
 
 export function granularityToCode(gran: ReportGranularity): string {
@@ -33,22 +33,25 @@ export function codeToGranularity(code: string): ReportGranularity | undefined {
  * e.g. "g,s" → chart 0 = grouped, chart 1 = stacked.
  */
 const MODE_TO_CODE: Record<ChartMode, string> = {
-  stacked: 's',
-  grouped: 'g',
+  stacked: "s",
+  grouped: "g",
 };
 
 const CODE_TO_MODE: Record<string, ChartMode> = {
-  s: 'stacked',
-  g: 'grouped',
+  s: "stacked",
+  g: "grouped",
 };
 
 /**
  * Parse a comma-separated chart mode param into an array of ChartMode values.
  * Missing or invalid positions fall back to the corresponding default.
  */
-export function parseChartModes(param: string, defaults: ChartMode[]): ChartMode[] {
+export function parseChartModes(
+  param: string,
+  defaults: ChartMode[],
+): ChartMode[] {
   if (!param) return [...defaults];
-  const codes = param.split(',');
+  const codes = param.split(",");
   return defaults.map((def, i) => CODE_TO_MODE[codes[i]] ?? def);
 }
 
@@ -56,7 +59,7 @@ export function parseChartModes(param: string, defaults: ChartMode[]): ChartMode
  * Serialize an array of ChartMode values into a comma-separated URL param.
  */
 export function serializeChartModes(modes: ChartMode[]): string {
-  return modes.map((m) => MODE_TO_CODE[m]).join(',');
+  return modes.map((m) => MODE_TO_CODE[m]).join(",");
 }
 
 /**
@@ -64,5 +67,5 @@ export function serializeChartModes(modes: ChartMode[]): string {
  * Returns empty array for empty/falsy input.
  */
 export function parseIds(value: string): string[] {
-  return value ? value.split(',').filter(Boolean) : [];
+  return value ? value.split(",").filter(Boolean) : [];
 }

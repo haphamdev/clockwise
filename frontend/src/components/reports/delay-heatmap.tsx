@@ -1,22 +1,22 @@
-import { Fragment, useMemo } from 'react';
+import { Fragment, useMemo } from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { UserLink } from '@/components/users/user-link';
-import type { DelayHeatmapCell } from '@/lib/reports/types';
+} from "@/components/ui/tooltip";
+import { UserLink } from "@/components/users/user-link";
+import type { DelayHeatmapCell } from "@/lib/reports/types";
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const COLOR_BANDS = [
-  { max: 1, color: 'oklch(0.82 0.15 145)', label: '0d' },
-  { max: 2, color: 'oklch(0.84 0.12 128)', label: '1d' },
-  { max: 4, color: 'oklch(0.86 0.10 95)', label: '2-3d' },
-  { max: 6, color: 'oklch(0.78 0.14 65)', label: '4-5d' },
-  { max: 8, color: 'oklch(0.70 0.16 40)', label: '6-7d' },
-  { max: Infinity, color: 'oklch(0.58 0.18 25)', label: '8d+' },
+  { max: 1, color: "oklch(0.82 0.15 145)", label: "0d" },
+  { max: 2, color: "oklch(0.84 0.12 128)", label: "1d" },
+  { max: 4, color: "oklch(0.86 0.10 95)", label: "2-3d" },
+  { max: 6, color: "oklch(0.78 0.14 65)", label: "4-5d" },
+  { max: 8, color: "oklch(0.70 0.16 40)", label: "6-7d" },
+  { max: Infinity, color: "oklch(0.58 0.18 25)", label: "8d+" },
 ] as const;
 
 function getDelayColor(p75: number): string {
@@ -61,12 +61,15 @@ export function DelayHeatmap({ cells, minEntries }: DelayHeatmapProps) {
       <div className="flex justify-end overflow-x-auto">
         <div
           className="grid gap-1 text-xs"
-          style={{ gridTemplateColumns: 'auto repeat(7, 40px)' }}
+          style={{ gridTemplateColumns: "auto repeat(7, 40px)" }}
         >
           {/* Header row */}
           <div />
           {WEEKDAYS.map((d) => (
-            <div key={d} className="text-center font-medium text-muted-foreground">
+            <div
+              key={d}
+              className="text-center font-medium text-muted-foreground"
+            >
               {d}
             </div>
           ))}
@@ -77,24 +80,19 @@ export function DelayHeatmap({ cells, minEntries }: DelayHeatmapProps) {
               <div className="max-w-[120px] truncate pr-2 leading-[28px]">
                 <UserLink id={userId} name={userName} />
               </div>
-              {WEEKDAYS.map((_, wi) => {
+              {WEEKDAYS.map((dayName, wi) => {
                 const cell = grid.get(`${userId}:${wi}`);
                 const hasData = cell && cell.entryCount >= minEntries;
                 return (
-                  <Tooltip key={`${userId}:${wi}`}>
+                  <Tooltip key={`${userId}:${dayName}`}>
                     <TooltipTrigger asChild>
                       <div
-                        role="gridcell"
-                        tabIndex={0}
-                        aria-label={
+                        className={`h-7 w-10 rounded ${!hasData ? "bg-muted" : ""}`}
+                        style={
                           hasData
-                            ? cell.p75Delay < 0.05
-                              ? `${userName}, ${WEEKDAYS[wi]}: same day (${cell.entryCount} entries)`
-                              : `${userName}, ${WEEKDAYS[wi]}: ${cell.p75Delay.toFixed(1)} days delay (${cell.entryCount} entries)`
-                            : `${userName}, ${WEEKDAYS[wi]}: not enough data`
+                            ? { backgroundColor: getDelayColor(cell.p75Delay) }
+                            : undefined
                         }
-                        className={`h-7 w-10 rounded ${!hasData ? 'bg-muted' : ''}`}
-                        style={hasData ? { backgroundColor: getDelayColor(cell.p75Delay) } : undefined}
                       />
                     </TooltipTrigger>
                     <TooltipContent>

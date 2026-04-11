@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useEffect, useState } from "react";
+import { Combobox } from "@/components/ui/combobox";
+import { FilterBar } from "@/components/ui/filter-bar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Combobox } from '@/components/ui/combobox';
-import { FilterBar } from '@/components/ui/filter-bar';
-import { useTeams } from '@/lib/teams/use-teams';
+} from "@/components/ui/select";
+import { useTeams } from "@/lib/teams/use-teams";
 
 interface UsersFilterBarProps {
   search: string;
@@ -42,7 +42,7 @@ export function UsersFilterBar({
   }, [search]);
 
   const teamOptions = [
-    { value: 'all', label: 'All teams' },
+    { value: "all", label: "All teams" },
     ...(teamsData?.data.map((t) => ({ value: t.id, label: t.name })) ?? []),
   ];
 
@@ -59,7 +59,10 @@ export function UsersFilterBar({
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs">Status</Label>
-        <Select value={status || 'all'} onValueChange={(v) => onStatusChange(v === 'all' ? '' : v)}>
+        <Select
+          value={status || "all"}
+          onValueChange={(v) => onStatusChange(v === "all" ? "" : v)}
+        >
           <SelectTrigger className="w-[140px]">
             <SelectValue />
           </SelectTrigger>
@@ -75,8 +78,8 @@ export function UsersFilterBar({
         <Label className="text-xs">Team</Label>
         <Combobox
           options={teamOptions}
-          value={teamId || 'all'}
-          onChange={(v) => onTeamChange(v === 'all' ? '' : v)}
+          value={teamId || "all"}
+          onChange={(v) => onTeamChange(v === "all" ? "" : v)}
           placeholder="All teams"
           searchPlaceholder="Search teams..."
           emptyText="No teams found."

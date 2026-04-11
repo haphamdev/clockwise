@@ -1,4 +1,4 @@
 export const orgKeys = {
-  all: ['org'] as const,
-  settings: () => [...orgKeys.all, 'settings'] as const,
+  all: ["org"] as const,
+  settings: () => [...orgKeys.all, "settings"] as const,
 };

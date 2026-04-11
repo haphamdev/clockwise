@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { MoreHorizontal } from 'lucide-react';
-
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,11 +11,10 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/dropdown-menu";
 
 const meta: Meta<typeof DropdownMenu> = {
-  title: 'UI/DropdownMenu',
+  title: "UI/DropdownMenu",
   component: DropdownMenu,
 };
 
@@ -33,9 +32,7 @@ export const Default: Story = {
         <DropdownMenuSeparator />
         <DropdownMenuItem>Edit</DropdownMenuItem>
         <DropdownMenuItem>Duplicate</DropdownMenuItem>
-        <DropdownMenuItem className="text-destructive">
-          Delete
-        </DropdownMenuItem>
+        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ),
@@ -62,9 +59,7 @@ export const WithSubMenu: Story = {
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-destructive">
-          Delete
-        </DropdownMenuItem>
+        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   ),

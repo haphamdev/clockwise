@@ -1,4 +1,4 @@
-import type { PaginationParams } from '@/lib/types';
+import type { PaginationParams } from "@/lib/types";
 
 export interface TimeLogTask {
   id: string;
@@ -20,7 +20,7 @@ export interface TimeLogProject {
   status: string;
 }
 
-export type TimeLogStatus = 'active' | 'archived';
+export type TimeLogStatus = "active" | "archived";
 
 export interface TimeLog {
   id: string;
@@ -38,7 +38,7 @@ export interface TimeLog {
 }
 
 export interface Warning {
-  type: 'daily_limit' | 'weekly_limit';
+  type: "daily_limit" | "weekly_limit";
   message: string;
   currentHours: number;
   threshold: number;

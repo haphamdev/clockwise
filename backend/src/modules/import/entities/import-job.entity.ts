@@ -1,4 +1,4 @@
-import { ImportJobStatus } from '@prisma/client';
+import { ImportJobStatus } from "@prisma/client";
 
 export interface ImportJobEntity {
   id: string;

@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
 
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-const filterRowClasses = 'flex flex-wrap items-end gap-4';
+const filterRowClasses = "flex flex-wrap items-end gap-4";
 
 interface FilterBarProps {
   children: React.ReactNode;
@@ -12,7 +12,11 @@ interface FilterBarProps {
   className?: string;
 }
 
-export function FilterBar({ children, collapsible = false, className }: FilterBarProps) {
+export function FilterBar({
+  children,
+  collapsible = false,
+  className,
+}: FilterBarProps) {
   const [open, setOpen] = useState(true);
 
   if (!collapsible) {

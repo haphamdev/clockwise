@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Invitation, InvitationTeamAssignment } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { AuditLogService } from '../audit-log/audit-log.service';
+import { Injectable } from "@nestjs/common";
+import { Invitation, InvitationTeamAssignment } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import { AuditLogService } from "../audit-log/audit-log.service";
 import {
   InvitationEntity,
   InvitationTeamAssignmentEntity,
-} from './entities/invitation.entity';
+} from "./entities/invitation.entity";
 
 type InvitationWithRelations = Invitation & {
   sender: { name: string };
@@ -36,8 +36,8 @@ export class InvitationsRepository {
     invitedBy: string;
     token: string;
     expiresAt: Date;
-    status: InvitationEntity['status'];
-    teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>;
+    status: InvitationEntity["status"];
+    teamAssignments: Array<{ teamId: string; role: "manager" | "member" }>;
   }): Promise<InvitationEntity> {
     const invitation = await this.prisma.invitation.create({
       data: {
@@ -66,14 +66,16 @@ export class InvitationsRepository {
   ): Promise<{ data: InvitationEntity[]; total: number }> {
     const where = {
       orgId,
-      ...(options.status && { status: options.status as InvitationEntity['status'] }),
+      ...(options.status && {
+        status: options.status as InvitationEntity["status"],
+      }),
     };
 
     const [invitations, total] = await Promise.all([
       this.prisma.invitation.findMany({
         where,
         include: INVITATION_INCLUDE,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -92,7 +94,9 @@ export class InvitationsRepository {
       include: INVITATION_INCLUDE,
     });
 
-    return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
+    return invitation
+      ? this.toEntity(invitation as InvitationWithRelations)
+      : null;
   }
 
   async findByToken(token: string): Promise<InvitationEntity | null> {
@@ -101,32 +105,55 @@ export class InvitationsRepository {
       include: INVITATION_INCLUDE,
     });
 
-    return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
+    return invitation
+      ? this.toEntity(invitation as InvitationWithRelations)
+      : null;
   }
 
-  async findActiveByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
+  async findActiveByEmail(
+    orgId: string,
+    email: string,
+  ): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { orgId, email, status: { in: ['initiated', 'sending', 'sent', 'failed'] }, expiresAt: { gt: new Date() } },
+      where: {
+        orgId,
+        email,
+        status: { in: ["initiated", "sending", "sent", "failed"] },
+        expiresAt: { gt: new Date() },
+      },
       include: INVITATION_INCLUDE,
     });
 
-    return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
+    return invitation
+      ? this.toEntity(invitation as InvitationWithRelations)
+      : null;
   }
 
   /**
    * Finds an active, non-expired invitation by email without org scoping.
    * Used during OAuth callback where only the email is known.
    */
-  async findActiveByEmailAnyOrg(email: string): Promise<InvitationEntity | null> {
+  async findActiveByEmailAnyOrg(
+    email: string,
+  ): Promise<InvitationEntity | null> {
     const invitation = await this.prisma.invitation.findFirst({
-      where: { email, status: { in: ['initiated', 'sending', 'sent', 'failed'] }, expiresAt: { gt: new Date() } },
+      where: {
+        email,
+        status: { in: ["initiated", "sending", "sent", "failed"] },
+        expiresAt: { gt: new Date() },
+      },
       include: INVITATION_INCLUDE,
     });
 
-    return invitation ? this.toEntity(invitation as InvitationWithRelations) : null;
+    return invitation
+      ? this.toEntity(invitation as InvitationWithRelations)
+      : null;
   }
 
-  async updateStatus(id: string, status: InvitationEntity['status']): Promise<void> {
+  async updateStatus(
+    id: string,
+    status: InvitationEntity["status"],
+  ): Promise<void> {
     await this.prisma.invitation.update({
       where: { id },
       data: { status },
@@ -139,8 +166,8 @@ export class InvitationsRepository {
    */
   async updateStatusIf(
     id: string,
-    expectedStatus: InvitationEntity['status'],
-    newStatus: InvitationEntity['status'],
+    expectedStatus: InvitationEntity["status"],
+    newStatus: InvitationEntity["status"],
   ): Promise<boolean> {
     const result = await this.prisma.invitation.updateMany({
       where: { id, status: expectedStatus },
@@ -168,7 +195,7 @@ export class InvitationsRepository {
     await this.prisma.$transaction(async (tx) => {
       await tx.invitation.update({
         where: { id: invitationId },
-        data: { status: 'accepted' },
+        data: { status: "accepted" },
       });
 
       for (const ta of invitation.teamAssignments) {
@@ -187,11 +214,31 @@ export class InvitationsRepository {
 
       const auditInputs = invitation.teamAssignments.flatMap((ta) => {
         const meta = {
-          after: { userId, userName, role: ta.role, teamId: ta.team.id, teamName: ta.team.name },
+          after: {
+            userId,
+            userName,
+            role: ta.role,
+            teamId: ta.team.id,
+            teamName: ta.team.name,
+          },
         };
         return [
-          { orgId: invitation.orgId, entityType: 'team' as const, entityId: ta.team.id, action: 'member_added', performedBy: 'system', metadata: meta },
-          { orgId: invitation.orgId, entityType: 'user' as const, entityId: userId, action: 'member_added', performedBy: 'system', metadata: meta },
+          {
+            orgId: invitation.orgId,
+            entityType: "team" as const,
+            entityId: ta.team.id,
+            action: "member_added",
+            performedBy: "system",
+            metadata: meta,
+          },
+          {
+            orgId: invitation.orgId,
+            entityType: "user" as const,
+            entityId: userId,
+            action: "member_added",
+            performedBy: "system",
+            metadata: meta,
+          },
         ];
       });
 
@@ -201,8 +248,12 @@ export class InvitationsRepository {
 
   async updateTeamAssignments(
     invitationId: string,
-    teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
-    resend?: { token: string; expiresAt: Date; status: InvitationEntity['status'] },
+    teamAssignments: Array<{ teamId: string; role: "manager" | "member" }>,
+    resend?: {
+      token: string;
+      expiresAt: Date;
+      status: InvitationEntity["status"];
+    },
   ): Promise<InvitationEntity> {
     const invitation = await this.prisma.$transaction(async (tx) => {
       await tx.invitationTeamAssignment.deleteMany({ where: { invitationId } });
@@ -218,7 +269,11 @@ export class InvitationsRepository {
       if (resend) {
         await tx.invitation.update({
           where: { id: invitationId },
-          data: { token: resend.token, expiresAt: resend.expiresAt, status: resend.status },
+          data: {
+            token: resend.token,
+            expiresAt: resend.expiresAt,
+            status: resend.status,
+          },
         });
       }
 
@@ -227,7 +282,7 @@ export class InvitationsRepository {
         include: INVITATION_INCLUDE,
       });
 
-      if (!result) throw new Error('Invitation not found after update');
+      if (!result) throw new Error("Invitation not found after update");
       return result;
     });
 
@@ -238,7 +293,7 @@ export class InvitationsRepository {
     id: string,
     token: string,
     expiresAt: Date,
-    status?: InvitationEntity['status'],
+    status?: InvitationEntity["status"],
   ): Promise<InvitationEntity> {
     const invitation = await this.prisma.invitation.update({
       where: { id },
@@ -258,13 +313,13 @@ export class InvitationsRepository {
       invitedByName: invitation.sender.name,
       token: invitation.token,
       expiresAt: invitation.expiresAt,
-      status: invitation.status as InvitationEntity['status'],
+      status: invitation.status as InvitationEntity["status"],
       createdAt: invitation.createdAt,
       teamAssignments: invitation.teamAssignments.map(
         (ta): InvitationTeamAssignmentEntity => ({
           teamId: ta.team.id,
           teamName: ta.team.name,
-          role: ta.role as 'manager' | 'member',
+          role: ta.role as "manager" | "member",
         }),
       ),
     };

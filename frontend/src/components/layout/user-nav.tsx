@@ -1,7 +1,6 @@
-import { Link } from 'react-router-dom';
-import { LogOut, Settings, User } from 'lucide-react';
-import { useAuth } from '@/lib/auth/use-auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { LogOut, Settings, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,13 +8,14 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/lib/auth/use-auth";
 
 function getInitials(name: string) {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -30,9 +30,13 @@ export function UserNav() {
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-bg-light transition-colors outline-none">
         <Avatar className="h-7 w-7">
           <AvatarImage src={user.avatarUrl ?? undefined} alt={user.name} />
-          <AvatarFallback className="text-xs">{getInitials(user.name)}</AvatarFallback>
+          <AvatarFallback className="text-xs">
+            {getInitials(user.name)}
+          </AvatarFallback>
         </Avatar>
-        <span className="hidden text-sm font-medium sm:inline-block">{user.name}</span>
+        <span className="hidden text-sm font-medium sm:inline-block">
+          {user.name}
+        </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel className="font-normal">

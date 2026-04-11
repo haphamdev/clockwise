@@ -1,19 +1,34 @@
-import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, User, Users, FolderKanban } from 'lucide-react';
-import { useAuth } from '@/lib/auth/use-auth';
-import { isAdminOrManager } from '@/lib/auth/role-utils';
-import { navLinkClasses } from '@/components/layout/nav-link-classes';
+import { BarChart3, FolderKanban, User, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { navLinkClasses } from "@/components/layout/nav-link-classes";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
+import { isAdminOrManager } from "@/lib/auth/role-utils";
+import { useAuth } from "@/lib/auth/use-auth";
 
 const reportLinks = [
-  { label: 'Personal Insight', href: '/reports/personal', icon: User, requireManager: false },
-  { label: 'Team Insight', href: '/reports/team', icon: Users, requireManager: true },
-  { label: 'Project Insight', href: '/reports/project', icon: FolderKanban, requireManager: true },
+  {
+    label: "Personal Insight",
+    href: "/reports/personal",
+    icon: User,
+    requireManager: false,
+  },
+  {
+    label: "Team Insight",
+    href: "/reports/team",
+    icon: Users,
+    requireManager: true,
+  },
+  {
+    label: "Project Insight",
+    href: "/reports/project",
+    icon: FolderKanban,
+    requireManager: true,
+  },
 ];
 
 export function ReportsNavDropdown() {
@@ -21,7 +36,7 @@ export function ReportsNavDropdown() {
   const { pathname } = useLocation();
 
   const showManagerLinks = user ? isAdminOrManager(user) : false;
-  const isActive = pathname.startsWith('/reports');
+  const isActive = pathname.startsWith("/reports");
 
   const visibleLinks = reportLinks.filter(
     (link) => !link.requireManager || showManagerLinks,

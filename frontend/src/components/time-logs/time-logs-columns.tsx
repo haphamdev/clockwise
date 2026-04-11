@@ -1,18 +1,18 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { Loader2, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { TaskDisplay } from '@/components/ui/task-display';
-import { TimeDisplay } from '@/components/ui/time-display';
-import { ProjectLink } from '@/components/projects/project-link';
-import { UserLink } from '@/components/users/user-link';
+import type { ColumnDef } from "@tanstack/react-table";
+import { Loader2, MoreHorizontal } from "lucide-react";
+import { ProjectLink } from "@/components/projects/project-link";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import type { TimeLog } from '@/lib/time-logs/types';
+} from "@/components/ui/dropdown-menu";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { TaskDisplay } from "@/components/ui/task-display";
+import { TimeDisplay } from "@/components/ui/time-display";
+import { UserLink } from "@/components/users/user-link";
+import type { TimeLog } from "@/lib/time-logs/types";
 
 interface TimeLogColumnActions {
   onView: (timeLog: TimeLog) => void;
@@ -23,16 +23,20 @@ interface TimeLogColumnActions {
   actionPendingId?: string;
 }
 
-export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<TimeLog>[] {
+export function getTimeLogsColumns(
+  actions: TimeLogColumnActions,
+): ColumnDef<TimeLog>[] {
   const columns: ColumnDef<TimeLog>[] = [
     {
-      accessorKey: 'date',
-      header: 'Date',
-      cell: ({ row }) => <TimeDisplay value={row.original.date} mode="date" absolute />,
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => (
+        <TimeDisplay value={row.original.date} mode="date" absolute />
+      ),
     },
     {
-      accessorKey: 'project',
-      header: 'Project',
+      accessorKey: "project",
+      header: "Project",
       cell: ({ row }) => {
         const project = row.original.project;
         return (
@@ -46,8 +50,8 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
       },
     },
     {
-      id: 'tasks',
-      header: 'Tasks',
+      id: "tasks",
+      header: "Tasks",
       cell: ({ row }) => (
         <div className="flex flex-wrap gap-1">
           {row.original.tasks.map((t) => (
@@ -57,18 +61,18 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
       ),
     },
     {
-      accessorKey: 'hours',
-      header: 'Hours',
+      accessorKey: "hours",
+      header: "Hours",
       cell: ({ row }) => (
         <span className="font-mono">{row.original.hours}h</span>
       ),
     },
     {
-      accessorKey: 'notes',
-      header: 'Notes',
+      accessorKey: "notes",
+      header: "Notes",
       cell: ({ row }) => (
         <span className="text-muted-foreground line-clamp-1 max-w-[200px]">
-          {row.original.notes || '\u2014'}
+          {row.original.notes || "\u2014"}
         </span>
       ),
     },
@@ -76,8 +80,8 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
 
   if (actions.showUser) {
     columns.push({
-      id: 'user',
-      header: 'User',
+      id: "user",
+      header: "User",
       cell: ({ row }) => {
         const user = row.original.user;
         return (
@@ -94,12 +98,12 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
 
   columns.push(
     {
-      id: 'status',
-      header: 'Status',
+      id: "status",
+      header: "Status",
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
-      id: 'actions',
+      id: "actions",
       cell: ({ row }) => {
         const timeLog = row.original;
         if (actions.actionPendingId === timeLog.id) {
@@ -121,7 +125,7 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
               <DropdownMenuItem onClick={() => actions.onView(timeLog)}>
                 View Details
               </DropdownMenuItem>
-              {timeLog.status === 'active' && (
+              {timeLog.status === "active" && (
                 <>
                   <DropdownMenuItem onClick={() => actions.onEdit(timeLog)}>
                     Edit
@@ -131,7 +135,7 @@ export function getTimeLogsColumns(actions: TimeLogColumnActions): ColumnDef<Tim
                   </DropdownMenuItem>
                 </>
               )}
-              {timeLog.status === 'archived' && (
+              {timeLog.status === "archived" && (
                 <DropdownMenuItem onClick={() => actions.onUnarchive(timeLog)}>
                   Unarchive
                 </DropdownMenuItem>

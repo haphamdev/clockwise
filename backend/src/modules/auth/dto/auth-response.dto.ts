@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class TeamMembershipDto {
   @ApiProperty()
@@ -7,7 +7,7 @@ export class TeamMembershipDto {
   @ApiProperty()
   teamName: string;
 
-  @ApiProperty({ enum: ['manager', 'member'] })
+  @ApiProperty({ enum: ["manager", "member"] })
   role: string;
 }
 

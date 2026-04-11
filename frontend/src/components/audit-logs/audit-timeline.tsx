@@ -1,10 +1,10 @@
-import { Clock, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuditLogs } from '@/lib/audit-logs/use-audit-logs';
-import { useMyAuditLogs } from '@/lib/audit-logs/use-my-audit-logs';
-import { AuditTimelineEntry } from './audit-timeline-entry';
+import { Clock, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuditLogs } from "@/lib/audit-logs/use-audit-logs";
+import { useMyAuditLogs } from "@/lib/audit-logs/use-my-audit-logs";
+import { AuditTimelineEntry } from "./audit-timeline-entry";
 
 interface AdminTimelineProps {
   entityType: string;
@@ -23,15 +23,14 @@ type AuditTimelineProps = AdminTimelineProps | SelfServiceTimelineProps;
 export function AuditTimeline(props: AuditTimelineProps) {
   const isSelfService = !!props.selfService;
   const adminQuery = useAuditLogs(
-    isSelfService ? '' : props.entityType!,
-    isSelfService ? '' : props.entityId!,
+    isSelfService ? "" : (props as AdminTimelineProps).entityType,
+    isSelfService ? "" : (props as AdminTimelineProps).entityId,
     !isSelfService,
   );
   const selfServiceQuery = useMyAuditLogs(isSelfService);
 
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = props.selfService
-    ? selfServiceQuery
-    : adminQuery;
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    props.selfService ? selfServiceQuery : adminQuery;
 
   const entries = data?.pages.flatMap((p) => p.data) ?? [];
   const total = data?.pages[0]?.total ?? 0;
@@ -80,9 +79,11 @@ export function AuditTimeline(props: AuditTimelineProps) {
                 size="sm"
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className='px-0'
+                className="px-0"
               >
-                {isFetchingNextPage && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {isFetchingNextPage && (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                )}
                 Load more
               </Button>
             )}

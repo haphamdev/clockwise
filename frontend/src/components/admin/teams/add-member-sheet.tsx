@@ -1,24 +1,24 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Combobox } from '@/components/ui/combobox';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-import { useUsers } from '@/lib/users/use-users';
-import { useAddTeamMember } from '@/lib/teams/use-add-team-member';
-import type { TeamMember, TeamRole } from '@/lib/teams/types';
+} from "@/components/ui/sheet";
+import type { TeamMember, TeamRole } from "@/lib/teams/types";
+import { useAddTeamMember } from "@/lib/teams/use-add-team-member";
+import { useUsers } from "@/lib/users/use-users";
 
 interface AddMemberSheetProps {
   teamId: string;
@@ -33,8 +33,8 @@ export function AddMemberSheet({
   open,
   onOpenChange,
 }: AddMemberSheetProps) {
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [role, setRole] = useState<TeamRole>('member');
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [role, setRole] = useState<TeamRole>("member");
 
   const { data: usersData } = useUsers({ limit: 100 });
   const addMember = useAddTeamMember();
@@ -42,7 +42,7 @@ export function AddMemberSheet({
   const existingIds = new Set(existingMembers.map((m) => m.userId));
   const userOptions =
     usersData?.data
-      .filter((u) => u.status === 'active' && !existingIds.has(u.id))
+      .filter((u) => u.status === "active" && !existingIds.has(u.id))
       .map((u) => ({ value: u.id, label: `${u.name} (${u.email})` })) ?? [];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -52,8 +52,8 @@ export function AddMemberSheet({
       { teamId, payload: { userId: selectedUserId, role } },
       {
         onSuccess: () => {
-          setSelectedUserId('');
-          setRole('member');
+          setSelectedUserId("");
+          setRole("member");
           onOpenChange(false);
         },
       },
@@ -65,7 +65,9 @@ export function AddMemberSheet({
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Add Member</SheetTitle>
-          <SheetDescription>Search for a user and assign a role.</SheetDescription>
+          <SheetDescription>
+            Search for a user and assign a role.
+          </SheetDescription>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div className="space-y-2">
@@ -96,7 +98,7 @@ export function AddMemberSheet({
             disabled={!selectedUserId || addMember.isPending}
             className="w-full"
           >
-            {addMember.isPending ? 'Adding...' : 'Add Member'}
+            {addMember.isPending ? "Adding..." : "Add Member"}
           </Button>
         </form>
       </SheetContent>

@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { projectsKeys } from './projects-keys';
-import { fetchProjectDetail } from './projects-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchProjectDetail } from "./projects-api";
+import { projectsKeys } from "./projects-keys";
 
 export function useProjectDetail(id: string) {
   return useQuery({

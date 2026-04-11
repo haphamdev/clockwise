@@ -1,28 +1,28 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
+  ArrayMinSize,
+  IsArray,
   IsEmail,
   IsIn,
   IsString,
   IsUUID,
   ValidateNested,
-  ArrayMinSize,
-  IsArray,
-} from 'class-validator';
+} from "class-validator";
 
 export class TeamAssignmentDto {
-  @ApiProperty({ example: 'uuid' })
+  @ApiProperty({ example: "uuid" })
   @IsString()
   @IsUUID()
   teamId: string;
 
-  @ApiProperty({ enum: ['manager', 'member'], example: 'member' })
-  @IsIn(['manager', 'member'])
-  role: 'manager' | 'member';
+  @ApiProperty({ enum: ["manager", "member"], example: "member" })
+  @IsIn(["manager", "member"])
+  role: "manager" | "member";
 }
 
 export class CreateInvitationDto {
-  @ApiProperty({ example: 'user@example.com' })
+  @ApiProperty({ example: "user@example.com" })
   @IsEmail()
   email: string;
 

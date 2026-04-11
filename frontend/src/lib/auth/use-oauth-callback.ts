@@ -1,8 +1,8 @@
-import { useMutation } from '@tanstack/react-query';
-import { setAccessToken } from '@/lib/api-client';
-import { queryClient } from '@/lib/query-client';
-import { authKeys } from './auth-keys';
-import { fetchCurrentUser } from './auth-api';
+import { useMutation } from "@tanstack/react-query";
+import { setAccessToken } from "@/lib/api-client";
+import { queryClient } from "@/lib/query-client";
+import { fetchCurrentUser } from "./auth-api";
+import { authKeys } from "./auth-keys";
 
 export function useOAuthCallback() {
   return useMutation({

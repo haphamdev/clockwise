@@ -1,25 +1,25 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { StatusBadge, type Status } from '@/components/ui/status-badge';
-import { UserLink } from '@/components/users/user-link';
-import type { User } from '@/lib/users/types';
+} from "@/components/ui/dropdown-menu";
+import { type Status, StatusBadge } from "@/components/ui/status-badge";
+import { UserLink } from "@/components/users/user-link";
+import type { User } from "@/lib/users/types";
 
 export function getUsersColumns(
   onNavigate: (user: User) => void,
 ): ColumnDef<User>[] {
   return [
     {
-      id: 'user',
-      header: 'User',
+      id: "user",
+      header: "User",
       cell: ({ row }) => {
         const user = row.original;
         return (
@@ -31,11 +31,7 @@ export function getUsersColumns(
               </AvatarFallback>
             </Avatar>
             <div>
-              <UserLink
-                id={user.id}
-                name={user.name}
-                status={user.status}
-              />
+              <UserLink id={user.id} name={user.name} status={user.status} />
               <p className="text-xs text-muted-foreground">{user.email}</p>
             </div>
           </div>
@@ -43,33 +39,32 @@ export function getUsersColumns(
       },
     },
     {
-      accessorKey: 'status',
-      header: 'Status',
+      accessorKey: "status",
+      header: "Status",
       cell: ({ row }) => <StatusBadge status={row.original.status as Status} />,
     },
     {
-      id: 'admin',
-      header: 'Role',
+      id: "admin",
+      header: "Role",
       cell: ({ row }) =>
-        row.original.isAdmin ? (
-          <Badge variant="outline">Admin</Badge>
-        ) : null,
+        row.original.isAdmin ? <Badge variant="outline">Admin</Badge> : null,
     },
     {
-      id: 'teams',
-      header: 'Teams',
+      id: "teams",
+      header: "Teams",
       cell: ({ row }) => {
         const teams = row.original.teamMemberships;
-        if (teams.length === 0) return <span className="text-muted-foreground">None</span>;
+        if (teams.length === 0)
+          return <span className="text-muted-foreground">None</span>;
         return (
           <span className="text-sm">
-            {teams.map((t) => t.teamName).join(', ')}
+            {teams.map((t) => t.teamName).join(", ")}
           </span>
         );
       },
     },
     {
-      id: 'actions',
+      id: "actions",
       cell: ({ row }) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

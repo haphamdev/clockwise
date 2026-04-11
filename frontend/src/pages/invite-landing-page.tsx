@@ -1,15 +1,15 @@
-import { useParams } from 'react-router-dom';
-import { AlertCircle, Mail } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useValidateInvitation } from '@/lib/invitations/use-validate-invitation';
-import { useDocumentTitle } from '@/hooks/use-document-title';
+import { AlertCircle, Mail } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useValidateInvitation } from "@/lib/invitations/use-validate-invitation";
 
 export function InviteLandingPage() {
-  useDocumentTitle('Clockwise - Invitation');
+  useDocumentTitle("Clockwise - Invitation");
   const { token } = useParams<{ token: string }>();
-  const { data, isLoading, isError } = useValidateInvitation(token ?? '');
+  const { data, isLoading, isError } = useValidateInvitation(token ?? "");
 
   if (isLoading) {
     return (
@@ -33,10 +33,12 @@ export function InviteLandingPage() {
         <Card className="w-full max-w-md">
           <CardContent className="flex flex-col items-center py-12 text-center">
             <AlertCircle className="h-12 w-12 text-destructive" />
-            <h2 className="mt-4 text-lg font-semibold">Invalid or Expired Invitation</h2>
+            <h2 className="mt-4 text-lg font-semibold">
+              Invalid or Expired Invitation
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              This invitation link is no longer valid. Please contact your administrator
-              for a new invitation.
+              This invitation link is no longer valid. Please contact your
+              administrator for a new invitation.
             </p>
           </CardContent>
         </Card>
@@ -49,7 +51,9 @@ export function InviteLandingPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Mail className="mx-auto h-10 w-10 text-primary" />
-          <CardTitle className="mt-2">You're invited to {data.orgName}</CardTitle>
+          <CardTitle className="mt-2">
+            You're invited to {data.orgName}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2 text-sm">
@@ -63,7 +67,9 @@ export function InviteLandingPage() {
                 {data.teamAssignments.map((ta) => (
                   <Badge key={ta.teamId} variant="outline">
                     {ta.teamName}
-                    <span className="ml-1 text-muted-foreground">({ta.role})</span>
+                    <span className="ml-1 text-muted-foreground">
+                      ({ta.role})
+                    </span>
                   </Badge>
                 ))}
               </div>
@@ -74,7 +80,7 @@ export function InviteLandingPage() {
             href="/api/v1/auth/google"
             className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
           >
-            <svg className="h-5 w-5" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"

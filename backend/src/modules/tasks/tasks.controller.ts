@@ -1,23 +1,23 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { Auth } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity } from '../users/entities/user.entity';
-import { TasksService } from './tasks.service';
-import { ListTasksQueryDto } from './dto/list-tasks-query.dto';
-import { TaskResponseDto, TaskListResponseDto } from './dto/task-response.dto';
+import { Controller, Get, Param, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Auth } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { UserEntity } from "../users/entities/user.entity";
+import { ListTasksQueryDto } from "./dto/list-tasks-query.dto";
+import { TaskListResponseDto, TaskResponseDto } from "./dto/task-response.dto";
+import { TasksService } from "./tasks.service";
 
-@ApiTags('Tasks')
-@Controller('projects/:projectId/tasks')
+@ApiTags("Tasks")
+@Controller("projects/:projectId/tasks")
 export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
   @Auth()
-  @ApiOperation({ summary: 'Search tasks within a project' })
+  @ApiOperation({ summary: "Search tasks within a project" })
   @ApiOkResponse({ type: TaskListResponseDto })
   async list(
-    @Param('projectId') projectId: string,
+    @Param("projectId") projectId: string,
     @CurrentUser() user: UserEntity,
     @Query() query: ListTasksQueryDto,
   ): Promise<TaskListResponseDto> {

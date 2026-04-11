@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { useTaskSearch } from '@/lib/tasks/use-task-search';
+import { X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useTaskSearch } from "@/lib/tasks/use-task-search";
 
 interface TaskAutocompleteProps {
   projectId: string;
@@ -17,17 +17,20 @@ export function TaskAutocomplete({
   onChange,
   disabled,
 }: TaskAutocompleteProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset input when project changes
   useEffect(() => {
-    setInputValue('');
+    setInputValue("");
     setShowSuggestions(false);
   }, [projectId]);
 
@@ -45,7 +48,7 @@ export function TaskAutocomplete({
       const trimmed = label.trim();
       if (!trimmed || value.includes(trimmed)) return;
       onChange([...value, trimmed]);
-      setInputValue('');
+      setInputValue("");
       setShowSuggestions(false);
     },
     [value, onChange],
@@ -59,11 +62,11 @@ export function TaskAutocomplete({
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addLabel(inputValue);
     }
-    if (e.key === 'Backspace' && !inputValue && value.length > 0) {
+    if (e.key === "Backspace" && !inputValue && value.length > 0) {
       removeLabel(value[value.length - 1]);
     }
   };
@@ -100,7 +103,11 @@ export function TaskAutocomplete({
               setShowSuggestions(false);
             }, 200);
           }}
-          placeholder={value.length === 0 ? 'Type a task label and press Enter...' : 'Add another...'}
+          placeholder={
+            value.length === 0
+              ? "Type a task label and press Enter..."
+              : "Add another..."
+          }
           className="h-7 min-w-[150px] flex-1 border-0 p-0 shadow-none focus-visible:ring-0"
           disabled={disabled || !projectId}
         />

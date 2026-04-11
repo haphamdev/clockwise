@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import {
   Table,
@@ -7,10 +7,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 
 const meta: Meta<typeof Table> = {
-  title: 'UI/Table',
+  title: "UI/Table",
   component: Table,
 };
 
@@ -18,10 +18,15 @@ export default meta;
 type Story = StoryObj<typeof Table>;
 
 const invoices = [
-  { id: 'INV001', status: 'Paid', method: 'Credit Card', amount: '$250.00' },
-  { id: 'INV002', status: 'Pending', method: 'PayPal', amount: '$150.00' },
-  { id: 'INV003', status: 'Unpaid', method: 'Bank Transfer', amount: '$350.00' },
-  { id: 'INV004', status: 'Paid', method: 'Credit Card', amount: '$450.00' },
+  { id: "INV001", status: "Paid", method: "Credit Card", amount: "$250.00" },
+  { id: "INV002", status: "Pending", method: "PayPal", amount: "$150.00" },
+  {
+    id: "INV003",
+    status: "Unpaid",
+    method: "Bank Transfer",
+    amount: "$350.00",
+  },
+  { id: "INV004", status: "Paid", method: "Credit Card", amount: "$450.00" },
 ];
 
 export const Default: Story = {

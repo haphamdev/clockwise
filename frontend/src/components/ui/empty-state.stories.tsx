@@ -1,11 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Inbox, Plus, Users } from 'lucide-react';
-
-import { EmptyState } from '@/components/ui/empty-state';
-import { Button } from '@/components/ui/button';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Inbox, Plus, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const meta: Meta<typeof EmptyState> = {
-  title: 'UI/EmptyState',
+  title: "UI/EmptyState",
   component: EmptyState,
 };
 
@@ -15,8 +14,8 @@ type Story = StoryObj<typeof EmptyState>;
 export const Default: Story = {
   args: {
     icon: Inbox,
-    title: 'No time logs yet',
-    description: 'Get started by logging your first hours against a project.',
+    title: "No time logs yet",
+    description: "Get started by logging your first hours against a project.",
   },
 };
 

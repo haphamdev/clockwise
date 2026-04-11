@@ -1,20 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UserNotFoundException } from '../../../common/exceptions/auth.exceptions';
-import { UsersService } from '../../users/users.service';
-import { JwtPayload } from '../auth.service';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { UserNotFoundException } from "../../../common/exceptions/auth.exceptions";
+import { UsersService } from "../../users/users.service";
+import { JwtPayload } from "../auth.service";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
   constructor(
     private readonly usersService: UsersService,
     configService: ConfigService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
+      secretOrKey: configService.getOrThrow<string>("JWT_SECRET"),
       ignoreExpiration: false,
     });
   }
@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   async validate(payload: JwtPayload) {
     const user = await this.usersService.findById(payload.sub);
 
-    if (!user || user.status !== 'active') {
+    if (!user || user.status !== "active") {
       throw new UserNotFoundException();
     }
 

@@ -1,9 +1,9 @@
-import { useMemo, type ReactNode } from 'react';
-import { AuthContext } from '@/lib/auth/auth-context';
-import { useUser } from '@/lib/auth/use-user';
-import { useLogout } from '@/lib/auth/use-logout';
-import { useOAuthCallback } from '@/lib/auth/use-oauth-callback';
-import type { AuthContextType } from '@/lib/auth/types';
+import { type ReactNode, useMemo } from "react";
+import { AuthContext } from "@/lib/auth/auth-context";
+import type { AuthContextType } from "@/lib/auth/types";
+import { useLogout } from "@/lib/auth/use-logout";
+import { useOAuthCallback } from "@/lib/auth/use-oauth-callback";
+import { useUser } from "@/lib/auth/use-user";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: user, isLoading } = useUser();
@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       isLoading,
       login: () => {
-        window.location.href = '/api/v1/auth/google';
+        window.location.href = "/api/v1/auth/google";
       },
       logout: () => logoutMutation.mutateAsync(),
       handleOAuthCallback: async (token: string) => {

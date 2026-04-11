@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
-import { Upload, Download, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { downloadTemplate } from '@/lib/import/import-api';
+import { Download, Loader2, Upload } from "lucide-react";
+import { useRef, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { downloadTemplate } from "@/lib/import/import-api";
 
 export function UploadStep({
   onFileSelect,
@@ -33,7 +33,9 @@ export function UploadStep({
         <Upload className="h-8 w-8 text-muted-foreground" />
         <div className="text-center">
           <p className="text-sm font-medium">Select a CSV file to upload</p>
-          <p className="text-xs text-muted-foreground">Maximum file size: 5MB</p>
+          <p className="text-xs text-muted-foreground">
+            Maximum file size: 5MB
+          </p>
         </div>
         <input
           ref={fileInputRef}
@@ -42,7 +44,7 @@ export function UploadStep({
           className="hidden"
           onChange={(e) => {
             onFileSelect(e);
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            if (fileInputRef.current) fileInputRef.current.value = "";
           }}
           disabled={isPending}
         />
@@ -57,7 +59,7 @@ export function UploadStep({
               Parsing...
             </>
           ) : (
-            'Choose File'
+            "Choose File"
           )}
         </Button>
       </div>
@@ -74,7 +76,7 @@ export function UploadStep({
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground disabled:opacity-50"
         >
           <Download className="mr-1.5 h-4 w-4" />
-          {downloading ? 'Downloading...' : 'Download CSV template'}
+          {downloading ? "Downloading..." : "Download CSV template"}
         </button>
       </div>
     </div>

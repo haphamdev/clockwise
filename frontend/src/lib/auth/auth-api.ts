@@ -1,5 +1,11 @@
-import { apiClient, ApiError, getAccessToken, setAccessToken, refreshAccessToken } from '@/lib/api-client';
-import type { UserProfile } from './types';
+import {
+  ApiError,
+  apiClient,
+  getAccessToken,
+  refreshAccessToken,
+  setAccessToken,
+} from "@/lib/api-client";
+import type { UserProfile } from "./types";
 
 export async function fetchCurrentUser(): Promise<UserProfile | null> {
   if (!getAccessToken()) {
@@ -7,7 +13,7 @@ export async function fetchCurrentUser(): Promise<UserProfile | null> {
     if (!refreshed) return null;
   }
   try {
-    return await apiClient<UserProfile>('/auth/me');
+    return await apiClient<UserProfile>("/auth/me");
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       setAccessToken(null);
@@ -19,7 +25,7 @@ export async function fetchCurrentUser(): Promise<UserProfile | null> {
 
 export async function logoutUser(): Promise<void> {
   try {
-    await apiClient('/auth/logout', { method: 'POST' });
+    await apiClient("/auth/logout", { method: "POST" });
   } catch {
     // Server logout failed, still clear locally
   }

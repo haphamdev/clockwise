@@ -1,10 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 const meta: Meta<typeof Textarea> = {
-  title: 'UI/Textarea',
+  title: "UI/Textarea",
   component: Textarea,
 };
 
@@ -12,11 +11,11 @@ export default meta;
 type Story = StoryObj<typeof Textarea>;
 
 export const Default: Story = {
-  args: { placeholder: 'Type your message here...' },
+  args: { placeholder: "Type your message here..." },
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, placeholder: 'Disabled' },
+  args: { disabled: true, placeholder: "Disabled" },
 };
 
 export const WithLabel: Story = {

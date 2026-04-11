@@ -1,7 +1,7 @@
-import { HttpStatus } from '@nestjs/common';
-import { ValidationError } from 'class-validator';
-import { AppException } from './app.exception';
-import { ErrorCode } from './error-codes';
+import { HttpStatus } from "@nestjs/common";
+import { ValidationError } from "class-validator";
+import { AppException } from "./app.exception";
+import { ErrorCode } from "./error-codes";
 
 function flattenErrors(errors: ValidationError[]): string[] {
   const messages: string[] = [];

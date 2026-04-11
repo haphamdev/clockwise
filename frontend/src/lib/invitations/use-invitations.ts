@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { invitationsKeys } from './invitations-keys';
-import { fetchInvitations } from './invitations-api';
-import type { ListInvitationsParams } from './types';
+import { useQuery } from "@tanstack/react-query";
+import { fetchInvitations } from "./invitations-api";
+import { invitationsKeys } from "./invitations-keys";
+import type { ListInvitationsParams } from "./types";
 
 export function useInvitations(params: ListInvitationsParams = {}) {
   return useQuery({

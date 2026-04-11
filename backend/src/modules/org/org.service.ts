@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { OrgNotFoundException } from '../../common/exceptions/org.exceptions';
-import { OrgRepository } from './org.repository';
-import { OrgSettingsEntity } from './entities/org-settings.entity';
+import { Injectable } from "@nestjs/common";
+import { OrgNotFoundException } from "../../common/exceptions/org.exceptions";
+import { OrgSettingsEntity } from "./entities/org-settings.entity";
+import { OrgRepository } from "./org.repository";
 
 @Injectable()
 export class OrgService {
@@ -22,8 +22,8 @@ export class OrgService {
       expectedHoursPerWeek?: number;
       dailyWarningThreshold?: number;
       weeklyWarningThreshold?: number;
-      dateFormat?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
-      timeFormat?: '12h' | '24h';
+      dateFormat?: "YYYY-MM-DD" | "DD/MM/YYYY" | "MM/DD/YYYY";
+      timeFormat?: "12h" | "24h";
       csvMaxRows?: number;
       trackSaturday?: boolean;
       trackSunday?: boolean;

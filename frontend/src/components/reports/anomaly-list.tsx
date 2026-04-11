@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -7,8 +7,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import type { AnomalyEntry } from '@/lib/reports/types';
+} from "@/components/ui/table";
+import type { AnomalyEntry } from "@/lib/reports/types";
 
 const PAGE_SIZE = 10;
 
@@ -20,6 +20,7 @@ interface AnomalyListProps {
 export function AnomalyList({ entries, thresholds }: AnomalyListProps) {
   const [page, setPage] = useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: reset page when entries change
   useEffect(() => setPage(0), [entries]);
 
   if (entries.length === 0) return null;
@@ -44,7 +45,7 @@ export function AnomalyList({ entries, thresholds }: AnomalyListProps) {
               <TableCell>{e.date}</TableCell>
               <TableCell
                 className={`text-right font-medium ${
-                  e.severity === 'critical' ? 'text-red-500' : 'text-amber-500'
+                  e.severity === "critical" ? "text-red-500" : "text-amber-500"
                 }`}
               >
                 {e.totalHours}h
@@ -79,10 +80,14 @@ export function AnomalyList({ entries, thresholds }: AnomalyListProps) {
         </div>
       )}
       <p className="text-xs text-muted-foreground">
-        Thresholds:{' '}
-        <span className="text-amber-500">Warning &ge; {thresholds.warningHigh}h</span>
-        {' · '}
-        <span className="text-red-500">Critical &ge; {thresholds.criticalHigh}h</span>
+        Thresholds:{" "}
+        <span className="text-amber-500">
+          Warning &ge; {thresholds.warningHigh}h
+        </span>
+        {" · "}
+        <span className="text-red-500">
+          Critical &ge; {thresholds.criticalHigh}h
+        </span>
       </p>
     </div>
   );

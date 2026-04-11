@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class InvitationTeamAssignmentResponseDto {
   @ApiProperty()
@@ -7,7 +7,7 @@ export class InvitationTeamAssignmentResponseDto {
   @ApiProperty()
   teamName: string;
 
-  @ApiProperty({ enum: ['manager', 'member'] })
+  @ApiProperty({ enum: ["manager", "member"] })
   role: string;
 }
 
@@ -21,13 +21,17 @@ export class InvitationResponseDto {
   @ApiProperty()
   invitedByName: string;
 
-  @ApiProperty({ enum: ['initiated', 'sending', 'sent', 'accepted', 'revoked', 'failed'] })
+  @ApiProperty({
+    enum: ["initiated", "sending", "sent", "accepted", "revoked", "failed"],
+  })
   status: string;
 
   @ApiProperty()
   expiresAt: Date;
 
-  @ApiProperty({ description: 'True if status is sent but expiresAt is in the past' })
+  @ApiProperty({
+    description: "True if status is sent but expiresAt is in the past",
+  })
   isExpired: boolean;
 
   @ApiProperty()

@@ -1,20 +1,20 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, Project, ProjectTeam, Team } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma, Project, ProjectTeam, Team } from "@prisma/client";
 import {
   ProjectAlreadyExistsException,
   ProjectLastTeamException,
-} from '../../common/exceptions/project.exceptions';
+} from "../../common/exceptions/project.exceptions";
+import { PrismaService } from "../../prisma/prisma.service";
 import {
   ProjectEntity,
   ProjectListItem,
-  ProjectWithTeams,
   ProjectTeamEntity,
-} from './entities/project.entity';
+  ProjectWithTeams,
+} from "./entities/project.entity";
 import {
-  ProjectSettingsEntity,
   DEFAULT_PROJECT_SETTINGS,
-} from './entities/project-settings.entity';
+  ProjectSettingsEntity,
+} from "./entities/project-settings.entity";
 
 type ProjectTeamWithTeam = ProjectTeam & {
   team: Team & { _count: { members: number } };
@@ -32,7 +32,7 @@ const projectTeamInclude = {
         include: { _count: { select: { members: true } } },
       },
     },
-    orderBy: { createdAt: 'asc' as const },
+    orderBy: { createdAt: "asc" as const },
   },
 };
 
@@ -42,11 +42,16 @@ export class ProjectsRepository {
 
   async findAll(
     orgId: string,
-    options: { includeArchived: boolean; page: number; limit: number; teamId?: string },
+    options: {
+      includeArchived: boolean;
+      page: number;
+      limit: number;
+      teamId?: string;
+    },
   ): Promise<{ data: ProjectListItem[]; total: number }> {
     const where: Prisma.ProjectWhereInput = {
       orgId,
-      ...(!options.includeArchived && { status: 'active' }),
+      ...(!options.includeArchived && { status: "active" }),
       ...(options.teamId && {
         projectTeams: { some: { teamId: options.teamId, isDeleted: false } },
       }),
@@ -57,9 +62,12 @@ export class ProjectsRepository {
         where,
         include: {
           _count: { select: { projectTeams: { where: { isDeleted: false } } } },
-          projectTeams: { where: { isDeleted: false }, select: { teamId: true } },
+          projectTeams: {
+            where: { isDeleted: false },
+            select: { teamId: true },
+          },
         },
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -79,7 +87,7 @@ export class ProjectsRepository {
   ): Promise<{ data: ProjectListItem[]; total: number }> {
     const where: Prisma.ProjectWhereInput = {
       orgId,
-      status: 'active',
+      status: "active",
       projectTeams: {
         some: {
           isDeleted: false,
@@ -97,9 +105,12 @@ export class ProjectsRepository {
         where,
         include: {
           _count: { select: { projectTeams: { where: { isDeleted: false } } } },
-          projectTeams: { where: { isDeleted: false }, select: { teamId: true } },
+          projectTeams: {
+            where: { isDeleted: false },
+            select: { teamId: true },
+          },
         },
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -122,7 +133,7 @@ export class ProjectsRepository {
   ): Promise<{ data: ProjectListItem[]; total: number }> {
     const where: Prisma.ProjectWhereInput = {
       orgId,
-      ...(!options.includeArchived && { status: 'active' }),
+      ...(!options.includeArchived && { status: "active" }),
       projectTeams: {
         some: {
           isDeleted: false,
@@ -136,9 +147,12 @@ export class ProjectsRepository {
         where,
         include: {
           _count: { select: { projectTeams: { where: { isDeleted: false } } } },
-          projectTeams: { where: { isDeleted: false }, select: { teamId: true } },
+          projectTeams: {
+            where: { isDeleted: false },
+            select: { teamId: true },
+          },
         },
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -151,16 +165,26 @@ export class ProjectsRepository {
     };
   }
 
-  async findActiveByNameInOrg(name: string, orgId: string): Promise<ProjectEntity | null> {
+  async findActiveByNameInOrg(
+    name: string,
+    orgId: string,
+  ): Promise<ProjectEntity | null> {
     const project = await this.prisma.project.findFirst({
-      where: { orgId, status: 'active', name: { equals: name, mode: 'insensitive' } },
+      where: {
+        orgId,
+        status: "active",
+        name: { equals: name, mode: "insensitive" },
+      },
     });
     return project ? this.toEntity(project) : null;
   }
 
-  async findByNameInOrg(name: string, orgId: string): Promise<ProjectEntity | null> {
+  async findByNameInOrg(
+    name: string,
+    orgId: string,
+  ): Promise<ProjectEntity | null> {
     const project = await this.prisma.project.findFirst({
-      where: { orgId, name: { equals: name, mode: 'insensitive' } },
+      where: { orgId, name: { equals: name, mode: "insensitive" } },
     });
     return project ? this.toEntity(project) : null;
   }
@@ -195,7 +219,10 @@ export class ProjectsRepository {
       });
       return this.toEntityWithTeams(project);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new ProjectAlreadyExistsException();
       }
       throw error;
@@ -207,8 +234,11 @@ export class ProjectsRepository {
       orgId: string;
       name: string;
       description?: string;
-      status?: 'active' | 'archived';
-      settings?: { dailyHourLimit?: number | null; weeklyHourLimit?: number | null };
+      status?: "active" | "archived";
+      settings?: {
+        dailyHourLimit?: number | null;
+        weeklyHourLimit?: number | null;
+      };
     },
     teamIds: string[],
   ): Promise<ProjectWithTeams> {
@@ -226,8 +256,10 @@ export class ProjectsRepository {
           orgId: data.orgId,
           name: data.name,
           description: data.description,
-          status: data.status ?? 'active',
-          ...(Object.keys(settings).length > 0 && { settings: settings as Prisma.InputJsonValue }),
+          status: data.status ?? "active",
+          ...(Object.keys(settings).length > 0 && {
+            settings: settings as Prisma.InputJsonValue,
+          }),
           projectTeams: {
             create: teamIds.map((teamId) => ({ teamId })),
           },
@@ -236,7 +268,10 @@ export class ProjectsRepository {
       });
       return this.toEntityWithTeams(project);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new ProjectAlreadyExistsException();
       }
       throw error;
@@ -251,7 +286,10 @@ export class ProjectsRepository {
       const project = await this.prisma.project.update({ where: { id }, data });
       return this.toEntity(project);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new ProjectAlreadyExistsException();
       }
       throw error;
@@ -261,7 +299,7 @@ export class ProjectsRepository {
   async archive(id: string): Promise<ProjectEntity> {
     const project = await this.prisma.project.update({
       where: { id },
-      data: { status: 'archived' },
+      data: { status: "archived" },
     });
     return this.toEntity(project);
   }
@@ -270,18 +308,24 @@ export class ProjectsRepository {
     try {
       const project = await this.prisma.project.update({
         where: { id },
-        data: { status: 'active' },
+        data: { status: "active" },
       });
       return this.toEntity(project);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new ProjectAlreadyExistsException();
       }
       throw error;
     }
   }
 
-  async assignTeam(projectId: string, teamId: string): Promise<ProjectTeamEntity> {
+  async assignTeam(
+    projectId: string,
+    teamId: string,
+  ): Promise<ProjectTeamEntity> {
     // Check for a soft-deleted record to reactivate
     const existing = await this.prisma.projectTeam.findUnique({
       where: { projectId_teamId: { projectId, teamId } },
@@ -330,14 +374,19 @@ export class ProjectsRepository {
     });
   }
 
-  async findProjectTeam(projectId: string, teamId: string): Promise<{ id: string } | null> {
+  async findProjectTeam(
+    projectId: string,
+    teamId: string,
+  ): Promise<{ id: string } | null> {
     return this.prisma.projectTeam.findFirst({
       where: { projectId, teamId, isDeleted: false },
       select: { id: true },
     });
   }
 
-  async getTeamSummary(projectId: string): Promise<{ teamCount: number; teamIds: string[] }> {
+  async getTeamSummary(
+    projectId: string,
+  ): Promise<{ teamCount: number; teamIds: string[] }> {
     const rows = await this.prisma.projectTeam.findMany({
       where: { projectId, isDeleted: false },
       select: { teamId: true },
@@ -346,10 +395,15 @@ export class ProjectsRepository {
   }
 
   async countTeams(projectId: string): Promise<number> {
-    return this.prisma.projectTeam.count({ where: { projectId, isDeleted: false } });
+    return this.prisma.projectTeam.count({
+      where: { projectId, isDeleted: false },
+    });
   }
 
-  async isUserLinkedToProject(projectId: string, userId: string): Promise<boolean> {
+  async isUserLinkedToProject(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
     const count = await this.prisma.projectTeam.count({
       where: {
         projectId,
@@ -360,12 +414,15 @@ export class ProjectsRepository {
     return count > 0;
   }
 
-  async isManagerOfLinkedTeam(projectId: string, userId: string): Promise<boolean> {
+  async isManagerOfLinkedTeam(
+    projectId: string,
+    userId: string,
+  ): Promise<boolean> {
     const count = await this.prisma.projectTeam.count({
       where: {
         projectId,
         isDeleted: false,
-        team: { members: { some: { userId, role: 'manager' } } },
+        team: { members: { some: { userId, role: "manager" } } },
       },
     });
     return count > 0;
@@ -381,7 +438,7 @@ export class ProjectsRepository {
 
   async isManagerOfTeam(teamId: string, userId: string): Promise<boolean> {
     const count = await this.prisma.teamMember.count({
-      where: { teamId, userId, role: 'manager' },
+      where: { teamId, userId, role: "manager" },
     });
     return count > 0;
   }
@@ -424,9 +481,13 @@ export class ProjectsRepository {
     const s = (settings ?? {}) as Record<string, unknown>;
     return {
       dailyHourLimit:
-        typeof s.dailyHourLimit === 'number' ? s.dailyHourLimit : DEFAULT_PROJECT_SETTINGS.dailyHourLimit,
+        typeof s.dailyHourLimit === "number"
+          ? s.dailyHourLimit
+          : DEFAULT_PROJECT_SETTINGS.dailyHourLimit,
       weeklyHourLimit:
-        typeof s.weeklyHourLimit === 'number' ? s.weeklyHourLimit : DEFAULT_PROJECT_SETTINGS.weeklyHourLimit,
+        typeof s.weeklyHourLimit === "number"
+          ? s.weeklyHourLimit
+          : DEFAULT_PROJECT_SETTINGS.weeklyHourLimit,
     };
   }
 
@@ -449,22 +510,22 @@ export class ProjectsRepository {
       orgId: project.orgId,
       name: project.name,
       description: project.description,
-      status: project.status as 'active' | 'archived',
+      status: project.status as "active" | "archived",
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
     };
   }
 
-  private toEntityWithTeams(project: ProjectWithTeamRelations): ProjectWithTeams {
+  private toEntityWithTeams(
+    project: ProjectWithTeamRelations,
+  ): ProjectWithTeams {
     return {
       ...this.toEntity(project),
       teams: project.projectTeams.map((pt) => this.toProjectTeamEntity(pt)),
     };
   }
 
-  private toProjectTeamEntity(
-    pt: ProjectTeamWithTeam,
-  ): ProjectTeamEntity {
+  private toProjectTeamEntity(pt: ProjectTeamWithTeam): ProjectTeamEntity {
     return {
       id: pt.id,
       teamId: pt.team.id,

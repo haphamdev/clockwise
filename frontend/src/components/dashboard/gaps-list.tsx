@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { TimeDisplay } from '@/components/ui/time-display';
-import type { Gap } from '@/lib/dashboard/types';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TimeDisplay } from "@/components/ui/time-display";
+import type { Gap } from "@/lib/dashboard/types";
 
 interface GapsListProps {
   gaps: Gap[] | undefined;
@@ -29,8 +29,15 @@ export function GapsList({ gaps, isLoading, isError }: GapsListProps) {
         ) : (
           <ul className="space-y-1">
             {gaps.map((gap) => (
-              <li key={gap.date} className="flex items-center justify-between text-sm">
-                <TimeDisplay value={gap.date} absolute className="text-muted-foreground" />
+              <li
+                key={gap.date}
+                className="flex items-center justify-between text-sm"
+              >
+                <TimeDisplay
+                  value={gap.date}
+                  absolute
+                  className="text-muted-foreground"
+                />
                 <span className="font-medium">{gap.hours}h</span>
               </li>
             ))}

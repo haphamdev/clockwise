@@ -1,6 +1,13 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength, IsInt, Min, Max } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from "class-validator";
 
 export class ListImportJobsQueryDto {
   @ApiPropertyOptional({ default: 1 })
@@ -18,7 +25,9 @@ export class ListImportJobsQueryDto {
   @Max(100)
   limit: number = 20;
 
-  @ApiPropertyOptional({ description: 'Filter by import type (e.g. "time-log")' })
+  @ApiPropertyOptional({
+    description: 'Filter by import type (e.g. "time-log")',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(50)

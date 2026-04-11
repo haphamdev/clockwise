@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsBoolean } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Transform, Type } from "class-transformer";
+import { IsBoolean, IsInt, IsOptional, Max, Min } from "class-validator";
 
 export class ListUserProjectsQueryDto {
   @ApiProperty({ required: false, default: 1 })
@@ -20,7 +20,7 @@ export class ListUserProjectsQueryDto {
 
   @ApiProperty({ required: false, default: false })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ value }) => value === "true" || value === true)
   @IsBoolean()
   includeArchived?: boolean = false;
 }

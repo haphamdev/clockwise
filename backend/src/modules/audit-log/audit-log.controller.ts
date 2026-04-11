@@ -1,21 +1,21 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { AdminOnly, Auth } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity } from '../users/entities/user.entity';
-import { AuditLogService } from './audit-log.service';
-import { AuditLogQueryDto } from './dto/audit-log-query.dto';
-import { MyAuditLogQueryDto } from './dto/my-audit-log-query.dto';
-import { AuditLogListResponseDto } from './dto/audit-log-response.dto';
+import { Controller, Get, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { AdminOnly, Auth } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { UserEntity } from "../users/entities/user.entity";
+import { AuditLogService } from "./audit-log.service";
+import { AuditLogQueryDto } from "./dto/audit-log-query.dto";
+import { AuditLogListResponseDto } from "./dto/audit-log-response.dto";
+import { MyAuditLogQueryDto } from "./dto/my-audit-log-query.dto";
 
-@ApiTags('Audit Logs')
-@Controller('audit-logs')
+@ApiTags("Audit Logs")
+@Controller("audit-logs")
 export class AuditLogController {
   constructor(private readonly auditLogService: AuditLogService) {}
 
-  @Get('me')
+  @Get("me")
   @Auth()
-  @ApiOperation({ summary: 'List audit logs for current user' })
+  @ApiOperation({ summary: "List audit logs for current user" })
   @ApiOkResponse({ type: AuditLogListResponseDto })
   async myLogs(
     @CurrentUser() user: UserEntity,
@@ -25,7 +25,7 @@ export class AuditLogController {
     const limit = query.limit ?? 20;
     const { data, total } = await this.auditLogService.findByEntity(
       user.orgId,
-      'user',
+      "user",
       user.id,
       { page, limit },
     );
@@ -49,7 +49,7 @@ export class AuditLogController {
 
   @Get()
   @AdminOnly()
-  @ApiOperation({ summary: 'List audit log entries for an entity' })
+  @ApiOperation({ summary: "List audit log entries for an entity" })
   @ApiOkResponse({ type: AuditLogListResponseDto })
   async list(
     @CurrentUser() user: UserEntity,

@@ -1,29 +1,35 @@
-import { randomUUID } from 'crypto';
-import { Injectable } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import { ImportJobStatus } from '@prisma/client';
+import { randomUUID } from "node:crypto";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Injectable } from "@nestjs/common";
+import { ImportJobStatus } from "@prisma/client";
+import { Queue } from "bullmq";
 import {
-  ImportProcessor,
-  ImportRow,
-  ImportValidationError,
-  ImportCallerContext,
-} from './interfaces/import-processor.interface';
-import { ImportJobData, ImportJobResult } from './interfaces/import-job.interface';
-import {
-  ImportUnsupportedTypeException,
+  ImportAdminOnlyException,
   ImportJobNotFoundException,
   ImportNoValidRowsException,
   ImportPreviewExpiredException,
-  ImportAdminOnlyException,
-} from '../../common/exceptions/import.exceptions';
+  ImportUnsupportedTypeException,
+} from "../../common/exceptions/import.exceptions";
+import { ImportJobEntity } from "./entities/import-job.entity";
 import {
   IMPORT_QUEUE,
   PREVIEW_CACHE_PREFIX,
   PREVIEW_CACHE_TTL_SECONDS,
-} from './import.constants';
-import { ImportJobRepository, UpdateImportJobInput } from './import-job.repository';
-import { ImportJobEntity } from './entities/import-job.entity';
+} from "./import.constants";
+import {
+  ImportJobRepository,
+  UpdateImportJobInput,
+} from "./import-job.repository";
+import {
+  ImportJobData,
+  ImportJobResult,
+} from "./interfaces/import-job.interface";
+import {
+  ImportCallerContext,
+  ImportProcessor,
+  ImportRow,
+  ImportValidationError,
+} from "./interfaces/import-processor.interface";
 
 interface CachedPreview {
   type: string;
@@ -115,7 +121,12 @@ export class ImportService {
     ctx: ImportCallerContext,
   ): Promise<ImportExecuteResponse> {
     const cached = await this.retrievePreviewResult(previewToken);
-    if (!cached || cached.userId !== ctx.userId || cached.orgId !== ctx.orgId || cached.type !== type) {
+    if (
+      !cached ||
+      cached.userId !== ctx.userId ||
+      cached.orgId !== ctx.orgId ||
+      cached.type !== type
+    ) {
       throw new ImportPreviewExpiredException();
     }
 
@@ -146,7 +157,7 @@ export class ImportService {
 
     let job: { id?: string };
     try {
-      job = await this.importQueue.add('import', jobData, {
+      job = await this.importQueue.add("import", jobData, {
         attempts: 1,
         removeOnComplete: { age: 3600 },
         removeOnFail: { age: 7200 },
@@ -164,7 +175,7 @@ export class ImportService {
         status: ImportJobStatus.failed,
         completedAt: new Date(),
       });
-      throw new Error('Failed to create import job');
+      throw new Error("Failed to create import job");
     }
 
     await this.importJobRepository.updateStatus(importJob.id, {
@@ -192,30 +203,35 @@ export class ImportService {
     const state = await job.getState();
     const result = job.returnvalue as ImportJobResult | undefined;
 
-    if (state === 'completed' && result) {
+    if (state === "completed" && result) {
       return { jobId, ...result };
     }
 
-    if (state === 'failed') {
+    if (state === "failed") {
       return {
         jobId,
-        status: 'failed',
+        status: "failed",
         totalRows: jobData.executableRows.length,
         imported: 0,
         errorCount: 0,
         errors: [
-          { row: 0, field: '', message: 'Import failed. Please try again or contact support.' },
+          {
+            row: 0,
+            field: "",
+            message: "Import failed. Please try again or contact support.",
+          },
         ],
       };
     }
 
     const raw = job.progress;
-    const progress = typeof raw === 'object' && raw !== null
-      ? (raw as { imported?: number; errorCount?: number })
-      : undefined;
+    const progress =
+      typeof raw === "object" && raw !== null
+        ? (raw as { imported?: number; errorCount?: number })
+        : undefined;
     return {
       jobId,
-      status: state === 'active' ? 'processing' : 'pending',
+      status: state === "active" ? "processing" : "pending",
       totalRows: jobData.executableRows.length,
       imported: progress?.imported ?? 0,
       errorCount: progress?.errorCount ?? 0,
@@ -228,12 +244,25 @@ export class ImportService {
     orgId: string,
     isAdmin: boolean,
     query: { page: number; limit: number; type?: string },
-  ): Promise<{ data: ImportJobEntity[]; total: number; page: number; limit: number }> {
-    const result = await this.importJobRepository.findByUser(userId, orgId, isAdmin, query);
+  ): Promise<{
+    data: ImportJobEntity[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const result = await this.importJobRepository.findByUser(
+      userId,
+      orgId,
+      isAdmin,
+      query,
+    );
     return { ...result, page: query.page, limit: query.limit };
   }
 
-  async updateJobRecord(id: string, update: UpdateImportJobInput): Promise<void> {
+  async updateJobRecord(
+    id: string,
+    update: UpdateImportJobInput,
+  ): Promise<void> {
     await this.importJobRepository.updateStatus(id, update);
   }
 
@@ -241,11 +270,18 @@ export class ImportService {
     const token = randomUUID();
     const key = `${PREVIEW_CACHE_PREFIX}${token}`;
     const client = await this.importQueue.client;
-    await client.set(key, JSON.stringify(data), 'EX', PREVIEW_CACHE_TTL_SECONDS);
+    await client.set(
+      key,
+      JSON.stringify(data),
+      "EX",
+      PREVIEW_CACHE_TTL_SECONDS,
+    );
     return token;
   }
 
-  private async retrievePreviewResult(token: string): Promise<CachedPreview | null> {
+  private async retrievePreviewResult(
+    token: string,
+  ): Promise<CachedPreview | null> {
     const key = `${PREVIEW_CACHE_PREFIX}${token}`;
     const client = await this.importQueue.client;
     const data = await client.getdel(key);

@@ -1,9 +1,9 @@
-import { Pencil, Archive, ArchiveRestore } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/ui/status-badge';
-import type { TeamDetail } from '@/lib/teams/types';
-import { TimeDisplay } from '@/components/ui/time-display';
+import { Archive, ArchiveRestore, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import type { TeamDetail } from "@/lib/teams/types";
 
 interface TeamInfoCardProps {
   team: TeamDetail;
@@ -13,14 +13,20 @@ interface TeamInfoCardProps {
   readOnly?: boolean;
 }
 
-export function TeamInfoCard({ team, onEdit, onArchive, onUnarchive, readOnly }: TeamInfoCardProps) {
+export function TeamInfoCard({
+  team,
+  onEdit,
+  onArchive,
+  onUnarchive,
+  readOnly,
+}: TeamInfoCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="space-y-1">
           <CardTitle className="flex items-center gap-2">
             {team.name}
-            <StatusBadge status={team.isArchived ? 'archived' : 'active'} />
+            <StatusBadge status={team.isArchived ? "archived" : "active"} />
           </CardTitle>
           {team.description && (
             <p className="text-sm text-muted-foreground">{team.description}</p>

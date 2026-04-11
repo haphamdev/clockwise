@@ -1,7 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { ValidateNested, ArrayMinSize, IsArray } from 'class-validator';
-import { TeamAssignmentDto } from './create-invitation.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { ArrayMinSize, IsArray, ValidateNested } from "class-validator";
+import { TeamAssignmentDto } from "./create-invitation.dto";
 
 export class UpdateInvitationTeamAssignmentsDto {
   @ApiProperty({ type: [TeamAssignmentDto] })

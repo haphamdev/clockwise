@@ -1,10 +1,10 @@
-import { applyDecorators, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../modules/auth/guards/jwt-auth.guard';
-import { IsAdminGuard } from '../guards/is-admin.guard';
-import { RolesGuard } from '../guards/roles.guard';
-import { TeamMemberGuard } from '../guards/team-member.guard';
-import { Roles } from './roles.decorator';
+import { applyDecorators, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth } from "@nestjs/swagger";
+import { JwtAuthGuard } from "../../modules/auth/guards/jwt-auth.guard";
+import { IsAdminGuard } from "../guards/is-admin.guard";
+import { RolesGuard } from "../guards/roles.guard";
+import { TeamMemberGuard } from "../guards/team-member.guard";
+import { Roles } from "./roles.decorator";
 
 /**
  * Requires a valid JWT access token.
@@ -25,7 +25,7 @@ export const AdminOnly = () =>
  * identified by the `:teamId` route parameter. Admins bypass this check.
  * Includes JWT authentication.
  */
-export const TeamRole = (...roles: Array<'manager' | 'member'>) =>
+export const TeamRole = (...roles: Array<"manager" | "member">) =>
   applyDecorators(
     Roles(...roles),
     UseGuards(JwtAuthGuard, RolesGuard),
@@ -38,7 +38,4 @@ export const TeamRole = (...roles: Array<'manager' | 'member'>) =>
  * Admins bypass this check. Includes JWT authentication.
  */
 export const TeamMember = () =>
-  applyDecorators(
-    UseGuards(JwtAuthGuard, TeamMemberGuard),
-    ApiBearerAuth(),
-  );
+  applyDecorators(UseGuards(JwtAuthGuard, TeamMemberGuard), ApiBearerAuth());

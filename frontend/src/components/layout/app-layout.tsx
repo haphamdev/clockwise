@@ -1,7 +1,7 @@
-import { Outlet } from 'react-router-dom';
-import { Toaster } from '@/components/ui/sonner';
-import { Navbar } from '@/components/layout/navbar';
-import { useSyncTheme } from '@/lib/user-preferences/use-sync-theme';
+import { Outlet } from "react-router-dom";
+import { Navbar } from "@/components/layout/navbar";
+import { Toaster } from "@/components/ui/sonner";
+import { useSyncTheme } from "@/lib/user-preferences/use-sync-theme";
 
 export function AppLayout() {
   useSyncTheme();

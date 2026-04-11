@@ -1,7 +1,7 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { reportsKeys } from './reports-keys';
-import { fetchWeekdayDistribution } from './reports-api';
-import type { WeekdayDistributionParams } from './types';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { fetchWeekdayDistribution } from "./reports-api";
+import { reportsKeys } from "./reports-keys";
+import type { WeekdayDistributionParams } from "./types";
 
 export function useWeekdayDistribution(params: WeekdayDistributionParams) {
   return useQuery({

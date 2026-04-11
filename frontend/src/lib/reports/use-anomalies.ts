@@ -1,7 +1,7 @@
-import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { reportsKeys } from './reports-keys';
-import { fetchAnomalies } from './reports-api';
-import type { AnomaliesParams } from './types';
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { fetchAnomalies } from "./reports-api";
+import { reportsKeys } from "./reports-keys";
+import type { AnomaliesParams } from "./types";
 
 export function useAnomalies(params: AnomaliesParams) {
   return useQuery({

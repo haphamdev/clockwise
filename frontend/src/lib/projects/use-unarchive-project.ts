@@ -1,11 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { queryClient } from '@/lib/query-client';
-import { showErrorToast } from '@/lib/api-error-toast';
-import { projectsKeys } from './projects-keys';
-import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
-import { timeLogsKeys } from '@/lib/time-logs/time-logs-keys';
-import { unarchiveProject } from './projects-api';
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { showErrorToast } from "@/lib/api-error-toast";
+import { auditLogsKeys } from "@/lib/audit-logs/audit-logs-keys";
+import { queryClient } from "@/lib/query-client";
+import { timeLogsKeys } from "@/lib/time-logs/time-logs-keys";
+import { unarchiveProject } from "./projects-api";
+import { projectsKeys } from "./projects-keys";
 
 export function useUnarchiveProject() {
   return useMutation({
@@ -14,10 +14,10 @@ export function useUnarchiveProject() {
       queryClient.invalidateQueries({ queryKey: projectsKeys.all });
       queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
       queryClient.invalidateQueries({ queryKey: timeLogsKeys.all });
-      toast.success('Project unarchived');
+      toast.success("Project unarchived");
     },
     onError: (err) => {
-      showErrorToast(err, 'Failed to unarchive project');
+      showErrorToast(err, "Failed to unarchive project");
     },
   });
 }

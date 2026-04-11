@@ -1,6 +1,6 @@
-import { SetMetadata } from '@nestjs/common';
+import { SetMetadata } from "@nestjs/common";
 
-export const ROLES_KEY = 'roles';
+export const ROLES_KEY = "roles";
 
 /**
  * Decorator to annotate endpoints with required team-scoped roles.
@@ -9,5 +9,5 @@ export const ROLES_KEY = 'roles';
  * @example @Roles('manager')
  * @example @Roles('manager', 'member')
  */
-export const Roles = (...roles: Array<'manager' | 'member'>) =>
+export const Roles = (...roles: Array<"manager" | "member">) =>
   SetMetadata(ROLES_KEY, roles);

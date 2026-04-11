@@ -1,16 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 import {
-  IsString,
+  ArrayMinSize,
+  IsArray,
+  IsDateString,
   IsNumber,
   IsOptional,
-  IsArray,
-  ArrayMinSize,
+  IsString,
+  Max,
   MaxLength,
   Min,
-  Max,
-  IsDateString,
   MinLength,
-} from 'class-validator';
+} from "class-validator";
 
 export class UpdateTimeLogDto {
   @ApiProperty({ type: [String], required: false })
@@ -22,7 +22,7 @@ export class UpdateTimeLogDto {
   @MaxLength(100, { each: true })
   taskLabels?: string[];
 
-  @ApiProperty({ required: false, description: 'YYYY-MM-DD' })
+  @ApiProperty({ required: false, description: "YYYY-MM-DD" })
   @IsOptional()
   @IsDateString()
   date?: string;
@@ -40,7 +40,7 @@ export class UpdateTimeLogDto {
   @MaxLength(2000)
   notes?: string;
 
-  @ApiProperty({ description: 'Reason for update (required)' })
+  @ApiProperty({ description: "Reason for update (required)" })
   @IsString()
   @MinLength(1)
   @MaxLength(500)

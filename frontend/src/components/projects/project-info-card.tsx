@@ -1,9 +1,9 @@
-import { Pencil, Archive, ArchiveRestore } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/ui/status-badge';
-import type { ProjectDetail } from '@/lib/projects/types';
-import { TimeDisplay } from '@/components/ui/time-display';
+import { Archive, ArchiveRestore, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import type { ProjectDetail } from "@/lib/projects/types";
 
 interface ProjectInfoCardProps {
   project: ProjectDetail;
@@ -31,11 +31,13 @@ export function ProjectInfoCard({
             <StatusBadge status={project.status} />
           </CardTitle>
           {project.description && (
-            <p className="text-sm text-muted-foreground">{project.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {project.description}
+            </p>
           )}
         </div>
         <div className="flex gap-2">
-          {project.status === 'archived' ? (
+          {project.status === "archived" ? (
             canArchive && (
               <Button variant="outline" size="sm" onClick={onUnarchive}>
                 <ArchiveRestore className="mr-1.5 h-3.5 w-3.5" />
@@ -68,7 +70,9 @@ export function ProjectInfoCard({
           </div>
           <div>
             <dt className="text-muted-foreground">Created</dt>
-            <dd className="font-medium"><TimeDisplay value={project.createdAt} /></dd>
+            <dd className="font-medium">
+              <TimeDisplay value={project.createdAt} />
+            </dd>
           </div>
         </dl>
       </CardContent>

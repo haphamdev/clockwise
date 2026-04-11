@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { useTheme } from 'next-themes';
-import { useUserPreferences } from './use-user-preferences';
+import { useTheme } from "next-themes";
+import { useEffect, useRef } from "react";
+import { useUserPreferences } from "./use-user-preferences";
 
 /**
  * Syncs the user's persisted theme preference to next-themes once on load.

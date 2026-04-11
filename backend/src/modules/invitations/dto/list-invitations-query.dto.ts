@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsIn, IsInt, IsOptional, Max, Min } from "class-validator";
 
 export class ListInvitationsQueryDto {
   @ApiProperty({ required: false, default: 1 })
@@ -18,8 +18,11 @@ export class ListInvitationsQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiProperty({ required: false, enum: ['initiated', 'sending', 'sent', 'accepted', 'revoked', 'failed'] })
+  @ApiProperty({
+    required: false,
+    enum: ["initiated", "sending", "sent", "accepted", "revoked", "failed"],
+  })
   @IsOptional()
-  @IsIn(['initiated', 'sending', 'sent', 'accepted', 'revoked', 'failed'])
-  status?: 'initiated' | 'sending' | 'sent' | 'accepted' | 'revoked' | 'failed';
+  @IsIn(["initiated", "sending", "sent", "accepted", "revoked", "failed"])
+  status?: "initiated" | "sending" | "sent" | "accepted" | "revoked" | "failed";
 }

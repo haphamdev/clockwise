@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Organization, Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { OrgSettingsEntity, DEFAULT_ORG_SETTINGS } from './entities/org-settings.entity';
+import { Injectable } from "@nestjs/common";
+import { Organization, Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import {
+  DEFAULT_ORG_SETTINGS,
+  OrgSettingsEntity,
+} from "./entities/org-settings.entity";
 
 interface SettingsJson {
   expectedHoursPerWeek?: number;
@@ -46,7 +49,10 @@ export class OrgRepository {
     },
   ): Promise<OrgSettingsEntity> {
     const { orgName, ...settingsFields } = data;
-    const mergedSettings: SettingsJson = { ...currentSettings, ...settingsFields };
+    const mergedSettings: SettingsJson = {
+      ...currentSettings,
+      ...settingsFields,
+    };
 
     const updated = await this.prisma.organization.update({
       where: { id: orgId },
@@ -67,9 +73,12 @@ export class OrgRepository {
       orgName: org.name,
       expectedHoursPerWeek: s.expectedHoursPerWeek ?? d.expectedHoursPerWeek,
       dailyWarningThreshold: s.dailyWarningThreshold ?? d.dailyWarningThreshold,
-      weeklyWarningThreshold: s.weeklyWarningThreshold ?? d.weeklyWarningThreshold,
-      dateFormat: (s.dateFormat as OrgSettingsEntity['dateFormat']) ?? d.dateFormat,
-      timeFormat: (s.timeFormat as OrgSettingsEntity['timeFormat']) ?? d.timeFormat,
+      weeklyWarningThreshold:
+        s.weeklyWarningThreshold ?? d.weeklyWarningThreshold,
+      dateFormat:
+        (s.dateFormat as OrgSettingsEntity["dateFormat"]) ?? d.dateFormat,
+      timeFormat:
+        (s.timeFormat as OrgSettingsEntity["timeFormat"]) ?? d.timeFormat,
       csvMaxRows: s.csvMaxRows ?? d.csvMaxRows,
       trackSaturday: s.trackSaturday ?? d.trackSaturday,
       trackSunday: s.trackSunday ?? d.trackSunday,

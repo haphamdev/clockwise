@@ -1,19 +1,21 @@
-import { useDocumentTitle } from '@/hooks/use-document-title';
+import { useDocumentTitle } from "@/hooks/use-document-title";
 
 export function LoginPage() {
-  useDocumentTitle('Clockwise - Sign In');
+  useDocumentTitle("Clockwise - Sign In");
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 text-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Clockwise</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in to track your time</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Sign in to track your time
+          </p>
         </div>
         <a
           href="/api/v1/auth/google"
           className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
         >
-          <svg className="h-5 w-5" viewBox="0 0 24 24">
+          <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
             <path
               fill="currentColor"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"

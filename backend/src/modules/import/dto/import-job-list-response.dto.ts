@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ImportJobStatus } from '@prisma/client';
+import { ApiProperty } from "@nestjs/swagger";
+import { ImportJobStatus } from "@prisma/client";
 
 export class ImportJobListItemDto {
   @ApiProperty()
@@ -8,7 +8,7 @@ export class ImportJobListItemDto {
   @ApiProperty()
   type: string;
 
-  @ApiProperty({ enum: ['pending', 'processing', 'completed', 'failed'] })
+  @ApiProperty({ enum: ["pending", "processing", "completed", "failed"] })
   status: ImportJobStatus;
 
   @ApiProperty()

@@ -1,36 +1,36 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-  FormDescription,
-} from '@/components/ui/form';
-import { useUpdateOrgSettings } from '@/lib/org/use-update-org-settings';
-import type { OrgSettings } from '@/lib/org/types';
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import type { OrgSettings } from "@/lib/org/types";
+import { useUpdateOrgSettings } from "@/lib/org/use-update-org-settings";
 
 const schema = z.object({
-  orgName: z.string().min(1, 'Organization name is required'),
+  orgName: z.string().min(1, "Organization name is required"),
   expectedHoursPerWeek: z.number().min(1).max(168),
   dailyWarningThreshold: z.number().min(1).max(24),
   weeklyWarningThreshold: z.number().min(1).max(168),
-  dateFormat: z.enum(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY']),
-  timeFormat: z.enum(['12h', '24h']),
+  dateFormat: z.enum(["YYYY-MM-DD", "DD/MM/YYYY", "MM/DD/YYYY"]),
+  timeFormat: z.enum(["12h", "24h"]),
   csvMaxRows: z.number().min(1).max(10000),
   trackSaturday: z.boolean(),
   trackSunday: z.boolean(),
@@ -59,7 +59,10 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="max-w-lg space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="max-w-lg space-y-4"
+      >
         <FormField
           control={form.control}
           name="orgName"
@@ -104,7 +107,9 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
                   onChange={(e) => field.onChange(e.target.valueAsNumber)}
                 />
               </FormControl>
-              <FormDescription>Warn when daily hours exceed this (1-24).</FormDescription>
+              <FormDescription>
+                Warn when daily hours exceed this (1-24).
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -122,7 +127,9 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
                   onChange={(e) => field.onChange(e.target.valueAsNumber)}
                 />
               </FormControl>
-              <FormDescription>Warn when weekly hours exceed this (1-168).</FormDescription>
+              <FormDescription>
+                Warn when weekly hours exceed this (1-168).
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -183,7 +190,9 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
                   onChange={(e) => field.onChange(e.target.valueAsNumber)}
                 />
               </FormControl>
-              <FormDescription>Maximum rows in CSV exports (1-10,000).</FormDescription>
+              <FormDescription>
+                Maximum rows in CSV exports (1-10,000).
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -200,7 +209,10 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
             </FormItem>
           )}
@@ -217,13 +229,16 @@ export function OrgSettingsForm({ settings }: OrgSettingsFormProps) {
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
             </FormItem>
           )}
         />
         <Button type="submit" disabled={updateSettings.isPending}>
-          {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
+          {updateSettings.isPending ? "Saving..." : "Save Settings"}
         </Button>
       </form>
     </Form>

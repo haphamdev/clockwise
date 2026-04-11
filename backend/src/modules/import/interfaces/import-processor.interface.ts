@@ -31,7 +31,10 @@ export interface ImportCallerContext {
   isAdmin: boolean;
 }
 
-export type ImportProgressCallback = (imported: number, errorCount: number) => void;
+export type ImportProgressCallback = (
+  imported: number,
+  errorCount: number,
+) => void;
 
 export interface ImportProcessor {
   readonly type: string;

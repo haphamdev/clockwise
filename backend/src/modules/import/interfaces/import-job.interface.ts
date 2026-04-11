@@ -1,4 +1,4 @@
-import { ImportRow, ImportValidationError } from './import-processor.interface';
+import { ImportRow, ImportValidationError } from "./import-processor.interface";
 
 export interface ImportJobData {
   type: string;
@@ -9,7 +9,7 @@ export interface ImportJobData {
   importJobId: string;
 }
 
-export type ImportJobStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type ImportJobStatus = "pending" | "processing" | "completed" | "failed";
 
 export interface ImportJobResult {
   status: ImportJobStatus;

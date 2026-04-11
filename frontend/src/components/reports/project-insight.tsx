@@ -1,17 +1,17 @@
-import { useMemo, useCallback, useState } from 'react';
-import { useTimeSeries } from '@/lib/reports/use-time-series';
-import { useReportSummary } from '@/lib/reports/use-report-summary';
-import { useSectionModes } from '@/lib/reports/use-section-modes';
-import { parseIds } from '@/lib/reports/report-param-utils';
-import { ProjectInsightFilters } from './project-insight-filters';
-import { SummaryCards } from './summary-cards';
-import { ChartToolbar } from './chart-toolbar';
-import { TimeSeriesChart } from './time-series-chart';
-import type { ChartMode, ChartLayers } from './chart-toolbar';
-import type { ReportGranularity } from '@/lib/reports/types';
+import { useCallback, useMemo, useState } from "react";
+import { parseIds } from "@/lib/reports/report-param-utils";
+import type { ReportGranularity } from "@/lib/reports/types";
+import { useReportSummary } from "@/lib/reports/use-report-summary";
+import { useSectionModes } from "@/lib/reports/use-section-modes";
+import { useTimeSeries } from "@/lib/reports/use-time-series";
+import type { ChartLayers, ChartMode } from "./chart-toolbar";
+import { ChartToolbar } from "./chart-toolbar";
+import { ProjectInsightFilters } from "./project-insight-filters";
+import { SummaryCards } from "./summary-cards";
+import { TimeSeriesChart } from "./time-series-chart";
 
 // Default chart modes: chart 0 = Hours by Team (stacked), chart 1 = Hours by User (grouped)
-const PR_MODE_DEFAULTS: ChartMode[] = ['stacked', 'grouped'];
+const PR_MODE_DEFAULTS: ChartMode[] = ["stacked", "grouped"];
 
 interface ProjectInsightProps {
   dateFrom: string;
@@ -31,30 +31,41 @@ export function ProjectInsight({
   setParams,
 }: ProjectInsightProps) {
   // Section-specific URL params
-  const projectId = getParam('projectId');
-  const teamIdsParam = getParam('teamIds');
+  const projectId = getParam("projectId");
+  const teamIdsParam = getParam("teamIds");
   const teamIds = useMemo(() => parseIds(teamIdsParam), [teamIdsParam]);
-  const userIdsParam = getParam('userIds');
+  const userIdsParam = getParam("userIds");
   const userIds = useMemo(() => parseIds(userIdsParam), [userIdsParam]);
-  const [modes, setMode] = useSectionModes('mode', PR_MODE_DEFAULTS, getParam, setParam);
-  const [layersTeam, setLayersTeam] = useState<ChartLayers>({ values: true, trend: true });
-  const [layersUser, setLayersUser] = useState<ChartLayers>({ values: true, trend: true });
+  const [modes, setMode] = useSectionModes(
+    "mode",
+    PR_MODE_DEFAULTS,
+    getParam,
+    setParam,
+  );
+  const [layersTeam, setLayersTeam] = useState<ChartLayers>({
+    values: true,
+    trend: true,
+  });
+  const [layersUser, setLayersUser] = useState<ChartLayers>({
+    values: true,
+    trend: true,
+  });
 
   // Changing project clears team and user filters
   const handleProjectChange = useCallback(
     (newProjectId: string) => {
-      setParams({ projectId: newProjectId, teamIds: '', userIds: '' });
+      setParams({ projectId: newProjectId, teamIds: "", userIds: "" });
     },
     [setParams],
   );
 
   const handleTeamIdsChange = useCallback(
-    (ids: string[]) => setParam('teamIds', ids.join(',')),
+    (ids: string[]) => setParam("teamIds", ids.join(",")),
     [setParam],
   );
 
   const handleUserIdsChange = useCallback(
-    (ids: string[]) => setParam('userIds', ids.join(',')),
+    (ids: string[]) => setParam("userIds", ids.join(",")),
     [setParam],
   );
 
@@ -71,20 +82,29 @@ export function ProjectInsight({
   );
 
   const { data: summaryData } = useReportSummary(filters);
-  const { data: teamSeries } = useTimeSeries({ ...filters, granularity, groupBy: 'team' });
-  const { data: userSeries } = useTimeSeries({ ...filters, granularity, groupBy: 'user' });
+  const { data: teamSeries } = useTimeSeries({
+    ...filters,
+    granularity,
+    groupBy: "team",
+  });
+  const { data: userSeries } = useTimeSeries({
+    ...filters,
+    granularity,
+    groupBy: "user",
+  });
 
   const summaryCards = useMemo(() => {
     if (!summaryData) return [];
     const avgPerMember =
       summaryData.uniqueUsers > 0
-        ? Math.round((summaryData.totalHours / summaryData.uniqueUsers) * 100) / 100
+        ? Math.round((summaryData.totalHours / summaryData.uniqueUsers) * 100) /
+          100
         : 0;
     return [
-      { label: 'Total hours', value: summaryData.totalHours, unit: 'h' },
-      { label: 'Avg / member', value: avgPerMember, unit: 'h' },
-      { label: 'Members', value: summaryData.uniqueUsers },
-      { label: 'Teams', value: summaryData.uniqueTeams },
+      { label: "Total hours", value: summaryData.totalHours, unit: "h" },
+      { label: "Avg / member", value: avgPerMember, unit: "h" },
+      { label: "Members", value: summaryData.uniqueUsers },
+      { label: "Teams", value: summaryData.uniqueTeams },
     ];
   }, [summaryData]);
 
@@ -103,10 +123,12 @@ export function ProjectInsight({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Hours by Team</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Hours by Team
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Each color represents a team. Compare how different teams contribute to this
-              project over time.
+              Each color represents a team. Compare how different teams
+              contribute to this project over time.
             </p>
           </div>
           <ChartToolbar
@@ -129,10 +151,12 @@ export function ProjectInsight({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Hours by User
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Each color represents a contributor. See individual contributions to this project
-              per time period.
+              Each color represents a contributor. See individual contributions
+              to this project per time period.
             </p>
           </div>
           <ChartToolbar

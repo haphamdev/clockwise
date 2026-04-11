@@ -1,22 +1,22 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Shield, Users, Mail, Settings } from 'lucide-react';
-import { navLinkClasses } from '@/components/layout/nav-link-classes';
+import { Mail, Settings, Shield, Users } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { navLinkClasses } from "@/components/layout/nav-link-classes";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 const adminLinks = [
-  { label: 'Users', href: '/admin/users', icon: Users },
-  { label: 'Invitations', href: '/admin/invitations', icon: Mail },
-  { label: 'Settings', href: '/admin/settings', icon: Settings },
+  { label: "Users", href: "/admin/users", icon: Users },
+  { label: "Invitations", href: "/admin/invitations", icon: Mail },
+  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function AdminNavDropdown() {
   const { pathname } = useLocation();
-  const isActive = pathname.startsWith('/admin');
+  const isActive = pathname.startsWith("/admin");
 
   return (
     <DropdownMenu>

@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MaxLength } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString, MaxLength } from "class-validator";
 
 export class ImportPreviewDto {
   @ApiProperty({ description: 'Import type (e.g. "time-log")' })
@@ -7,7 +7,7 @@ export class ImportPreviewDto {
   @MaxLength(50)
   type: string;
 
-  @ApiProperty({ description: 'CSV file content' })
+  @ApiProperty({ description: "CSV file content" })
   @IsString()
   @MaxLength(5 * 1024 * 1024)
   csvContent: string;
@@ -23,7 +23,10 @@ export class ImportValidationErrorDto {
   @ApiProperty()
   message: string;
 
-  @ApiProperty({ required: false, description: 'Original row data (when available)' })
+  @ApiProperty({
+    required: false,
+    description: "Original row data (when available)",
+  })
   data?: Record<string, string>;
 }
 
@@ -47,13 +50,15 @@ export class ImportPreviewResponseDto {
 
   @ApiProperty({
     required: false,
-    description: 'Token to pass to the execute endpoint. Only present when there are valid rows.',
+    description:
+      "Token to pass to the execute endpoint. Only present when there are valid rows.",
   })
   previewToken?: string;
 
   @ApiProperty({
     required: false,
-    description: 'Seconds until the preview expires. Only present when previewToken is set.',
+    description:
+      "Seconds until the preview expires. Only present when previewToken is set.",
   })
   expiresInSeconds?: number;
 }

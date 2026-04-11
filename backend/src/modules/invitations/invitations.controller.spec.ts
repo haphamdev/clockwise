@@ -1,17 +1,17 @@
-import { InvitationsController } from './invitations.controller';
-import { InvitationsService } from './invitations.service';
-import { UserEntity } from '../users/entities/user.entity';
-import { InvitationEntity } from './entities/invitation.entity';
+import { UserEntity } from "../users/entities/user.entity";
+import { InvitationEntity } from "./entities/invitation.entity";
+import { InvitationsController } from "./invitations.controller";
+import { InvitationsService } from "./invitations.service";
 
 function makeUser(overrides?: Partial<UserEntity>): UserEntity {
   return {
-    id: 'admin-1',
-    orgId: 'org-1',
-    email: 'admin@example.com',
-    name: 'Admin',
+    id: "admin-1",
+    orgId: "org-1",
+    email: "admin@example.com",
+    name: "Admin",
     avatarUrl: null,
     isAdmin: true,
-    status: 'active',
+    status: "active",
     lastLoginAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -19,25 +19,27 @@ function makeUser(overrides?: Partial<UserEntity>): UserEntity {
   };
 }
 
-function makeInvitation(overrides?: Partial<InvitationEntity>): InvitationEntity {
+function makeInvitation(
+  overrides?: Partial<InvitationEntity>,
+): InvitationEntity {
   return {
-    id: 'inv-1',
-    orgId: 'org-1',
-    email: 'new@example.com',
-    invitedBy: 'admin-1',
-    invitedByName: 'Admin',
-    token: 'abc123',
+    id: "inv-1",
+    orgId: "org-1",
+    email: "new@example.com",
+    invitedBy: "admin-1",
+    invitedByName: "Admin",
+    token: "abc123",
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    status: 'sent',
+    status: "sent",
     createdAt: new Date(),
     teamAssignments: [
-      { teamId: 'team-1', teamName: 'Engineering', role: 'member' },
+      { teamId: "team-1", teamName: "Engineering", role: "member" },
     ],
     ...overrides,
   };
 }
 
-describe('InvitationsController', () => {
+describe("InvitationsController", () => {
   let controller: InvitationsController;
   let service: jest.Mocked<InvitationsService>;
 
@@ -53,43 +55,43 @@ describe('InvitationsController', () => {
     controller = new InvitationsController(service);
   });
 
-  describe('validateToken', () => {
-    it('should return invitation details and org name (public, no auth)', async () => {
+  describe("validateToken", () => {
+    it("should return invitation details and org name (public, no auth)", async () => {
       service.validateTokenWithOrgName.mockResolvedValue({
         invitation: makeInvitation(),
-        orgName: 'Acme Corp',
+        orgName: "Acme Corp",
       });
 
-      const result = await controller.validateToken('abc123');
-      expect(result.email).toBe('new@example.com');
-      expect(result.orgName).toBe('Acme Corp');
+      const result = await controller.validateToken("abc123");
+      expect(result.email).toBe("new@example.com");
+      expect(result.orgName).toBe("Acme Corp");
       expect(result.teamAssignments).toHaveLength(1);
-      expect(service.validateTokenWithOrgName).toHaveBeenCalledWith('abc123');
+      expect(service.validateTokenWithOrgName).toHaveBeenCalledWith("abc123");
     });
   });
 
-  describe('create', () => {
-    it('should create and return invitation', async () => {
+  describe("create", () => {
+    it("should create and return invitation", async () => {
       const invitation = makeInvitation();
       service.create.mockResolvedValue(invitation);
 
       const user = makeUser();
       const result = await controller.create(user, {
-        email: 'new@example.com',
-        teamAssignments: [{ teamId: 'team-1', role: 'member' }],
+        email: "new@example.com",
+        teamAssignments: [{ teamId: "team-1", role: "member" }],
       });
 
-      expect(result.email).toBe('new@example.com');
+      expect(result.email).toBe("new@example.com");
       expect(result.teamAssignments).toHaveLength(1);
-      expect(service.create).toHaveBeenCalledWith('org-1', 'admin-1', {
-        email: 'new@example.com',
-        teamAssignments: [{ teamId: 'team-1', role: 'member' }],
+      expect(service.create).toHaveBeenCalledWith("org-1", "admin-1", {
+        email: "new@example.com",
+        teamAssignments: [{ teamId: "team-1", role: "member" }],
       });
     });
   });
 
-  describe('list', () => {
-    it('should return paginated invitations', async () => {
+  describe("list", () => {
+    it("should return paginated invitations", async () => {
       service.findAll.mockResolvedValue({ data: [makeInvitation()], total: 1 });
 
       const result = await controller.list(makeUser(), { page: 1, limit: 20 });
@@ -97,36 +99,36 @@ describe('InvitationsController', () => {
       expect(result.total).toBe(1);
     });
 
-    it('should pass status filter', async () => {
+    it("should pass status filter", async () => {
       service.findAll.mockResolvedValue({ data: [], total: 0 });
 
-      await controller.list(makeUser(), { page: 1, limit: 20, status: 'sent' });
-      expect(service.findAll).toHaveBeenCalledWith('org-1', {
+      await controller.list(makeUser(), { page: 1, limit: 20, status: "sent" });
+      expect(service.findAll).toHaveBeenCalledWith("org-1", {
         page: 1,
         limit: 20,
-        status: 'sent',
+        status: "sent",
       });
     });
   });
 
-  describe('revoke', () => {
-    it('should revoke and return message', async () => {
+  describe("revoke", () => {
+    it("should revoke and return message", async () => {
       service.revoke.mockResolvedValue(undefined);
 
-      const result = await controller.revoke('inv-1', makeUser());
-      expect(result.message).toBe('Invitation revoked');
-      expect(service.revoke).toHaveBeenCalledWith('inv-1', 'org-1');
+      const result = await controller.revoke("inv-1", makeUser());
+      expect(result.message).toBe("Invitation revoked");
+      expect(service.revoke).toHaveBeenCalledWith("inv-1", "org-1");
     });
   });
 
-  describe('resend', () => {
-    it('should resend and return updated invitation', async () => {
-      const invitation = makeInvitation({ token: 'new-token' });
+  describe("resend", () => {
+    it("should resend and return updated invitation", async () => {
+      const invitation = makeInvitation({ token: "new-token" });
       service.resend.mockResolvedValue(invitation);
 
-      const result = await controller.resend('inv-1', makeUser());
-      expect(result.email).toBe('new@example.com');
-      expect(service.resend).toHaveBeenCalledWith('inv-1', 'org-1');
+      const result = await controller.resend("inv-1", makeUser());
+      expect(result.email).toBe("new@example.com");
+      expect(service.resend).toHaveBeenCalledWith("inv-1", "org-1");
     });
   });
 });

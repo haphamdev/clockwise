@@ -1,8 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsIn, Min, Max, IsNotEmpty, IsBoolean } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import {
+  IsBoolean,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from "class-validator";
 
 export class UpdateOrgSettingsDto {
-  @ApiProperty({ required: false, example: 'Acme Corp' })
+  @ApiProperty({ required: false, example: "Acme Corp" })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
@@ -29,15 +38,18 @@ export class UpdateOrgSettingsDto {
   @Max(168)
   weeklyWarningThreshold?: number;
 
-  @ApiProperty({ required: false, enum: ['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'] })
+  @ApiProperty({
+    required: false,
+    enum: ["YYYY-MM-DD", "DD/MM/YYYY", "MM/DD/YYYY"],
+  })
   @IsOptional()
-  @IsIn(['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'])
-  dateFormat?: 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
+  @IsIn(["YYYY-MM-DD", "DD/MM/YYYY", "MM/DD/YYYY"])
+  dateFormat?: "YYYY-MM-DD" | "DD/MM/YYYY" | "MM/DD/YYYY";
 
-  @ApiProperty({ required: false, enum: ['12h', '24h'] })
+  @ApiProperty({ required: false, enum: ["12h", "24h"] })
   @IsOptional()
-  @IsIn(['12h', '24h'])
-  timeFormat?: '12h' | '24h';
+  @IsIn(["12h", "24h"])
+  timeFormat?: "12h" | "24h";
 
   @ApiProperty({ required: false, example: 500 })
   @IsOptional()

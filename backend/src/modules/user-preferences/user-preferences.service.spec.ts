@@ -1,23 +1,23 @@
-import { ErrorCode } from '../../common/exceptions/error-codes';
-import { UserPreferencesService } from './user-preferences.service';
-import { UserPreferencesRepository } from './user-preferences.repository';
-import { UserPreferencesEntity } from './entities/user-preferences.entity';
+import { ErrorCode } from "../../common/exceptions/error-codes";
+import { UserPreferencesEntity } from "./entities/user-preferences.entity";
+import { UserPreferencesRepository } from "./user-preferences.repository";
+import { UserPreferencesService } from "./user-preferences.service";
 
 function makePreferences(
   overrides?: Partial<UserPreferencesEntity>,
 ): UserPreferencesEntity {
   return {
-    theme: 'system',
+    theme: "system",
     dateFormat: null,
     timeFormat: null,
-    timezone: 'UTC',
+    timezone: "UTC",
     defaultProjectId: null,
-    weekStartDay: 'monday',
+    weekStartDay: "monday",
     ...overrides,
   };
 }
 
-describe('UserPreferencesService', () => {
+describe("UserPreferencesService", () => {
   let service: UserPreferencesService;
   let prefsRepo: jest.Mocked<UserPreferencesRepository>;
 
@@ -30,62 +30,62 @@ describe('UserPreferencesService', () => {
     service = new UserPreferencesService(prefsRepo);
   });
 
-  describe('getPreferences', () => {
-    it('should return preferences from repo', async () => {
-      const prefs = makePreferences({ theme: 'dark' });
+  describe("getPreferences", () => {
+    it("should return preferences from repo", async () => {
+      const prefs = makePreferences({ theme: "dark" });
       prefsRepo.findPreferences.mockResolvedValue(prefs);
 
-      const result = await service.getPreferences('user-1');
+      const result = await service.getPreferences("user-1");
       expect(result).toEqual(prefs);
-      expect(prefsRepo.findPreferences).toHaveBeenCalledWith('user-1');
+      expect(prefsRepo.findPreferences).toHaveBeenCalledWith("user-1");
     });
 
-    it('should throw USER_NOT_FOUND when user missing', async () => {
+    it("should throw USER_NOT_FOUND when user missing", async () => {
       prefsRepo.findPreferences.mockResolvedValue(null);
 
-      await expect(service.getPreferences('bad-id')).rejects.toThrow(
+      await expect(service.getPreferences("bad-id")).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.USER.NOT_FOUND }),
       );
     });
   });
 
-  describe('updatePreferences', () => {
-    it('should merge partial update and return result', async () => {
-      const current = makePreferences({ theme: 'dark' });
+  describe("updatePreferences", () => {
+    it("should merge partial update and return result", async () => {
+      const current = makePreferences({ theme: "dark" });
       prefsRepo.findPreferences.mockResolvedValue(current);
-      const updated = makePreferences({ theme: 'light' });
+      const updated = makePreferences({ theme: "light" });
       prefsRepo.updatePreferences.mockResolvedValue(updated);
 
-      const result = await service.updatePreferences('user-1', {
-        theme: 'light',
+      const result = await service.updatePreferences("user-1", {
+        theme: "light",
       });
 
       expect(result).toEqual(updated);
       expect(prefsRepo.updatePreferences).toHaveBeenCalledWith(
-        'user-1',
+        "user-1",
         current,
-        { theme: 'light' },
+        { theme: "light" },
       );
     });
 
-    it('should throw USER_NOT_FOUND when user missing', async () => {
+    it("should throw USER_NOT_FOUND when user missing", async () => {
       prefsRepo.findPreferences.mockResolvedValue(null);
 
       await expect(
-        service.updatePreferences('bad-id', { theme: 'dark' }),
+        service.updatePreferences("bad-id", { theme: "dark" }),
       ).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.USER.NOT_FOUND }),
       );
     });
 
-    it('should return current preferences without DB write when body is empty', async () => {
-      const prefs = makePreferences({ theme: 'dark' });
+    it("should return current preferences without DB write when body is empty", async () => {
+      const prefs = makePreferences({ theme: "dark" });
       prefsRepo.findPreferences.mockResolvedValue(prefs);
 
-      const result = await service.updatePreferences('user-1', {});
+      const result = await service.updatePreferences("user-1", {});
 
       expect(result).toEqual(prefs);
-      expect(prefsRepo.findPreferences).toHaveBeenCalledWith('user-1');
+      expect(prefsRepo.findPreferences).toHaveBeenCalledWith("user-1");
       expect(prefsRepo.updatePreferences).not.toHaveBeenCalled();
     });
   });

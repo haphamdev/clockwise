@@ -1,6 +1,6 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useOrgOverview } from '@/lib/dashboard/use-org-overview';
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useOrgOverview } from "@/lib/dashboard/use-org-overview";
 
 interface OrgOverviewCardsProps {
   enabled: boolean;
@@ -28,7 +28,9 @@ export function OrgOverviewCards({ enabled }: OrgOverviewCardsProps) {
     return (
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Organization Overview</h2>
-        <p className="text-sm text-destructive">Failed to load organization overview.</p>
+        <p className="text-sm text-destructive">
+          Failed to load organization overview.
+        </p>
       </div>
     );
   }
@@ -36,9 +38,24 @@ export function OrgOverviewCards({ enabled }: OrgOverviewCardsProps) {
   if (!data) return null;
 
   const cards = [
-    { label: 'Users', active: data.users.active, inactive: data.users.deactivated, inactiveLabel: 'deactivated' },
-    { label: 'Teams', active: data.teams.active, inactive: data.teams.archived, inactiveLabel: 'archived' },
-    { label: 'Projects', active: data.projects.active, inactive: data.projects.archived, inactiveLabel: 'archived' },
+    {
+      label: "Users",
+      active: data.users.active,
+      inactive: data.users.deactivated,
+      inactiveLabel: "deactivated",
+    },
+    {
+      label: "Teams",
+      active: data.teams.active,
+      inactive: data.teams.archived,
+      inactiveLabel: "archived",
+    },
+    {
+      label: "Projects",
+      active: data.projects.active,
+      inactive: data.projects.archived,
+      inactiveLabel: "archived",
+    },
   ];
 
   return (

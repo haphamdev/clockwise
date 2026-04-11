@@ -1,5 +1,5 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { AdminAccessRequiredException } from '../exceptions/admin.exceptions';
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { AdminAccessRequiredException } from "../exceptions/admin.exceptions";
 
 /**
  * Guard that restricts access to admin users only.

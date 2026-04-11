@@ -1,11 +1,12 @@
-import { useId } from 'react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { useId } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Canonical type lives in chart-utils; re-exported here so callers can co-import with ChartLayers
-import type { ChartMode } from '@/lib/reports/chart-utils';
-export type { ChartMode } from '@/lib/reports/chart-utils';
+import type { ChartMode } from "@/lib/reports/chart-utils";
+
+export type { ChartMode } from "@/lib/reports/chart-utils";
 
 export interface ChartLayers {
   values: boolean;

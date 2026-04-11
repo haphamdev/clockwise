@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
 import {
   TimeLogEntity,
   TimeLogListItem,
   TimeLogTaskEntity,
-} from './entities/time-log.entity';
+} from "./entities/time-log.entity";
 
 @Injectable()
 export class TimeLogsRepository {
@@ -45,7 +45,7 @@ export class TimeLogsRepository {
         userId,
         date,
         projectId,
-        status: 'active',
+        status: "active",
         timeLogTasks: {
           some: {
             task: { labelNormalized: taskLabel.trim().toLowerCase() },
@@ -61,12 +61,17 @@ export class TimeLogsRepository {
     return timeLog ? this.toEntity(timeLog) : null;
   }
 
-  async findListItemById(id: string, orgId: string): Promise<TimeLogListItem | null> {
+  async findListItemById(
+    id: string,
+    orgId: string,
+  ): Promise<TimeLogListItem | null> {
     const timeLog = await this.prisma.timeLog.findFirst({
       where: { id, user: { orgId } },
       include: {
         user: { select: { id: true, name: true, email: true, status: true } },
-        project: { select: { id: true, name: true, description: true, status: true } },
+        project: {
+          select: { id: true, name: true, description: true, status: true },
+        },
         timeLogTasks: {
           include: {
             task: { select: { id: true, label: true, description: true } },
@@ -79,8 +84,18 @@ export class TimeLogsRepository {
 
     return {
       ...this.toEntity(timeLog),
-      user: { id: timeLog.user.id, name: timeLog.user.name, email: timeLog.user.email, status: timeLog.user.status },
-      project: { id: timeLog.project.id, name: timeLog.project.name, description: timeLog.project.description, status: timeLog.project.status },
+      user: {
+        id: timeLog.user.id,
+        name: timeLog.user.name,
+        email: timeLog.user.email,
+        status: timeLog.user.status,
+      },
+      project: {
+        id: timeLog.project.id,
+        name: timeLog.project.name,
+        description: timeLog.project.description,
+        status: timeLog.project.status,
+      },
       tasks: timeLog.timeLogTasks.map((tlt) => this.toTaskEntity(tlt.task)),
     };
   }
@@ -96,7 +111,10 @@ export class TimeLogsRepository {
     return this.toEntity(timeLog);
   }
 
-  async replaceTimeLogTasks(timeLogId: string, taskIds: string[]): Promise<void> {
+  async replaceTimeLogTasks(
+    timeLogId: string,
+    taskIds: string[],
+  ): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.timeLogTask.deleteMany({ where: { timeLogId } }),
       this.prisma.timeLogTask.createMany({
@@ -108,7 +126,7 @@ export class TimeLogsRepository {
   async archive(id: string): Promise<TimeLogEntity> {
     const timeLog = await this.prisma.timeLog.update({
       where: { id },
-      data: { status: 'archived' },
+      data: { status: "archived" },
     });
     return this.toEntity(timeLog);
   }
@@ -116,7 +134,7 @@ export class TimeLogsRepository {
   async unarchive(id: string): Promise<TimeLogEntity> {
     const timeLog = await this.prisma.timeLog.update({
       where: { id },
-      data: { status: 'active' },
+      data: { status: "active" },
     });
     return this.toEntity(timeLog);
   }
@@ -146,7 +164,7 @@ export class TimeLogsRepository {
           }),
         },
       },
-      ...(!options.includeArchived && { status: 'active' }),
+      ...(!options.includeArchived && { status: "active" }),
       ...(options.dateFrom && { date: { gte: new Date(options.dateFrom) } }),
       ...(options.dateTo && {
         date: {
@@ -154,7 +172,9 @@ export class TimeLogsRepository {
           lte: new Date(options.dateTo),
         },
       }),
-      ...(options.projectIds?.length && { projectId: { in: options.projectIds } }),
+      ...(options.projectIds?.length && {
+        projectId: { in: options.projectIds },
+      }),
       ...(options.userIds?.length && { userId: { in: options.userIds } }),
       ...(options.scopedUserIds && {
         userId: { in: options.scopedUserIds },
@@ -166,14 +186,16 @@ export class TimeLogsRepository {
         where,
         include: {
           user: { select: { id: true, name: true, email: true, status: true } },
-          project: { select: { id: true, name: true, description: true, status: true } },
+          project: {
+            select: { id: true, name: true, description: true, status: true },
+          },
           timeLogTasks: {
             include: {
               task: { select: { id: true, label: true, description: true } },
             },
           },
         },
-        orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [{ date: "desc" }, { createdAt: "desc" }],
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -187,8 +209,18 @@ export class TimeLogsRepository {
     return {
       data: timeLogs.map((tl) => ({
         ...this.toEntity(tl),
-        user: { id: tl.user.id, name: tl.user.name, email: tl.user.email, status: tl.user.status },
-        project: { id: tl.project.id, name: tl.project.name, description: tl.project.description, status: tl.project.status },
+        user: {
+          id: tl.user.id,
+          name: tl.user.name,
+          email: tl.user.email,
+          status: tl.user.status,
+        },
+        project: {
+          id: tl.project.id,
+          name: tl.project.name,
+          description: tl.project.description,
+          status: tl.project.status,
+        },
         tasks: tl.timeLogTasks.map((tlt) => this.toTaskEntity(tlt.task)),
       })),
       total,
@@ -198,7 +230,7 @@ export class TimeLogsRepository {
 
   async sumHoursForDate(userId: string, date: Date): Promise<number> {
     const result = await this.prisma.timeLog.aggregate({
-      where: { userId, date, status: 'active' },
+      where: { userId, date, status: "active" },
       _sum: { hours: true },
     });
     return Number(result._sum.hours ?? 0);
@@ -215,7 +247,7 @@ export class TimeLogsRepository {
     const result = await this.prisma.timeLog.aggregate({
       where: {
         userId,
-        status: 'active',
+        status: "active",
         date: { gte: monday, lte: sunday },
       },
       _sum: { hours: true },
@@ -230,17 +262,21 @@ export class TimeLogsRepository {
     return this.prisma.user.findMany({
       where: {
         orgId,
-        status: 'active',
+        status: "active",
         ...(userIds && { id: { in: userIds } }),
       },
       select: { id: true, name: true, email: true },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   }
 
   async findManagedUserIds(managerId: string): Promise<string[]> {
     const memberships = await this.prisma.teamMember.findMany({
-      where: { userId: managerId, role: 'manager', team: { isArchived: false } },
+      where: {
+        userId: managerId,
+        role: "manager",
+        team: { isArchived: false },
+      },
       select: { teamId: true },
     });
 
@@ -250,7 +286,7 @@ export class TimeLogsRepository {
     const members = await this.prisma.teamMember.findMany({
       where: { teamId: { in: teamIds } },
       select: { userId: true },
-      distinct: ['userId'],
+      distinct: ["userId"],
     });
 
     return members.map((m) => m.userId);
@@ -281,7 +317,7 @@ export class TimeLogsRepository {
       date: timeLog.date,
       hours: Number(timeLog.hours),
       notes: timeLog.notes,
-      status: timeLog.status as 'active' | 'archived',
+      status: timeLog.status as "active" | "archived",
       createdAt: timeLog.createdAt,
       updatedAt: timeLog.updatedAt,
     };

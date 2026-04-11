@@ -1,30 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { InvitationsService } from "../../invitations/invitations.service";
+import { TeamsService } from "../../teams/teams.service";
+import { UsersService } from "../../users/users.service";
 import {
+  ImportCallerContext,
+  ImportPreviewResult,
   ImportProcessor,
+  ImportProgressCallback,
+  ImportResult,
   ImportRow,
   ImportValidationError,
-  ImportPreviewResult,
-  ImportResult,
-  ImportCallerContext,
-  ImportProgressCallback,
-} from '../interfaces/import-processor.interface';
-import { parseCsv, validateHeaders, parseCommaSeparated } from '../utils/csv-parser';
-import { InvitationsService } from '../../invitations/invitations.service';
-import { TeamsService } from '../../teams/teams.service';
-import { UsersService } from '../../users/users.service';
+} from "../interfaces/import-processor.interface";
+import {
+  parseCommaSeparated,
+  parseCsv,
+  validateHeaders,
+} from "../utils/csv-parser";
 
-const EXPECTED_HEADERS = ['email', 'teams', 'manager_teams'];
+const EXPECTED_HEADERS = ["email", "teams", "manager_teams"];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ValidateRowResult {
   errors: ImportValidationError[];
   warnings: ImportValidationError[];
-  resolvedAssignments?: Array<{ teamId: string; role: 'manager' | 'member' }>;
+  resolvedAssignments?: Array<{ teamId: string; role: "manager" | "member" }>;
 }
 
 @Injectable()
 export class InvitationImportProcessor implements ImportProcessor {
-  readonly type = 'invitation';
+  readonly type = "invitation";
   readonly adminOnly = true;
 
   constructor(
@@ -43,8 +47,13 @@ export class InvitationImportProcessor implements ImportProcessor {
     }
 
     const headerResult = validateHeaders(rows[0], EXPECTED_HEADERS);
-    if ('error' in headerResult) {
-      return { validRows: [], executableRows: [], errors: [headerResult.error], totalRows: 0 };
+    if ("error" in headerResult) {
+      return {
+        validRows: [],
+        executableRows: [],
+        errors: [headerResult.error],
+        totalRows: 0,
+      };
     }
     const columnMap = headerResult.columnMap;
 
@@ -52,8 +61,14 @@ export class InvitationImportProcessor implements ImportProcessor {
     const executableRows: ImportRow[] = [];
     const errors: ImportValidationError[] = [];
 
-    const teamCache = new Map<string, { id: string; isArchived: boolean } | null>();
-    const emailCache = new Map<string, { isActiveUser: boolean; hasActiveInvitation: boolean }>();
+    const teamCache = new Map<
+      string,
+      { id: string; isArchived: boolean } | null
+    >();
+    const emailCache = new Map<
+      string,
+      { isActiveUser: boolean; hasActiveInvitation: boolean }
+    >();
     const seenEmails = new Set<string>();
 
     const minFieldCount = Math.max(...columnMap.values()) + 1;
@@ -63,30 +78,39 @@ export class InvitationImportProcessor implements ImportProcessor {
       const rowNumber = i + 2;
       const fields = dataRows[i];
 
-      if (fields.length === 1 && fields[0].trim() === '') {
+      if (fields.length === 1 && fields[0].trim() === "") {
         continue;
       }
 
       dataRowCount++;
 
       if (fields.length < minFieldCount) {
-        errors.push({ row: rowNumber, field: '', message: 'Row has too few columns' });
+        errors.push({
+          row: rowNumber,
+          field: "",
+          message: "Row has too few columns",
+        });
         continue;
       }
 
       const data: Record<string, string> = {};
       for (const header of EXPECTED_HEADERS) {
-        const idx = columnMap.get(header)!;
-        data[header] = (fields[idx] ?? '').trim();
+        const idx = columnMap.get(header) as number;
+        data[header] = (fields[idx] ?? "").trim();
       }
 
       const result = await this.validateRow(
-        data, rowNumber, ctx, teamCache, emailCache, seenEmails,
+        data,
+        rowNumber,
+        ctx,
+        teamCache,
+        emailCache,
+        seenEmails,
       );
 
       const cleanData: Record<string, string> = {};
       for (const key of EXPECTED_HEADERS) {
-        cleanData[key] = data[key] ?? '';
+        cleanData[key] = data[key] ?? "";
       }
 
       for (const w of result.warnings) {
@@ -102,7 +126,9 @@ export class InvitationImportProcessor implements ImportProcessor {
       } else {
         const execData = {
           ...data,
-          _resolved_team_assignments: JSON.stringify(result.resolvedAssignments),
+          _resolved_team_assignments: JSON.stringify(
+            result.resolvedAssignments,
+          ),
         };
         executableRows.push({ rowNumber, data: execData });
       }
@@ -111,7 +137,7 @@ export class InvitationImportProcessor implements ImportProcessor {
     const validRows = executableRows.map((r) => {
       const cleanData: Record<string, string> = {};
       for (const key of EXPECTED_HEADERS) {
-        cleanData[key] = r.data[key] ?? '';
+        cleanData[key] = r.data[key] ?? "";
       }
       return { rowNumber: r.rowNumber, data: cleanData };
     });
@@ -129,8 +155,10 @@ export class InvitationImportProcessor implements ImportProcessor {
 
     for (const row of validRows) {
       try {
-        const teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }> =
-          JSON.parse(row.data._resolved_team_assignments);
+        const teamAssignments: Array<{
+          teamId: string;
+          role: "manager" | "member";
+        }> = JSON.parse(row.data._resolved_team_assignments);
 
         const invitation = await this.invitationsService.createForImport(
           ctx.orgId,
@@ -141,8 +169,9 @@ export class InvitationImportProcessor implements ImportProcessor {
         await this.invitationsService.queueInvitationEmail(invitation.id);
         imported++;
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Unknown error';
-        errors.push({ row: row.rowNumber, field: '', message });
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        errors.push({ row: row.rowNumber, field: "", message });
       }
       onProgress?.(imported, errors.length);
     }
@@ -155,7 +184,10 @@ export class InvitationImportProcessor implements ImportProcessor {
     rowNumber: number,
     ctx: ImportCallerContext,
     teamCache: Map<string, { id: string; isArchived: boolean } | null>,
-    emailCache: Map<string, { isActiveUser: boolean; hasActiveInvitation: boolean }>,
+    emailCache: Map<
+      string,
+      { isActiveUser: boolean; hasActiveInvitation: boolean }
+    >,
     seenEmails: Set<string>,
   ): Promise<ValidateRowResult> {
     const errors: ImportValidationError[] = [];
@@ -163,11 +195,19 @@ export class InvitationImportProcessor implements ImportProcessor {
 
     // Email
     if (!data.email) {
-      errors.push({ row: rowNumber, field: 'email', message: 'Email is required' });
+      errors.push({
+        row: rowNumber,
+        field: "email",
+        message: "Email is required",
+      });
       return { errors, warnings };
     }
     if (!EMAIL_REGEX.test(data.email)) {
-      errors.push({ row: rowNumber, field: 'email', message: 'Must be a valid email address' });
+      errors.push({
+        row: rowNumber,
+        field: "email",
+        message: "Must be a valid email address",
+      });
       return { errors, warnings };
     }
 
@@ -180,16 +220,17 @@ export class InvitationImportProcessor implements ImportProcessor {
         this.invitationsService.findActiveByEmail(ctx.orgId, data.email),
       ]);
       emailCache.set(emailLower, {
-        isActiveUser: user?.status === 'active' && user?.orgId === ctx.orgId,
+        isActiveUser: user?.status === "active" && user?.orgId === ctx.orgId,
         hasActiveInvitation: activeInvitation !== null,
       });
     }
 
+    // biome-ignore lint/style/noNonNullAssertion: value was just set above
     const cached = emailCache.get(emailLower)!;
     if (cached.isActiveUser) {
       errors.push({
         row: rowNumber,
-        field: 'email',
+        field: "email",
         message: `"${data.email}" is already registered as an active user`,
       });
       return { errors, warnings };
@@ -197,7 +238,7 @@ export class InvitationImportProcessor implements ImportProcessor {
     if (cached.hasActiveInvitation) {
       errors.push({
         row: rowNumber,
-        field: 'email',
+        field: "email",
         message: `"${data.email}" already has an active invitation`,
       });
       return { errors, warnings };
@@ -207,7 +248,7 @@ export class InvitationImportProcessor implements ImportProcessor {
     if (seenEmails.has(emailLower)) {
       errors.push({
         row: rowNumber,
-        field: 'email',
+        field: "email",
         message: `Duplicate email "${data.email}" in CSV`,
       });
       return { errors, warnings };
@@ -217,7 +258,10 @@ export class InvitationImportProcessor implements ImportProcessor {
     const memberTeamNames = parseCommaSeparated(data.teams);
     const managerTeamNames = parseCommaSeparated(data.manager_teams);
 
-    const resolvedAssignments: Array<{ teamId: string; role: 'manager' | 'member' }> = [];
+    const resolvedAssignments: Array<{
+      teamId: string;
+      role: "manager" | "member";
+    }> = [];
     const resolvedTeamIds = new Set<string>();
 
     // Manager teams first (manager role wins if in both columns)
@@ -226,18 +270,18 @@ export class InvitationImportProcessor implements ImportProcessor {
       if (!team) {
         warnings.push({
           row: rowNumber,
-          field: 'manager_teams',
+          field: "manager_teams",
           message: `Team "${name}" not found, skipped`,
         });
       } else if (team.isArchived) {
         warnings.push({
           row: rowNumber,
-          field: 'manager_teams',
+          field: "manager_teams",
           message: `Team "${name}" is archived, skipped`,
         });
       } else if (!resolvedTeamIds.has(team.id)) {
         resolvedTeamIds.add(team.id);
-        resolvedAssignments.push({ teamId: team.id, role: 'manager' });
+        resolvedAssignments.push({ teamId: team.id, role: "manager" });
       }
     }
 
@@ -247,18 +291,18 @@ export class InvitationImportProcessor implements ImportProcessor {
       if (!team) {
         warnings.push({
           row: rowNumber,
-          field: 'teams',
+          field: "teams",
           message: `Team "${name}" not found, skipped`,
         });
       } else if (team.isArchived) {
         warnings.push({
           row: rowNumber,
-          field: 'teams',
+          field: "teams",
           message: `Team "${name}" is archived, skipped`,
         });
       } else if (!resolvedTeamIds.has(team.id)) {
         resolvedTeamIds.add(team.id);
-        resolvedAssignments.push({ teamId: team.id, role: 'member' });
+        resolvedAssignments.push({ teamId: team.id, role: "member" });
       }
     }
 
@@ -266,8 +310,8 @@ export class InvitationImportProcessor implements ImportProcessor {
     if (resolvedAssignments.length === 0) {
       errors.push({
         row: rowNumber,
-        field: 'teams',
-        message: 'At least one valid team is required',
+        field: "teams",
+        message: "At least one valid team is required",
       });
       return { errors, warnings };
     }
@@ -284,7 +328,10 @@ export class InvitationImportProcessor implements ImportProcessor {
     const key = name.toLowerCase();
     if (!cache.has(key)) {
       const team = await this.teamsService.findByNameInOrg(name, orgId);
-      cache.set(key, team ? { id: team.id, isArchived: team.isArchived } : null);
+      cache.set(
+        key,
+        team ? { id: team.id, isArchived: team.isArchived } : null,
+      );
     }
     return cache.get(key) ?? null;
   }

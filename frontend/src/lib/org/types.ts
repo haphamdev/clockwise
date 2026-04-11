@@ -1,5 +1,5 @@
-export type DateFormat = 'YYYY-MM-DD' | 'DD/MM/YYYY' | 'MM/DD/YYYY';
-export type TimeFormat = '12h' | '24h';
+export type DateFormat = "YYYY-MM-DD" | "DD/MM/YYYY" | "MM/DD/YYYY";
+export type TimeFormat = "12h" | "24h";
 
 export interface OrgSettings {
   orgName: string;

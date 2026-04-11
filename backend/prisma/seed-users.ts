@@ -1,11 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-import { randomBytes } from 'crypto';
-import { TEAMS, USERS, SeedUserDef } from './seed-users-data';
+import { randomBytes } from "node:crypto";
+import { PrismaClient } from "@prisma/client";
+import { SeedUserDef, TEAMS, USERS } from "./seed-users-data";
 
 const prisma = new PrismaClient();
 
-const ORG_ID = '00000000-0000-4000-a000-000000000001';
-const BASE_DATE = new Date('2024-03-01T09:00:00Z');
+const ORG_ID = "00000000-0000-4000-a000-000000000001";
+const BASE_DATE = new Date("2024-03-01T09:00:00Z");
 const INVITE_EXPIRY_DAYS = 7;
 
 function addDays(date: Date, days: number): Date {
@@ -21,29 +21,35 @@ function avatarUrl(name: string): string {
 async function main() {
   // ── Step 0: Idempotency check ─────────────────────────────────────────
   const existing = await prisma.user.findFirst({
-    where: { email: { endsWith: '@clockwise.test' } },
+    where: { email: { endsWith: "@clockwise.test" } },
   });
   if (existing) {
-    console.log('Seed users already exist — skipping. Delete @clockwise.test users to re-seed.');
+    console.log(
+      "Seed users already exist — skipping. Delete @clockwise.test users to re-seed.",
+    );
     return;
   }
 
   // ── Step 1: Admin lookup & activation ─────────────────────────────────
   const adminEmail = process.env.ADMIN_EMAIL;
   if (!adminEmail) {
-    throw new Error('ADMIN_EMAIL env var is required. Run `pnpm prisma db seed` first.');
+    throw new Error(
+      "ADMIN_EMAIL env var is required. Run `pnpm prisma db seed` first.",
+    );
   }
   const admin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!admin) {
-    throw new Error(`Admin user not found (${adminEmail}). Run \`pnpm prisma db seed\` first.`);
+    throw new Error(
+      `Admin user not found (${adminEmail}). Run \`pnpm prisma db seed\` first.`,
+    );
   }
 
-  if (admin.status === 'pending') {
+  if (admin.status === "pending") {
     await prisma.user.update({
       where: { id: admin.id },
-      data: { status: 'active', name: 'Admin' },
+      data: { status: "active", name: "Admin" },
     });
-    console.log('Admin user activated.');
+    console.log("Admin user activated.");
   }
 
   // ── Step 2: Create teams ──────────────────────────────────────────────
@@ -74,7 +80,7 @@ async function main() {
         orgId: ORG_ID,
         email: def.email,
         name: def.email, // Matches real createPendingUser pattern
-        status: 'pending',
+        status: "pending",
       },
     });
 
@@ -86,9 +92,9 @@ async function main() {
     );
 
     // Create invitation with team assignments
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expiresAt = addDays(inviteDate, INVITE_EXPIRY_DAYS);
-    const invitationStatus = def.outcome === 'accepted' ? 'accepted' : 'sent';
+    const invitationStatus = def.outcome === "accepted" ? "accepted" : "sent";
 
     await prisma.invitation.create({
       data: {
@@ -110,20 +116,25 @@ async function main() {
 
     userRecords.push({ def, userId: user.id, inviteDate });
   }
-  console.log(`Users: ${userRecords.length} pending users + invitations created.`);
+  console.log(
+    `Users: ${userRecords.length} pending users + invitations created.`,
+  );
 
   // ── Step 4: Activate accepted users + create team memberships ─────────
-  const acceptedUsers = userRecords.filter((r) => r.def.outcome === 'accepted');
+  const acceptedUsers = userRecords.filter((r) => r.def.outcome === "accepted");
   let membershipCount = 0;
 
   for (const rec of acceptedUsers) {
-    const acceptDate = addDays(rec.inviteDate, rec.def.acceptDelayDays!);
+    const acceptDate = addDays(
+      rec.inviteDate,
+      rec.def.acceptDelayDays as number,
+    );
 
     // Activate user
     await prisma.user.update({
       where: { id: rec.userId },
       data: {
-        status: 'active',
+        status: "active",
         name: rec.def.name,
         avatarUrl: avatarUrl(rec.def.name),
         lastLoginAt: acceptDate,
@@ -150,7 +161,9 @@ async function main() {
       membershipCount++;
     }
   }
-  console.log(`Activated: ${acceptedUsers.length} users, ${membershipCount} team memberships.`);
+  console.log(
+    `Activated: ${acceptedUsers.length} users, ${membershipCount} team memberships.`,
+  );
 
   // ── Step 5: Batch-insert audit logs ───────────────────────────────────
   const auditLogs: Array<{
@@ -167,27 +180,30 @@ async function main() {
     // user.created
     auditLogs.push({
       orgId: ORG_ID,
-      entityType: 'user',
+      entityType: "user",
       entityId: rec.userId,
-      action: 'created',
+      action: "created",
       performedBy: admin.id,
-      metadata: { after: { email: rec.def.email, status: 'pending' } },
+      metadata: { after: { email: rec.def.email, status: "pending" } },
       createdAt: rec.inviteDate,
     });
 
-    if (rec.def.outcome === 'accepted') {
-      const acceptDate = addDays(rec.inviteDate, rec.def.acceptDelayDays!);
+    if (rec.def.outcome === "accepted") {
+      const acceptDate = addDays(
+        rec.inviteDate,
+        rec.def.acceptDelayDays as number,
+      );
 
       // user.activated
       auditLogs.push({
         orgId: ORG_ID,
-        entityType: 'user',
+        entityType: "user",
         entityId: rec.userId,
-        action: 'activated',
-        performedBy: 'system',
+        action: "activated",
+        performedBy: "system",
         metadata: {
-          before: { status: 'pending' },
-          after: { status: 'active', name: rec.def.name },
+          before: { status: "pending" },
+          after: { status: "active", name: rec.def.name },
         },
         createdAt: acceptDate,
       });
@@ -207,20 +223,20 @@ async function main() {
 
         auditLogs.push({
           orgId: ORG_ID,
-          entityType: 'team',
+          entityType: "team",
           entityId: team.id,
-          action: 'member_added',
-          performedBy: 'system',
+          action: "member_added",
+          performedBy: "system",
           metadata: meta,
           createdAt: acceptDate,
         });
 
         auditLogs.push({
           orgId: ORG_ID,
-          entityType: 'user',
+          entityType: "user",
           entityId: rec.userId,
-          action: 'member_added',
-          performedBy: 'system',
+          action: "member_added",
+          performedBy: "system",
           metadata: meta,
           createdAt: acceptDate,
         });
@@ -228,23 +244,28 @@ async function main() {
     }
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: seed script audit log shape doesn't match Prisma's strict input type
   await prisma.auditLog.createMany({ data: auditLogs as any });
   console.log(`Audit logs: ${auditLogs.length} entries created.`);
 
   // ── Step 6: Summary ───────────────────────────────────────────────────
-  const active = userRecords.filter((r) => r.def.outcome === 'accepted').length;
-  const pending = userRecords.filter((r) => r.def.outcome === 'expired').length;
-  console.log('\n── Seed Summary ──');
+  const active = userRecords.filter((r) => r.def.outcome === "accepted").length;
+  const pending = userRecords.filter((r) => r.def.outcome === "expired").length;
+  console.log("\n── Seed Summary ──");
   console.log(`  Teams:        ${teamMap.length}`);
-  console.log(`  Users:        ${userRecords.length} (${active} active, ${pending} pending/expired)`);
-  console.log(`  Invitations:  ${userRecords.length} (${active} accepted, ${pending} sent/expired)`);
+  console.log(
+    `  Users:        ${userRecords.length} (${active} active, ${pending} pending/expired)`,
+  );
+  console.log(
+    `  Invitations:  ${userRecords.length} (${active} accepted, ${pending} sent/expired)`,
+  );
   console.log(`  Memberships:  ${membershipCount}`);
   console.log(`  Audit logs:   ${auditLogs.length}`);
 }
 
 main()
   .catch((e) => {
-    console.error('Seed failed:', e);
+    console.error("Seed failed:", e);
     process.exit(1);
   })
   .finally(async () => {

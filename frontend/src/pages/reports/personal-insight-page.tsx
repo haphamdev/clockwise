@@ -1,8 +1,8 @@
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useAuth } from '@/lib/auth/use-auth';
-import { useReportDateRange } from '@/lib/reports/use-report-date-range';
-import { ReportPageShell } from '@/components/reports/report-page-shell';
-import { PersonalInsight } from '@/components/reports/personal-insight';
+import { PersonalInsight } from "@/components/reports/personal-insight";
+import { ReportPageShell } from "@/components/reports/report-page-shell";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import { useAuth } from "@/lib/auth/use-auth";
+import { useReportDateRange } from "@/lib/reports/use-report-date-range";
 
 export function PersonalInsightPage() {
   const { user } = useAuth();

@@ -1,19 +1,37 @@
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const statusConfig = {
-  active: { label: 'Active', className: 'bg-success text-primary-foreground' },
-  accepted: { label: 'Accepted', className: 'bg-success text-primary-foreground' },
-  archived: { label: 'Archived', className: 'bg-danger text-primary-foreground' },
-  pending: { label: 'Pending', className: 'bg-warning text-primary-foreground' },
-  initiated: { label: 'Initiated', className: 'bg-muted text-muted-foreground' },
-  sending: { label: 'Sending', className: 'bg-warning text-primary-foreground' },
-  sent: { label: 'Sent', className: 'bg-info text-primary-foreground' },
-  deactivated: { label: 'Deactivated', className: 'bg-danger text-primary-foreground' },
-  invited: { label: 'Invited', className: 'bg-info text-primary-foreground' },
-  revoked: { label: 'Revoked', className: 'bg-danger text-primary-foreground' },
-  failed: { label: 'Failed', className: 'bg-danger text-primary-foreground' },
-  expired: { label: 'Expired', className: 'bg-muted text-muted-foreground' },
+  active: { label: "Active", className: "bg-success text-primary-foreground" },
+  accepted: {
+    label: "Accepted",
+    className: "bg-success text-primary-foreground",
+  },
+  archived: {
+    label: "Archived",
+    className: "bg-danger text-primary-foreground",
+  },
+  pending: {
+    label: "Pending",
+    className: "bg-warning text-primary-foreground",
+  },
+  initiated: {
+    label: "Initiated",
+    className: "bg-muted text-muted-foreground",
+  },
+  sending: {
+    label: "Sending",
+    className: "bg-warning text-primary-foreground",
+  },
+  sent: { label: "Sent", className: "bg-info text-primary-foreground" },
+  deactivated: {
+    label: "Deactivated",
+    className: "bg-danger text-primary-foreground",
+  },
+  invited: { label: "Invited", className: "bg-info text-primary-foreground" },
+  revoked: { label: "Revoked", className: "bg-danger text-primary-foreground" },
+  failed: { label: "Failed", className: "bg-danger text-primary-foreground" },
+  expired: { label: "Expired", className: "bg-muted text-muted-foreground" },
 } as const;
 
 export type Status = keyof typeof statusConfig;
@@ -25,7 +43,10 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-const fallback = { label: 'Unknown', className: 'bg-muted text-muted-foreground' } as const;
+const fallback = {
+  label: "Unknown",
+  className: "bg-muted text-muted-foreground",
+} as const;
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   const config = statusConfig[status] ?? fallback;

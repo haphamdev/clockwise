@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
-import { Loader2, Mail } from 'lucide-react';
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Loader2, Mail } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 const meta: Meta<typeof Button> = {
-  title: 'UI/Button',
+  title: "UI/Button",
   component: Button,
 };
 
@@ -40,7 +40,7 @@ export const AllSizes: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
-    children: 'Disabled',
+    children: "Disabled",
   },
 };
 

@@ -1,34 +1,41 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { PageHeader } from '@/components/ui/page-header';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import { getTeamsColumns } from '@/components/admin/teams/teams-columns';
-import { CreateTeamSheet } from '@/components/admin/teams/create-team-sheet';
-import { EditTeamSheet } from '@/components/admin/teams/edit-team-sheet';
-import { useTeams } from '@/lib/teams/use-teams';
-import { useArchiveTeam } from '@/lib/teams/use-archive-team';
-import { useUnarchiveTeam } from '@/lib/teams/use-unarchive-team';
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useAuth } from '@/lib/auth/use-auth';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { Team } from '@/lib/teams/types';
+import { Plus, Upload } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { CreateTeamSheet } from "@/components/admin/teams/create-team-sheet";
+import { EditTeamSheet } from "@/components/admin/teams/edit-team-sheet";
+import { getTeamsColumns } from "@/components/admin/teams/teams-columns";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import { useAuth } from "@/lib/auth/use-auth";
+import type { Team } from "@/lib/teams/types";
+import { useArchiveTeam } from "@/lib/teams/use-archive-team";
+import { useTeams } from "@/lib/teams/use-teams";
+import { useUnarchiveTeam } from "@/lib/teams/use-unarchive-team";
 
 export function TeamsPage() {
-  useDocumentTitle('Clockwise - Teams');
+  useDocumentTitle("Clockwise - Teams");
   const { user } = useAuth();
   const isAdmin = user?.isAdmin ?? false;
   const { page, limit, setPage } = usePaginationParams();
   const [showArchived, setShowArchived] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [editTeam, setEditTeam] = useState<Team | null>(null);
-  const [confirmTeam, setConfirmTeam] = useState<{ team: Team; action: 'archive' | 'unarchive' } | null>(null);
+  const [confirmTeam, setConfirmTeam] = useState<{
+    team: Team;
+    action: "archive" | "unarchive";
+  } | null>(null);
 
-  const { data, isLoading } = useTeams({ page, limit, includeArchived: showArchived });
+  const { data, isLoading } = useTeams({
+    page,
+    limit,
+    includeArchived: showArchived,
+  });
   const archiveTeam = useArchiveTeam();
   const unarchiveTeam = useUnarchiveTeam();
 
@@ -43,8 +50,8 @@ export function TeamsPage() {
       isAdmin
         ? getTeamsColumns(
             (team) => setEditTeam(team),
-            (team) => setConfirmTeam({ team, action: 'archive' }),
-            (team) => setConfirmTeam({ team, action: 'unarchive' }),
+            (team) => setConfirmTeam({ team, action: "archive" }),
+            (team) => setConfirmTeam({ team, action: "unarchive" }),
             actionPendingId,
           )
         : getTeamsColumns(
@@ -60,7 +67,7 @@ export function TeamsPage() {
   const handleConfirm = () => {
     if (!confirmTeam) return;
     const { team, action } = confirmTeam;
-    if (action === 'archive') {
+    if (action === "archive") {
       archiveTeam.mutate(team.id, { onSuccess: () => setConfirmTeam(null) });
     } else {
       unarchiveTeam.mutate(team.id, { onSuccess: () => setConfirmTeam(null) });
@@ -73,7 +80,11 @@ export function TeamsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Teams"
-        description={isAdmin ? "Manage your organization's teams." : "View your organization's teams."}
+        description={
+          isAdmin
+            ? "Manage your organization's teams."
+            : "View your organization's teams."
+        }
         actions={
           isAdmin ? (
             <div className="flex gap-2">
@@ -125,14 +136,22 @@ export function TeamsPage() {
           <ConfirmDialog
             open={confirmTeam !== null}
             onOpenChange={(open) => !open && setConfirmTeam(null)}
-            title={confirmTeam?.action === 'archive' ? 'Archive Team' : 'Unarchive Team'}
+            title={
+              confirmTeam?.action === "archive"
+                ? "Archive Team"
+                : "Unarchive Team"
+            }
             description={
-              confirmTeam?.action === 'archive'
+              confirmTeam?.action === "archive"
                 ? `Are you sure you want to archive ${confirmTeam.team.name}? Members will lose access to this team.`
                 : `Are you sure you want to unarchive ${confirmTeam?.team.name}? Members will regain access to this team.`
             }
-            confirmLabel={confirmTeam?.action === 'archive' ? 'Archive' : 'Unarchive'}
-            variant={confirmTeam?.action === 'archive' ? 'destructive' : 'default'}
+            confirmLabel={
+              confirmTeam?.action === "archive" ? "Archive" : "Unarchive"
+            }
+            variant={
+              confirmTeam?.action === "archive" ? "destructive" : "default"
+            }
             onConfirm={handleConfirm}
             isPending={archiveTeam.isPending || unarchiveTeam.isPending}
           />

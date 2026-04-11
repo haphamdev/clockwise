@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
-import { UserLink } from '@/components/users/user-link';
-import { ProjectLink } from '@/components/projects/project-link';
-import { ChangeBadge } from '@/components/dashboard/change-badge';
-import type { TeamBreakdownItem } from '@/lib/dashboard/types';
+import { Link } from "react-router-dom";
+import { ChangeBadge } from "@/components/dashboard/change-badge";
+import { ProjectLink } from "@/components/projects/project-link";
+import { Card, CardContent } from "@/components/ui/card";
+import { UserLink } from "@/components/users/user-link";
+import type { TeamBreakdownItem } from "@/lib/dashboard/types";
 
 interface TeamBreakdownCardProps {
   team: TeamBreakdownItem;
@@ -32,28 +32,35 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
             <div>
               <p className="text-xs text-muted-foreground">This Week</p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-semibold">{team.hoursThisWeek}h</span>
+                <span className="text-lg font-semibold">
+                  {team.hoursThisWeek}h
+                </span>
                 <ChangeBadge value={team.weekOverWeekPct} />
               </div>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">This Month</p>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-lg font-semibold">{team.hoursThisMonth}h</span>
+                <span className="text-lg font-semibold">
+                  {team.hoursThisMonth}h
+                </span>
                 <ChangeBadge value={team.monthOverMonthPct} />
               </div>
             </div>
 
-            {(team.thresholdBreaches.dailyCount > 0 || team.thresholdBreaches.weeklyCount > 0) && (
+            {(team.thresholdBreaches.dailyCount > 0 ||
+              team.thresholdBreaches.weeklyCount > 0) && (
               <div className="flex gap-3 text-xs">
                 {team.thresholdBreaches.dailyCount > 0 && (
                   <span className="text-amber-500">
-                    {team.thresholdBreaches.dailyCount} daily breach{team.thresholdBreaches.dailyCount !== 1 ? 'es' : ''}
+                    {team.thresholdBreaches.dailyCount} daily breach
+                    {team.thresholdBreaches.dailyCount !== 1 ? "es" : ""}
                   </span>
                 )}
                 {team.thresholdBreaches.weeklyCount > 0 && (
                   <span className="text-amber-500">
-                    {team.thresholdBreaches.weeklyCount} weekly breach{team.thresholdBreaches.weeklyCount !== 1 ? 'es' : ''}
+                    {team.thresholdBreaches.weeklyCount} weekly breach
+                    {team.thresholdBreaches.weeklyCount !== 1 ? "es" : ""}
                   </span>
                 )}
               </div>
@@ -61,7 +68,9 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
           </div>
 
           <div className="border-l pl-6">
-            <p className="text-xs font-medium text-muted-foreground">Not logged this week</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              Not logged this week
+            </p>
             {team.notLoggedThisWeek.length > 0 ? (
               <ul className="mt-1 list-disc pl-4">
                 {team.notLoggedThisWeek.map((u) => (
@@ -75,12 +84,16 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
                 ))}
               </ul>
             ) : (
-              <p className="mt-1 text-xs text-muted-foreground">All caught up</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                All caught up
+              </p>
             )}
           </div>
 
           <div className="border-l pl-6">
-            <p className="text-xs font-medium text-muted-foreground">Active Projects</p>
+            <p className="text-xs font-medium text-muted-foreground">
+              Active Projects
+            </p>
             {team.activeProjects.length > 0 ? (
               <ul className="mt-1 list-disc pl-4">
                 {team.activeProjects.map((p) => (

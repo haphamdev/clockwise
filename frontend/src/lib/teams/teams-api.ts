@@ -1,23 +1,23 @@
-import { apiClient } from '@/lib/api-client';
-import type { PaginatedResponse } from '@/lib/types';
+import { apiClient } from "@/lib/api-client";
+import type { PaginatedResponse } from "@/lib/types";
 import type {
+  AddTeamMemberPayload,
+  CreateTeamPayload,
+  ListTeamsParams,
   Team,
   TeamDetail,
   TeamMember,
-  CreateTeamPayload,
-  UpdateTeamPayload,
-  AddTeamMemberPayload,
   UpdateTeamMemberPayload,
-  ListTeamsParams,
-} from './types';
+  UpdateTeamPayload,
+} from "./types";
 
 export function fetchTeams(params: ListTeamsParams = {}) {
   const searchParams = new URLSearchParams();
-  if (params.page) searchParams.set('page', String(params.page));
-  if (params.limit) searchParams.set('limit', String(params.limit));
-  if (params.includeArchived) searchParams.set('includeArchived', 'true');
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.limit) searchParams.set("limit", String(params.limit));
+  if (params.includeArchived) searchParams.set("includeArchived", "true");
   const qs = searchParams.toString();
-  return apiClient<PaginatedResponse<Team>>(`/teams${qs ? `?${qs}` : ''}`);
+  return apiClient<PaginatedResponse<Team>>(`/teams${qs ? `?${qs}` : ""}`);
 }
 
 export function fetchTeamDetail(id: string) {
@@ -25,43 +25,47 @@ export function fetchTeamDetail(id: string) {
 }
 
 export function createTeam(payload: CreateTeamPayload) {
-  return apiClient<Team>('/teams', {
-    method: 'POST',
+  return apiClient<Team>("/teams", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
 export function updateTeam(id: string, payload: UpdateTeamPayload) {
   return apiClient<Team>(`/teams/${id}`, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
 export function archiveTeam(id: string) {
-  return apiClient<Team>(`/teams/${id}/archive`, { method: 'PATCH' });
+  return apiClient<Team>(`/teams/${id}/archive`, { method: "PATCH" });
 }
 
 export function unarchiveTeam(id: string) {
-  return apiClient<Team>(`/teams/${id}/unarchive`, { method: 'PATCH' });
+  return apiClient<Team>(`/teams/${id}/unarchive`, { method: "PATCH" });
 }
 
 export function addTeamMember(teamId: string, payload: AddTeamMemberPayload) {
   return apiClient<TeamMember>(`/teams/${teamId}/members`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export function updateTeamMember(teamId: string, userId: string, payload: UpdateTeamMemberPayload) {
+export function updateTeamMember(
+  teamId: string,
+  userId: string,
+  payload: UpdateTeamMemberPayload,
+) {
   return apiClient<TeamMember>(`/teams/${teamId}/members/${userId}`, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
 export function removeTeamMember(teamId: string, userId: string) {
   return apiClient<{ message: string }>(`/teams/${teamId}/members/${userId}`, {
-    method: 'DELETE',
+    method: "DELETE",
   });
 }

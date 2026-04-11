@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 class NotLoggedUserDto {
   @ApiProperty() userId: string;
@@ -23,8 +23,10 @@ class TeamBreakdownItemDto {
   @ApiProperty({ nullable: true }) weekOverWeekPct: number | null;
   @ApiProperty() hoursThisMonth: number;
   @ApiProperty({ nullable: true }) monthOverMonthPct: number | null;
-  @ApiProperty({ type: [NotLoggedUserDto] }) notLoggedThisWeek: NotLoggedUserDto[];
-  @ApiProperty({ type: ThresholdBreachesDto }) thresholdBreaches: ThresholdBreachesDto;
+  @ApiProperty({ type: [NotLoggedUserDto] })
+  notLoggedThisWeek: NotLoggedUserDto[];
+  @ApiProperty({ type: ThresholdBreachesDto })
+  thresholdBreaches: ThresholdBreachesDto;
   @ApiProperty({ type: [TeamProjectDto] }) activeProjects: TeamProjectDto[];
   @ApiProperty() activeProjectCount: number;
 }

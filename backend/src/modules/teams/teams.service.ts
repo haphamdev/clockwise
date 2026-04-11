@@ -1,18 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
-import { TeamsRepository } from './teams.repository';
-import { AuditLogService } from '../audit-log/audit-log.service';
-import { TeamEntity, TeamListItem, TeamWithMembers, TeamMemberEntity } from './entities/team.entity';
+import { Injectable } from "@nestjs/common";
 import {
-  TeamNotFoundException,
   TeamArchivedException,
-  TeamNotArchivedException,
   TeamLastManagerException,
   TeamMemberAlreadyExistsException,
   TeamMemberNotFoundException,
-  TeamUserNotFoundException,
   TeamNotAMemberException,
-} from '../../common/exceptions/team.exceptions';
+  TeamNotArchivedException,
+  TeamNotFoundException,
+  TeamUserNotFoundException,
+} from "../../common/exceptions/team.exceptions";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { UsersService } from "../users/users.service";
+import {
+  TeamEntity,
+  TeamListItem,
+  TeamMemberEntity,
+  TeamWithMembers,
+} from "./entities/team.entity";
+import { TeamsRepository } from "./teams.repository";
 
 @Injectable()
 export class TeamsService {
@@ -65,9 +70,9 @@ export class TeamsService {
     const team = await this.teamsRepository.create({ orgId, ...data });
     await this.auditLogService.log({
       orgId,
-      entityType: 'team',
+      entityType: "team",
       entityId: team.id,
-      action: 'created',
+      action: "created",
       performedBy,
       metadata: { after: { name: team.name, description: team.description } },
     });
@@ -90,16 +95,19 @@ export class TeamsService {
       before.name = team.name;
       after.name = data.name;
     }
-    if (data.description !== undefined && data.description !== team.description) {
+    if (
+      data.description !== undefined &&
+      data.description !== team.description
+    ) {
       before.description = team.description;
       after.description = data.description;
     }
     if (Object.keys(after).length > 0) {
       await this.auditLogService.log({
         orgId,
-        entityType: 'team',
+        entityType: "team",
         entityId: teamId,
-        action: 'updated',
+        action: "updated",
         performedBy,
         metadata: { before, after },
       });
@@ -108,30 +116,38 @@ export class TeamsService {
     return updated;
   }
 
-  async archive(teamId: string, orgId: string, performedBy: string): Promise<TeamEntity> {
+  async archive(
+    teamId: string,
+    orgId: string,
+    performedBy: string,
+  ): Promise<TeamEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
     const updated = await this.teamsRepository.archive(teamId);
     await this.auditLogService.log({
       orgId,
-      entityType: 'team',
+      entityType: "team",
       entityId: teamId,
-      action: 'archived',
+      action: "archived",
       performedBy,
       metadata: { before: { isArchived: false }, after: { isArchived: true } },
     });
     return updated;
   }
 
-  async unarchive(teamId: string, orgId: string, performedBy: string): Promise<TeamEntity> {
+  async unarchive(
+    teamId: string,
+    orgId: string,
+    performedBy: string,
+  ): Promise<TeamEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureArchived(team);
     const updated = await this.teamsRepository.unarchive(teamId);
     await this.auditLogService.log({
       orgId,
-      entityType: 'team',
+      entityType: "team",
       entityId: teamId,
-      action: 'unarchived',
+      action: "unarchived",
       performedBy,
       metadata: { before: { isArchived: true }, after: { isArchived: false } },
     });
@@ -142,14 +158,14 @@ export class TeamsService {
     teamId: string,
     orgId: string,
     userId: string,
-    role: 'manager' | 'member',
+    role: "manager" | "member",
     performedBy: string,
   ): Promise<TeamMemberEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
     this.ensureNotArchived(team);
 
     const user = await this.usersService.findById(userId);
-    if (!user || user.orgId !== orgId || user.status !== 'active') {
+    if (!user || user.orgId !== orgId || user.status !== "active") {
       throw new TeamUserNotFoundException();
     }
 
@@ -159,10 +175,26 @@ export class TeamsService {
     }
 
     const member = await this.teamsRepository.addMember(teamId, userId, role);
-    const meta = { after: { userId, userName: user.name, role, teamId, teamName: team.name } };
+    const meta = {
+      after: { userId, userName: user.name, role, teamId, teamName: team.name },
+    };
     await this.auditLogService.logMany([
-      { orgId, entityType: 'team', entityId: teamId, action: 'member_added', performedBy, metadata: meta },
-      { orgId, entityType: 'user', entityId: userId, action: 'member_added', performedBy, metadata: meta },
+      {
+        orgId,
+        entityType: "team",
+        entityId: teamId,
+        action: "member_added",
+        performedBy,
+        metadata: meta,
+      },
+      {
+        orgId,
+        entityType: "user",
+        entityId: userId,
+        action: "member_added",
+        performedBy,
+        metadata: meta,
+      },
     ]);
     return member;
   }
@@ -171,7 +203,7 @@ export class TeamsService {
     teamId: string,
     orgId: string,
     userId: string,
-    role: 'manager' | 'member',
+    role: "manager" | "member",
     performedBy: string,
   ): Promise<TeamMemberEntity> {
     const team = await this.getTeamOrThrow(teamId, orgId);
@@ -182,18 +214,48 @@ export class TeamsService {
       throw new TeamMemberNotFoundException();
     }
 
-    if (member.role === 'manager' && role === 'member') {
+    if (member.role === "manager" && role === "member") {
       await this.ensureNotLastManager(teamId);
     }
 
-    const updated = await this.teamsRepository.updateMemberRole(teamId, userId, role);
+    const updated = await this.teamsRepository.updateMemberRole(
+      teamId,
+      userId,
+      role,
+    );
     const meta = {
-      before: { userId, userName: member.userName, role: member.role, teamId, teamName: team.name },
-      after: { userId, userName: member.userName, role, teamId, teamName: team.name },
+      before: {
+        userId,
+        userName: member.userName,
+        role: member.role,
+        teamId,
+        teamName: team.name,
+      },
+      after: {
+        userId,
+        userName: member.userName,
+        role,
+        teamId,
+        teamName: team.name,
+      },
     };
     await this.auditLogService.logMany([
-      { orgId, entityType: 'team', entityId: teamId, action: 'role_changed', performedBy, metadata: meta },
-      { orgId, entityType: 'user', entityId: userId, action: 'role_changed', performedBy, metadata: meta },
+      {
+        orgId,
+        entityType: "team",
+        entityId: teamId,
+        action: "role_changed",
+        performedBy,
+        metadata: meta,
+      },
+      {
+        orgId,
+        entityType: "user",
+        entityId: userId,
+        action: "role_changed",
+        performedBy,
+        metadata: meta,
+      },
     ]);
     return updated;
   }
@@ -212,25 +274,54 @@ export class TeamsService {
       throw new TeamMemberNotFoundException();
     }
 
-    if (member.role === 'manager') {
+    if (member.role === "manager") {
       await this.ensureNotLastManager(teamId);
     }
 
     await this.teamsRepository.removeMember(teamId, userId);
-    const meta = { before: { userId, userName: member.userName, role: member.role, teamId, teamName: team.name } };
+    const meta = {
+      before: {
+        userId,
+        userName: member.userName,
+        role: member.role,
+        teamId,
+        teamName: team.name,
+      },
+    };
     await this.auditLogService.logMany([
-      { orgId, entityType: 'team', entityId: teamId, action: 'member_removed', performedBy, metadata: meta },
-      { orgId, entityType: 'user', entityId: userId, action: 'member_removed', performedBy, metadata: meta },
+      {
+        orgId,
+        entityType: "team",
+        entityId: teamId,
+        action: "member_removed",
+        performedBy,
+        metadata: meta,
+      },
+      {
+        orgId,
+        entityType: "user",
+        entityId: userId,
+        action: "member_removed",
+        performedBy,
+        metadata: meta,
+      },
     ]);
   }
 
-  async findByNameInOrg(name: string, orgId: string): Promise<TeamEntity | null> {
+  async findByNameInOrg(
+    name: string,
+    orgId: string,
+  ): Promise<TeamEntity | null> {
     return this.teamsRepository.findByNameInOrg(name, orgId);
   }
 
   async createForImport(
     orgId: string,
-    data: { name: string; description?: string; members: Array<{ userId: string; role: 'manager' | 'member' }> },
+    data: {
+      name: string;
+      description?: string;
+      members: Array<{ userId: string; role: "manager" | "member" }>;
+    },
     performedBy: string,
   ): Promise<TeamEntity> {
     const team = await this.teamsRepository.createWithMembers(
@@ -239,14 +330,14 @@ export class TeamsService {
     );
     await this.auditLogService.log({
       orgId,
-      entityType: 'team',
+      entityType: "team",
       entityId: team.id,
-      action: 'created',
+      action: "created",
       performedBy,
       metadata: {
         after: { name: team.name, description: team.description },
         members: data.members,
-        source: 'import',
+        source: "import",
       },
     });
     return team;
@@ -264,7 +355,10 @@ export class TeamsService {
     this.ensureNotArchived(team);
   }
 
-  private async getTeamOrThrow(teamId: string, orgId: string): Promise<TeamEntity> {
+  private async getTeamOrThrow(
+    teamId: string,
+    orgId: string,
+  ): Promise<TeamEntity> {
     const team = await this.teamsRepository.findEntityById(teamId);
     if (!team || team.orgId !== orgId) {
       throw new TeamNotFoundException();

@@ -1,7 +1,7 @@
-import type { DateFormat, TimeFormat } from '@/lib/org/types';
+import type { DateFormat, TimeFormat } from "@/lib/org/types";
 
-export type Theme = 'light' | 'dark' | 'system';
-export type WeekStartDay = 'monday' | 'sunday';
+export type Theme = "light" | "dark" | "system";
+export type WeekStartDay = "monday" | "sunday";
 
 export interface UserPreferences {
   theme: Theme;

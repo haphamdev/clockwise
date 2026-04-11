@@ -1,41 +1,54 @@
-import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui/form';
-import { Label } from '@/components/ui/label';
-import { TaskAutocomplete } from './task-autocomplete';
-import { useUpdateTimeLog } from '@/lib/time-logs/use-update-time-log';
-import type { TimeLog } from '@/lib/time-logs/types';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import type { TimeLog } from "@/lib/time-logs/types";
+import { useUpdateTimeLog } from "@/lib/time-logs/use-update-time-log";
+import { TaskAutocomplete } from "./task-autocomplete";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 const schema = z.object({
-  taskLabels: z.array(z.string().min(1)).min(1, 'At least one task is required'),
-  date: z.string().min(1, 'Date is required'),
-  hours: z.string().min(1, 'Hours is required')
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) > 0, 'Hours must be greater than 0')
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) <= 24, 'Maximum 24')
-    .refine((v) => !isNaN(parseFloat(v)) && parseFloat(v) % 0.25 === 0, 'Must be in 0.25 increments'),
+  taskLabels: z
+    .array(z.string().min(1))
+    .min(1, "At least one task is required"),
+  date: z.string().min(1, "Date is required"),
+  hours: z
+    .string()
+    .min(1, "Hours is required")
+    .refine(
+      (v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) > 0,
+      "Hours must be greater than 0",
+    )
+    .refine(
+      (v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) <= 24,
+      "Maximum 24",
+    )
+    .refine(
+      (v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) % 0.25 === 0,
+      "Must be in 0.25 increments",
+    ),
   notes: z.string().optional(),
-  reason: z.string().min(1, 'Reason is required').max(500),
+  reason: z.string().min(1, "Reason is required").max(500),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -46,17 +59,21 @@ interface EditTimeLogSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogSheetProps) {
+export function EditTimeLogSheet({
+  timeLog,
+  open,
+  onOpenChange,
+}: EditTimeLogSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    mode: 'onSubmit',
-    reValidateMode: 'onBlur',
+    mode: "onSubmit",
+    reValidateMode: "onBlur",
     defaultValues: {
       taskLabels: [],
-      date: '',
-      hours: '',
-      notes: '',
-      reason: '',
+      date: "",
+      hours: "",
+      notes: "",
+      reason: "",
     },
   });
   const updateTimeLog = useUpdateTimeLog();
@@ -67,8 +84,8 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
         taskLabels: timeLog.tasks.map((t) => t.label),
         date: timeLog.date.slice(0, 10),
         hours: String(timeLog.hours),
-        notes: timeLog.notes ?? '',
-        reason: '',
+        notes: timeLog.notes ?? "",
+        reason: "",
       });
     }
   }, [open, timeLog, form]);
@@ -77,7 +94,10 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
 
   const onSubmit = (values: FormValues) => {
     updateTimeLog.mutate(
-      { id: timeLog.id, payload: { ...values, hours: parseFloat(values.hours) } },
+      {
+        id: timeLog.id,
+        payload: { ...values, hours: parseFloat(values.hours) },
+      },
       {
         onSuccess: () => {
           onOpenChange(false);
@@ -97,7 +117,10 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
         </SheetHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-6 space-y-4"
+          >
             <FormField
               control={form.control}
               name="date"
@@ -143,8 +166,8 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
                       placeholder="0"
                       {...field}
                       onChange={(e) => {
-                        const v = e.target.value.replace(',', '.');
-                        if (v === '' || /^(0|[1-9]\d*)?(\.\d*)?$/.test(v)) {
+                        const v = e.target.value.replace(",", ".");
+                        if (v === "" || /^(0|[1-9]\d*)?(\.\d*)?$/.test(v)) {
                           field.onChange(v);
                         }
                       }}
@@ -188,8 +211,12 @@ export function EditTimeLogSheet({ timeLog, open, onOpenChange }: EditTimeLogShe
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={updateTimeLog.isPending} className="w-full">
-              {updateTimeLog.isPending ? 'Saving...' : 'Save Changes'}
+            <Button
+              type="submit"
+              disabled={updateTimeLog.isPending}
+              className="w-full"
+            >
+              {updateTimeLog.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </Form>

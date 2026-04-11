@@ -1,17 +1,23 @@
-import { Link, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Clock, Upload, FolderKanban, Building2 } from 'lucide-react';
-import { useAuth } from '@/lib/auth/use-auth';
-import { isAdminOrManager } from '@/lib/auth/role-utils';
-import { AdminNavDropdown } from '@/components/layout/admin-nav-dropdown';
-import { ReportsNavDropdown } from '@/components/layout/reports-nav-dropdown';
-import { navLinkClasses } from '@/components/layout/nav-link-classes';
-import { UserNav } from '@/components/layout/user-nav';
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
+import {
+  Building2,
+  Clock,
+  FolderKanban,
+  LayoutDashboard,
+  Upload,
+} from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
+import { AdminNavDropdown } from "@/components/layout/admin-nav-dropdown";
+import { navLinkClasses } from "@/components/layout/nav-link-classes";
+import { ReportsNavDropdown } from "@/components/layout/reports-nav-dropdown";
+import { UserNav } from "@/components/layout/user-nav";
+import { isAdminOrManager } from "@/lib/auth/role-utils";
+import { useAuth } from "@/lib/auth/use-auth";
 
 const navLinks: Array<{ label: string; href: string; icon: LucideIcon }> = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Time Logs', href: '/time-logs', icon: Clock },
-  { label: 'Projects', href: '/projects', icon: FolderKanban },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Time Logs", href: "/time-logs", icon: Clock },
+  { label: "Projects", href: "/projects", icon: FolderKanban },
 ];
 
 export function Navbar() {
@@ -21,7 +27,10 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b bg-bg-dark/80 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:px-6">
-        <Link to="/dashboard" className="text-lg font-bold tracking-tight text-foreground">
+        <Link
+          to="/dashboard"
+          className="text-lg font-bold tracking-tight text-foreground"
+        >
           Clockwise
         </Link>
 
@@ -37,13 +46,19 @@ export function Navbar() {
             </NavLink>
           ))}
           {showTeams && (
-            <NavLink to="/teams" className={({ isActive }) => navLinkClasses(isActive)}>
+            <NavLink
+              to="/teams"
+              className={({ isActive }) => navLinkClasses(isActive)}
+            >
               <Building2 className="h-4 w-4" />
               Teams
             </NavLink>
           )}
           <ReportsNavDropdown />
-          <NavLink to="/import" className={({ isActive }) => navLinkClasses(isActive)}>
+          <NavLink
+            to="/import"
+            className={({ isActive }) => navLinkClasses(isActive)}
+          >
             <Upload className="h-4 w-4" />
             Import
           </NavLink>

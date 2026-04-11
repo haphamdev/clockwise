@@ -1,6 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsBoolean, IsUUID } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Transform, Type } from "class-transformer";
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsUUID,
+  Max,
+  Min,
+} from "class-validator";
 
 export class ListProjectsQueryDto {
   @ApiProperty({ required: false, default: 1 })
@@ -20,12 +27,12 @@ export class ListProjectsQueryDto {
 
   @ApiProperty({ required: false, default: false })
   @IsOptional()
-  @Transform(({ value }) => value === 'true' || value === true)
+  @Transform(({ value }) => value === "true" || value === true)
   @IsBoolean()
   includeArchived?: boolean = false;
 
-  @ApiProperty({ required: false, description: 'Filter by team ID' })
+  @ApiProperty({ required: false, description: "Filter by team ID" })
   @IsOptional()
-  @IsUUID('4')
+  @IsUUID("4")
   teamId?: string;
 }

@@ -1,9 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength, IsInt, Min, Max } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min,
+} from "class-validator";
 
 export class ListTasksQueryDto {
-  @ApiProperty({ required: false, description: 'Search query for task label' })
+  @ApiProperty({ required: false, description: "Search query for task label" })
   @IsOptional()
   @IsString()
   @MaxLength(100)

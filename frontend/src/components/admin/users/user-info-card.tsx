@@ -1,13 +1,13 @@
-import { Save, Undo2, UserX, UserCheck } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { StatusBadge, type Status } from '@/components/ui/status-badge';
-import type { User } from '@/lib/users/types';
-import { TimeDisplay } from '@/components/ui/time-display';
+import { Save, Undo2, UserCheck, UserX } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { type Status, StatusBadge } from "@/components/ui/status-badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import type { User } from "@/lib/users/types";
 
 interface UserInfoCardProps {
   user: User;
@@ -32,7 +32,7 @@ export function UserInfoCard({
   isSaving,
   isDirty,
 }: UserInfoCardProps) {
-  const isDeactivated = user.status === 'deactivated';
+  const isDeactivated = user.status === "deactivated";
   const archivedCount = user.teamMemberships.filter((t) => t.isArchived).length;
 
   return (
@@ -61,14 +61,14 @@ export function UserInfoCard({
           )}
           <Button size="sm" onClick={onSave} disabled={!isDirty || isSaving}>
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            {isSaving ? "Saving..." : "Save Changes"}
           </Button>
           {isDeactivated ? (
             <Button variant="outline" size="sm" onClick={onReactivate}>
               <UserCheck className="mr-1.5 h-3.5 w-3.5" />
               Reactivate
             </Button>
-          ) : user.status === 'active' ? (
+          ) : user.status === "active" ? (
             <Button variant="destructive" size="sm" onClick={onDeactivate}>
               <UserX className="mr-1.5 h-3.5 w-3.5" />
               Deactivate

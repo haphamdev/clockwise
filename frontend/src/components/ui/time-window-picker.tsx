@@ -1,17 +1,21 @@
-import { useState, useCallback } from 'react';
-import { CalendarDays } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
-import { TimeWindowPresets } from '@/components/ui/time-window-presets';
-import { TimeWindowCustom } from '@/components/ui/time-window-custom';
+import { CalendarDays } from "lucide-react";
+import { useCallback, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { TimeWindowCustom } from "@/components/ui/time-window-custom";
+import { TimeWindowPresets } from "@/components/ui/time-window-presets";
 import {
   formatTimeWindowLabel,
   type TimeWindow,
   type TimeWindowPreset,
-} from '@/lib/dates/time-window-utils';
+} from "@/lib/dates/time-window-utils";
 
-export type DraftSource = 'preset' | 'rolling' | 'calendar';
+export type DraftSource = "preset" | "rolling" | "calendar";
 
 export interface Draft {
   dateFrom: string;
@@ -38,7 +42,7 @@ function makeDraft(value: TimeWindow): Draft {
     dateFrom: value.dateFrom,
     dateTo: value.dateTo,
     preset: value.preset,
-    source: value.preset ? 'preset' : 'calendar',
+    source: value.preset ? "preset" : "calendar",
   };
 }
 
@@ -57,7 +61,9 @@ export function TimeWindowPicker({
 }: TimeWindowPickerProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(() => makeDraft(value));
-  const [activePreset, setActivePreset] = useState<TimeWindowPreset | null>(value.preset ?? null);
+  const [activePreset, setActivePreset] = useState<TimeWindowPreset | null>(
+    value.preset ?? null,
+  );
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -82,7 +88,9 @@ export function TimeWindowPicker({
 
   const isMidClick = !!draft.calendarPendingFrom;
 
-  const enriched: TimeWindow = activePreset ? { ...value, preset: activePreset } : value;
+  const enriched: TimeWindow = activePreset
+    ? { ...value, preset: activePreset }
+    : value;
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>

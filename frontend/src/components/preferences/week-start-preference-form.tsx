@@ -1,7 +1,7 @@
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useUpdateUserPreferences } from '@/lib/user-preferences/use-update-user-preferences';
-import type { WeekStartDay } from '@/lib/user-preferences/types';
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { WeekStartDay } from "@/lib/user-preferences/types";
+import { useUpdateUserPreferences } from "@/lib/user-preferences/use-update-user-preferences";
 
 interface WeekStartPreferenceFormProps {
   currentWeekStartDay: WeekStartDay;
@@ -18,7 +18,7 @@ export function WeekStartPreferenceForm({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Week starts on</label>
+      <span className="text-sm font-medium">Week starts on</span>
       <RadioGroup
         value={currentWeekStartDay}
         onValueChange={handleChange}
@@ -27,11 +27,15 @@ export function WeekStartPreferenceForm({
       >
         <div className="flex items-center gap-2">
           <RadioGroupItem value="monday" id="week-monday" />
-          <Label htmlFor="week-monday" className="cursor-pointer">Monday</Label>
+          <Label htmlFor="week-monday" className="cursor-pointer">
+            Monday
+          </Label>
         </div>
         <div className="flex items-center gap-2">
           <RadioGroupItem value="sunday" id="week-sunday" />
-          <Label htmlFor="week-sunday" className="cursor-pointer">Sunday</Label>
+          <Label htmlFor="week-sunday" className="cursor-pointer">
+            Sunday
+          </Label>
         </div>
       </RadioGroup>
     </div>

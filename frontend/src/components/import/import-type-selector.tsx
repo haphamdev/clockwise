@@ -4,21 +4,29 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { IMPORT_TYPE_OPTIONS } from '@/lib/import/import-type-config';
-import type { ImportType } from '@/lib/import/types';
+} from "@/components/ui/select";
+import { IMPORT_TYPE_OPTIONS } from "@/lib/import/import-type-config";
+import type { ImportType } from "@/lib/import/types";
 
 interface ImportTypeSelectorProps {
   value: ImportType | null;
   onChange: (type: ImportType) => void;
 }
 
-export function ImportTypeSelector({ value, onChange }: ImportTypeSelectorProps) {
+export function ImportTypeSelector({
+  value,
+  onChange,
+}: ImportTypeSelectorProps) {
   return (
     <div className="flex items-center gap-3">
-      <label className="text-sm font-medium">Import type</label>
-      <Select value={value ?? ''} onValueChange={(v) => onChange(v as ImportType)}>
-        <SelectTrigger className="w-48">
+      <label htmlFor="import-type" className="text-sm font-medium">
+        Import type
+      </label>
+      <Select
+        value={value ?? ""}
+        onValueChange={(v) => onChange(v as ImportType)}
+      >
+        <SelectTrigger id="import-type" className="w-48">
           <SelectValue placeholder="Select type..." />
         </SelectTrigger>
         <SelectContent>

@@ -1,11 +1,14 @@
-import { Logger } from '@nestjs/common';
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { ImportJobStatus } from '@prisma/client';
-import { ImportService } from './import.service';
-import { ImportJobData, ImportJobResult } from './interfaces/import-job.interface';
-import { ImportProgressCallback } from './interfaces/import-processor.interface';
-import { IMPORT_QUEUE } from './import.constants';
+import { OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
+import { Logger } from "@nestjs/common";
+import { ImportJobStatus } from "@prisma/client";
+import { Job } from "bullmq";
+import { IMPORT_QUEUE } from "./import.constants";
+import { ImportService } from "./import.service";
+import {
+  ImportJobData,
+  ImportJobResult,
+} from "./interfaces/import-job.interface";
+import { ImportProgressCallback } from "./interfaces/import-processor.interface";
 
 const PROGRESS_INTERVAL_MS = 2000;
 
@@ -18,7 +21,8 @@ export class ImportJobProcessor extends WorkerHost {
   }
 
   async process(job: Job<ImportJobData>): Promise<ImportJobResult> {
-    const { type, executableRows, userId, orgId, isAdmin, importJobId } = job.data;
+    const { type, executableRows, userId, orgId, isAdmin, importJobId } =
+      job.data;
 
     const processor = this.importService.getProcessor(type);
 
@@ -31,8 +35,15 @@ export class ImportJobProcessor extends WorkerHost {
       }
     };
 
-    const result = await processor.execute(executableRows, { userId, orgId, isAdmin }, onProgress);
-    await job.updateProgress({ imported: result.imported, errorCount: result.errors.length });
+    const result = await processor.execute(
+      executableRows,
+      { userId, orgId, isAdmin },
+      onProgress,
+    );
+    await job.updateProgress({
+      imported: result.imported,
+      errorCount: result.errors.length,
+    });
 
     const completedAt = new Date();
     try {
@@ -49,7 +60,7 @@ export class ImportJobProcessor extends WorkerHost {
     }
 
     return {
-      status: 'completed',
+      status: "completed",
       totalRows: result.totalRows,
       imported: result.imported,
       errorCount: result.errors.length,
@@ -58,7 +69,7 @@ export class ImportJobProcessor extends WorkerHost {
     };
   }
 
-  @OnWorkerEvent('failed')
+  @OnWorkerEvent("failed")
   async onFailed(job: Job<ImportJobData>, error: Error): Promise<void> {
     this.logger.error(
       `Import job ${job.id} (type=${job.data.type}) failed: ${error.message}`,

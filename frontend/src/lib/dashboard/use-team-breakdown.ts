@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { dashboardKeys } from './dashboard-keys';
-import { fetchTeamBreakdown } from './dashboard-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchTeamBreakdown } from "./dashboard-api";
+import { dashboardKeys } from "./dashboard-keys";
 
 export function useTeamBreakdown(enabled: boolean) {
   return useQuery({

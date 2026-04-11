@@ -4,7 +4,7 @@ export interface TeamMemberEntity {
   userName: string;
   userEmail: string;
   userStatus: string;
-  role: 'manager' | 'member';
+  role: "manager" | "member";
   createdAt: Date;
 }
 

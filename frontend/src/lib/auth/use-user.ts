@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { authKeys } from './auth-keys';
-import { fetchCurrentUser } from './auth-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchCurrentUser } from "./auth-api";
+import { authKeys } from "./auth-keys";
 
 export function useUser() {
   return useQuery({

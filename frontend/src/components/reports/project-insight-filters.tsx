@@ -1,10 +1,10 @@
-import { useMemo, useEffect } from 'react';
-import { Label } from '@/components/ui/label';
-import { Combobox } from '@/components/ui/combobox';
-import { useProjects } from '@/lib/projects/use-projects';
-import { useTeams } from '@/lib/teams/use-teams';
-import { useUsers } from '@/lib/users/use-users';
-import type { ComboboxOption } from '@/components/ui/combobox';
+import { useEffect, useMemo } from "react";
+import type { ComboboxOption } from "@/components/ui/combobox";
+import { Combobox } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
+import { useProjects } from "@/lib/projects/use-projects";
+import { useTeams } from "@/lib/teams/use-teams";
+import { useUsers } from "@/lib/users/use-users";
 
 interface ProjectInsightFiltersProps {
   projectId: string;
@@ -28,7 +28,7 @@ export function ProjectInsightFilters({
   const availableProjects = useMemo(
     () =>
       (projectsData?.data ?? [])
-        .filter((p) => p.status !== 'archived')
+        .filter((p) => p.status !== "archived")
         .sort((a, b) => a.name.localeCompare(b.name)),
     [projectsData],
   );

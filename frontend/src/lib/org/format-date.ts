@@ -1,19 +1,24 @@
-import { format, formatDistanceToNow, differenceInDays, parseISO } from 'date-fns';
-import type { DateFormat, TimeFormat } from './types';
+import {
+  differenceInDays,
+  format,
+  formatDistanceToNow,
+  parseISO,
+} from "date-fns";
+import type { DateFormat, TimeFormat } from "./types";
 
 export const DATE_TOKENS: Record<DateFormat, string> = {
-  'YYYY-MM-DD': 'yyyy-MM-dd',
-  'DD/MM/YYYY': 'dd/MM/yyyy',
-  'MM/DD/YYYY': 'MM/dd/yyyy',
+  "YYYY-MM-DD": "yyyy-MM-dd",
+  "DD/MM/YYYY": "dd/MM/yyyy",
+  "MM/DD/YYYY": "MM/dd/yyyy",
 };
 
 export const TIME_TOKENS: Record<TimeFormat, string> = {
-  '12h': 'h:mm a',
-  '24h': 'HH:mm',
+  "12h": "h:mm a",
+  "24h": "HH:mm",
 };
 
 export function toDate(input: string | Date): Date {
-  return typeof input === 'string' ? parseISO(input) : input;
+  return typeof input === "string" ? parseISO(input) : input;
 }
 
 interface FormatOptions {

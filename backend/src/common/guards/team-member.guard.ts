@@ -1,7 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import { NotAuthenticatedException } from '../exceptions/auth.exceptions';
-import { TeamContextRequiredException, TeamNotAMemberException } from '../exceptions/team.exceptions';
+import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { PrismaService } from "../../prisma/prisma.service";
+import { NotAuthenticatedException } from "../exceptions/auth.exceptions";
+import {
+  TeamContextRequiredException,
+  TeamNotAMemberException,
+} from "../exceptions/team.exceptions";
 
 /**
  * Guard that verifies the current user is a member of the team

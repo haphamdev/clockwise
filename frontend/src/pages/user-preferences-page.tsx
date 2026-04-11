@@ -1,13 +1,13 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/ui/page-header';
-import { ThemePreferenceForm } from '@/components/preferences/theme-preference-form';
-import { FormatPreferenceForm } from '@/components/preferences/format-preference-form';
-import { WeekStartPreferenceForm } from '@/components/preferences/week-start-preference-form';
-import { useUserPreferences } from '@/lib/user-preferences/use-user-preferences';
-import { useDocumentTitle } from '@/hooks/use-document-title';
+import { FormatPreferenceForm } from "@/components/preferences/format-preference-form";
+import { ThemePreferenceForm } from "@/components/preferences/theme-preference-form";
+import { WeekStartPreferenceForm } from "@/components/preferences/week-start-preference-form";
+import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useUserPreferences } from "@/lib/user-preferences/use-user-preferences";
 
 export function UserPreferencesPage() {
-  useDocumentTitle('Clockwise - Settings');
+  useDocumentTitle("Clockwise - Settings");
   const { data: prefs, isLoading, isError } = useUserPreferences();
 
   if (isLoading) {
@@ -21,7 +21,11 @@ export function UserPreferencesPage() {
   }
 
   if (isError || !prefs) {
-    return <p className="py-12 text-center text-muted-foreground">Failed to load preferences.</p>;
+    return (
+      <p className="py-12 text-center text-muted-foreground">
+        Failed to load preferences.
+      </p>
+    );
   }
 
   return (
@@ -29,8 +33,8 @@ export function UserPreferencesPage() {
       <PageHeader
         title="Settings"
         breadcrumbs={[
-          { label: 'Profile', href: '/profile' },
-          { label: 'Settings' },
+          { label: "Profile", href: "/profile" },
+          { label: "Settings" },
         ]}
       />
 

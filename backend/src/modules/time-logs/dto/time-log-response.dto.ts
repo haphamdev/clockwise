@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class TimeLogTaskResponseDto {
   @ApiProperty()
@@ -41,7 +41,7 @@ export class TimeLogProjectDto {
 
 export class WarningDto {
   @ApiProperty()
-  type: 'daily_limit' | 'weekly_limit';
+  type: "daily_limit" | "weekly_limit";
 
   @ApiProperty()
   message: string;

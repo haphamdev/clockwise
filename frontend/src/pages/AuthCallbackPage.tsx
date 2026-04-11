@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/auth/use-auth';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/lib/auth/use-auth";
 
 export function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -9,17 +9,17 @@ export function AuthCallbackPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.slice(1));
-    const token = params.get('token');
+    const token = params.get("token");
 
     if (token) {
-      window.history.replaceState({}, '', '/auth/callback');
+      window.history.replaceState({}, "", "/auth/callback");
       handleOAuthCallback(token)
-        .then(() => navigate('/dashboard', { replace: true }))
+        .then(() => navigate("/dashboard", { replace: true }))
         .catch(() => {
-          setError('Sign in failed. Please try again.');
+          setError("Sign in failed. Please try again.");
         });
     } else {
-      navigate('/login', { replace: true });
+      navigate("/login", { replace: true });
     }
   }, [navigate, handleOAuthCallback]);
 

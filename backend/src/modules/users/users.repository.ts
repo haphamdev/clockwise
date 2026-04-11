@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma, User } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma, User } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
 import {
+  TeamMembershipInfo,
   UserEntity,
   UserWithRefreshToken,
   UserWithTeams,
-  TeamMembershipInfo,
-} from './entities/user.entity';
+} from "./entities/user.entity";
 
 @Injectable()
 export class UsersRepository {
@@ -32,12 +32,15 @@ export class UsersRepository {
 
   async createPendingUser(orgId: string, email: string): Promise<UserEntity> {
     const user = await this.prisma.user.create({
-      data: { orgId, email, name: email, status: 'pending' },
+      data: { orgId, email, name: email, status: "pending" },
     });
     return this.toEntity(user);
   }
 
-  async updateRefreshToken(userId: string, hashedToken: string | null): Promise<void> {
+  async updateRefreshToken(
+    userId: string,
+    hashedToken: string | null,
+  ): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
       data: { refreshToken: hashedToken },
@@ -51,7 +54,7 @@ export class UsersRepository {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: {
-        status: 'active',
+        status: "active",
         name: data.name,
         avatarUrl: data.avatarUrl,
         lastLoginAt: new Date(),
@@ -79,16 +82,23 @@ export class UsersRepository {
       projectId?: string;
     },
   ): Promise<{ data: UserWithTeams[]; total: number }> {
-    const teamMembershipFilter = this.buildTeamMembershipFilter(options.teamId, options.projectId);
+    const teamMembershipFilter = this.buildTeamMembershipFilter(
+      options.teamId,
+      options.projectId,
+    );
 
     const where: Prisma.UserWhereInput = {
       orgId,
-      ...(options.status && { status: options.status as 'pending' | 'active' | 'deactivated' }),
-      ...(teamMembershipFilter && { teamMemberships: { some: teamMembershipFilter } }),
+      ...(options.status && {
+        status: options.status as "pending" | "active" | "deactivated",
+      }),
+      ...(teamMembershipFilter && {
+        teamMemberships: { some: teamMembershipFilter },
+      }),
       ...(options.search && {
         OR: [
-          { name: { contains: options.search, mode: 'insensitive' as const } },
-          { email: { contains: options.search, mode: 'insensitive' as const } },
+          { name: { contains: options.search, mode: "insensitive" as const } },
+          { email: { contains: options.search, mode: "insensitive" as const } },
         ],
       }),
     };
@@ -99,7 +109,7 @@ export class UsersRepository {
       this.prisma.user.findMany({
         where,
         include,
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),
@@ -114,7 +124,7 @@ export class UsersRepository {
 
   async countActiveAdmins(orgId: string): Promise<number> {
     return this.prisma.user.count({
-      where: { orgId, isAdmin: true, status: 'active' },
+      where: { orgId, isAdmin: true, status: "active" },
     });
   }
 
@@ -128,14 +138,14 @@ export class UsersRepository {
   async deactivateUser(userId: string): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { status: 'deactivated', refreshToken: null },
+      data: { status: "deactivated", refreshToken: null },
     });
   }
 
   async reactivateUser(userId: string): Promise<void> {
     await this.prisma.user.update({
       where: { id: userId },
-      data: { status: 'active' },
+      data: { status: "active" },
     });
   }
 
@@ -155,14 +165,14 @@ export class UsersRepository {
    */
   async findTeamsWhereOnlyManager(userId: string): Promise<string[]> {
     const memberships = await this.prisma.teamMember.findMany({
-      where: { userId, role: 'manager' },
+      where: { userId, role: "manager" },
       select: { teamId: true },
     });
 
     const soloManagerTeamIds: string[] = [];
     for (const m of memberships) {
       const managerCount = await this.prisma.teamMember.count({
-        where: { teamId: m.teamId, role: 'manager' },
+        where: { teamId: m.teamId, role: "manager" },
       });
       if (managerCount <= 1) {
         soloManagerTeamIds.push(m.teamId);
@@ -174,7 +184,7 @@ export class UsersRepository {
 
   async replaceTeamAssignments(
     userId: string,
-    assignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    assignments: Array<{ teamId: string; role: "manager" | "member" }>,
   ): Promise<void> {
     await this.prisma.$transaction([
       this.prisma.teamMember.deleteMany({ where: { userId } }),
@@ -186,12 +196,15 @@ export class UsersRepository {
     ]);
   }
 
-  async countManagerRelationship(managerId: string, memberId: string): Promise<number> {
+  async countManagerRelationship(
+    managerId: string,
+    memberId: string,
+  ): Promise<number> {
     return this.prisma.team.count({
       where: {
         isArchived: false,
         AND: [
-          { members: { some: { userId: managerId, role: 'manager' } } },
+          { members: { some: { userId: managerId, role: "manager" } } },
           { members: { some: { userId: memberId } } },
         ],
       },
@@ -206,11 +219,15 @@ export class UsersRepository {
     return new Map(teams.map((t) => [t.id, t.name]));
   }
 
-  async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
+  async findByIdWithRefreshToken(
+    id: string,
+  ): Promise<UserWithRefreshToken | null> {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
-    return user ? { ...this.toEntity(user), refreshToken: user.refreshToken } : null;
+    return user
+      ? { ...this.toEntity(user), refreshToken: user.refreshToken }
+      : null;
   }
 
   /**
@@ -259,7 +276,7 @@ export class UsersRepository {
         (tm): TeamMembershipInfo => ({
           teamId: tm.team.id,
           teamName: tm.team.name,
-          role: tm.role as 'manager' | 'member',
+          role: tm.role as "manager" | "member",
           isArchived: tm.team.isArchived,
         }),
       ),

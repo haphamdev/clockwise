@@ -1,31 +1,31 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/ui/page-header';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { UserInfoCard } from '@/components/admin/users/user-info-card';
-import { UserMembershipsTable } from '@/components/admin/users/user-memberships-table';
-import { AddToTeamSheet } from '@/components/admin/users/add-to-team-sheet';
-import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
-import { RelatedProjectsSection } from '@/components/admin/related-projects-section';
-import { queryClient } from '@/lib/query-client';
-import { useUserProjects } from '@/lib/projects/use-user-projects';
-import { useUserDetail } from '@/lib/users/use-user-detail';
-import { useUpdateUser } from '@/lib/users/use-update-user';
-import { useDeactivateUser } from '@/lib/users/use-deactivate-user';
-import { useReactivateUser } from '@/lib/users/use-reactivate-user';
-import { useUpdateTeamMember } from '@/lib/teams/use-update-team-member';
-import { useRemoveTeamMember } from '@/lib/teams/use-remove-team-member';
-import { usersKeys } from '@/lib/users/users-keys';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { TeamRole } from '@/lib/teams/types';
+import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { RelatedProjectsSection } from "@/components/admin/related-projects-section";
+import { AddToTeamSheet } from "@/components/admin/users/add-to-team-sheet";
+import { UserInfoCard } from "@/components/admin/users/user-info-card";
+import { UserMembershipsTable } from "@/components/admin/users/user-memberships-table";
+import { AuditTimeline } from "@/components/audit-logs/audit-timeline";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useUserProjects } from "@/lib/projects/use-user-projects";
+import { queryClient } from "@/lib/query-client";
+import type { TeamRole } from "@/lib/teams/types";
+import { useRemoveTeamMember } from "@/lib/teams/use-remove-team-member";
+import { useUpdateTeamMember } from "@/lib/teams/use-update-team-member";
+import { useDeactivateUser } from "@/lib/users/use-deactivate-user";
+import { useReactivateUser } from "@/lib/users/use-reactivate-user";
+import { useUpdateUser } from "@/lib/users/use-update-user";
+import { useUserDetail } from "@/lib/users/use-user-detail";
+import { usersKeys } from "@/lib/users/users-keys";
 
 export function UserDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: user, isLoading } = useUserDetail(id!);
-  useDocumentTitle(user ? `Clockwise - ${user.name}` : 'Clockwise - User');
+  const { data: user, isLoading } = useUserDetail(id ?? null);
+  useDocumentTitle(user ? `Clockwise - ${user.name}` : "Clockwise - User");
   const updateUser = useUpdateUser();
   const deactivateUser = useDeactivateUser();
   const reactivateUser = useReactivateUser();
@@ -34,15 +34,20 @@ export function UserDetailPage() {
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [addTeamOpen, setAddTeamOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<'deactivate' | 'reactivate' | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    "deactivate" | "reactivate" | null
+  >(null);
   const [projectsPage, setProjectsPage] = useState(1);
   const [showArchivedProjects, setShowArchivedProjects] = useState(false);
 
-  const { data: projectsData, isLoading: projectsLoading } = useUserProjects(id, {
-    page: projectsPage,
-    limit: 5,
-    includeArchived: showArchivedProjects,
-  });
+  const { data: projectsData, isLoading: projectsLoading } = useUserProjects(
+    id,
+    {
+      page: projectsPage,
+      limit: 5,
+      includeArchived: showArchivedProjects,
+    },
+  );
 
   useEffect(() => {
     if (user) setIsAdmin(user.isAdmin);
@@ -59,11 +64,13 @@ export function UserDetailPage() {
   }
 
   if (!user) {
-    return <p className="py-12 text-center text-muted-foreground">User not found.</p>;
+    return (
+      <p className="py-12 text-center text-muted-foreground">User not found.</p>
+    );
   }
 
   const isDirty = isAdmin !== user.isAdmin;
-  const isDeactivated = user.status === 'deactivated';
+  const isDeactivated = user.status === "deactivated";
 
   const handleSave = () => {
     updateUser.mutate({ id: user.id, payload: { isAdmin } });
@@ -74,7 +81,10 @@ export function UserDetailPage() {
   const handleChangeRole = (teamId: string, role: TeamRole) => {
     updateMember.mutate(
       { teamId, userId: user.id, payload: { role } },
-      { onSuccess: () => queryClient.invalidateQueries({ queryKey: usersKeys.all }) },
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: usersKeys.all }),
+      },
     );
   };
 
@@ -83,10 +93,14 @@ export function UserDetailPage() {
   };
 
   const handleConfirm = () => {
-    if (confirmAction === 'deactivate') {
-      deactivateUser.mutate(user.id, { onSuccess: () => setConfirmAction(null) });
-    } else if (confirmAction === 'reactivate') {
-      reactivateUser.mutate(user.id, { onSuccess: () => setConfirmAction(null) });
+    if (confirmAction === "deactivate") {
+      deactivateUser.mutate(user.id, {
+        onSuccess: () => setConfirmAction(null),
+      });
+    } else if (confirmAction === "reactivate") {
+      reactivateUser.mutate(user.id, {
+        onSuccess: () => setConfirmAction(null),
+      });
     }
   };
 
@@ -95,7 +109,7 @@ export function UserDetailPage() {
       <PageHeader
         title={user.name}
         breadcrumbs={[
-          { label: 'Users', href: '/admin/users' },
+          { label: "Users", href: "/admin/users" },
           { label: user.name },
         ]}
       />
@@ -106,8 +120,8 @@ export function UserDetailPage() {
         onIsAdminChange={setIsAdmin}
         onSave={handleSave}
         onRestore={handleRestore}
-        onDeactivate={() => setConfirmAction('deactivate')}
-        onReactivate={() => setConfirmAction('reactivate')}
+        onDeactivate={() => setConfirmAction("deactivate")}
+        onReactivate={() => setConfirmAction("reactivate")}
         isSaving={updateUser.isPending}
         isDirty={isDirty}
       />
@@ -128,14 +142,18 @@ export function UserDetailPage() {
         onRemove={handleRemove}
         readOnly={isDeactivated}
         removePending={removeMember.isPending}
-        roleChangePendingTeamId={updateMember.isPending ? updateMember.variables?.teamId : undefined}
+        roleChangePendingTeamId={
+          updateMember.isPending ? updateMember.variables?.teamId : undefined
+        }
       />
 
       <RelatedProjectsSection
         data={projectsData?.data ?? []}
         total={projectsData?.total ?? 0}
         page={projectsPage}
-        totalPages={projectsData ? Math.ceil(projectsData.total / projectsData.limit) : 0}
+        totalPages={
+          projectsData ? Math.ceil(projectsData.total / projectsData.limit) : 0
+        }
         isLoading={projectsLoading}
         onPageChange={setProjectsPage}
         showArchived={showArchivedProjects}
@@ -157,14 +175,18 @@ export function UserDetailPage() {
       <ConfirmDialog
         open={confirmAction !== null}
         onOpenChange={(open) => !open && setConfirmAction(null)}
-        title={confirmAction === 'deactivate' ? 'Deactivate User' : 'Reactivate User'}
+        title={
+          confirmAction === "deactivate" ? "Deactivate User" : "Reactivate User"
+        }
         description={
-          confirmAction === 'deactivate'
+          confirmAction === "deactivate"
             ? `Are you sure you want to deactivate ${user.name}? They will lose access to the organization.`
             : `Are you sure you want to reactivate ${user.name}? They will regain access to the organization.`
         }
-        confirmLabel={confirmAction === 'deactivate' ? 'Deactivate' : 'Reactivate'}
-        variant={confirmAction === 'deactivate' ? 'destructive' : 'default'}
+        confirmLabel={
+          confirmAction === "deactivate" ? "Deactivate" : "Reactivate"
+        }
+        variant={confirmAction === "deactivate" ? "destructive" : "default"}
         onConfirm={handleConfirm}
         isPending={deactivateUser.isPending || reactivateUser.isPending}
       />

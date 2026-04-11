@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const meta: Meta<typeof Input> = {
-  title: 'UI/Input',
+  title: "UI/Input",
   component: Input,
 };
 
@@ -12,23 +12,23 @@ export default meta;
 type Story = StoryObj<typeof Input>;
 
 export const Default: Story = {
-  args: { placeholder: 'Enter text...' },
+  args: { placeholder: "Enter text..." },
 };
 
 export const TypeEmail: Story = {
-  args: { type: 'email', placeholder: 'email@example.com' },
+  args: { type: "email", placeholder: "email@example.com" },
 };
 
 export const TypePassword: Story = {
-  args: { type: 'password', placeholder: 'Password' },
+  args: { type: "password", placeholder: "Password" },
 };
 
 export const TypeNumber: Story = {
-  args: { type: 'number', placeholder: '0' },
+  args: { type: "number", placeholder: "0" },
 };
 
 export const Disabled: Story = {
-  args: { disabled: true, placeholder: 'Disabled' },
+  args: { disabled: true, placeholder: "Disabled" },
 };
 
 export const WithLabel: Story = {

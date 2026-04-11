@@ -1,28 +1,28 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui/form';
-import { useCreateTeam } from '@/lib/teams/use-create-team';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateTeam } from "@/lib/teams/use-create-team";
 
 const schema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
+  name: z.string().min(1, "Name is required").max(255),
   description: z.string().optional(),
 });
 
@@ -36,7 +36,7 @@ interface CreateTeamSheetProps {
 export function CreateTeamSheet({ open, onOpenChange }: CreateTeamSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', description: '' },
+    defaultValues: { name: "", description: "" },
   });
   const createTeam = useCreateTeam();
 
@@ -54,10 +54,15 @@ export function CreateTeamSheet({ open, onOpenChange }: CreateTeamSheetProps) {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Create Team</SheetTitle>
-          <SheetDescription>Add a new team to your organization.</SheetDescription>
+          <SheetDescription>
+            Add a new team to your organization.
+          </SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-6 space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -84,8 +89,12 @@ export function CreateTeamSheet({ open, onOpenChange }: CreateTeamSheetProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={createTeam.isPending} className="w-full">
-              {createTeam.isPending ? 'Creating...' : 'Create Team'}
+            <Button
+              type="submit"
+              disabled={createTeam.isPending}
+              className="w-full"
+            >
+              {createTeam.isPending ? "Creating..." : "Create Team"}
             </Button>
           </form>
         </Form>

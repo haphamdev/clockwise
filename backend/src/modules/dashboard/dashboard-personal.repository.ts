@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
 
 interface UserHoursRow {
   today: number;
@@ -34,7 +34,10 @@ interface ProjectSummaryRow {
 export class DashboardPersonalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUserHoursByPeriod(userId: string, today: string): Promise<UserHoursRow> {
+  async findUserHoursByPeriod(
+    userId: string,
+    today: string,
+  ): Promise<UserHoursRow> {
     const rows = await this.prisma.$queryRaw<
       Array<{
         today: number;
@@ -112,7 +115,10 @@ export class DashboardPersonalRepository {
     );
 
     return rows.map((r) => ({
-      date: r.date instanceof Date ? r.date.toISOString().slice(0, 10) : String(r.date).slice(0, 10),
+      date:
+        r.date instanceof Date
+          ? r.date.toISOString().slice(0, 10)
+          : String(r.date).slice(0, 10),
       hours: r.hours,
     }));
   }
@@ -121,7 +127,15 @@ export class DashboardPersonalRepository {
     userId: string,
     orgId: string,
     limit: number,
-  ): Promise<Array<{ id: string; date: string; projectName: string; taskLabels: string[]; hours: number }>> {
+  ): Promise<
+    Array<{
+      id: string;
+      date: string;
+      projectName: string;
+      taskLabels: string[];
+      hours: number;
+    }>
+  > {
     const rows = await this.prisma.$queryRaw<RecentLogRow[]>(
       Prisma.sql`
         SELECT
@@ -149,7 +163,10 @@ export class DashboardPersonalRepository {
 
     return rows.map((r) => ({
       id: r.id,
-      date: r.date instanceof Date ? r.date.toISOString().slice(0, 10) : String(r.date).slice(0, 10),
+      date:
+        r.date instanceof Date
+          ? r.date.toISOString().slice(0, 10)
+          : String(r.date).slice(0, 10),
       projectName: r.project_name,
       taskLabels: r.task_labels,
       hours: r.hours,
@@ -159,7 +176,14 @@ export class DashboardPersonalRepository {
   async findProjectSummaries(
     userId: string,
     today: string,
-  ): Promise<Array<{ projectId: string; projectName: string; hoursThisWeek: number; entriesThisWeek: number }>> {
+  ): Promise<
+    Array<{
+      projectId: string;
+      projectName: string;
+      hoursThisWeek: number;
+      entriesThisWeek: number;
+    }>
+  > {
     const rows = await this.prisma.$queryRaw<ProjectSummaryRow[]>(
       Prisma.sql`
         SELECT

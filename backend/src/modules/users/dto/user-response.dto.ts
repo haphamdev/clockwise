@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class UserTeamMembershipDto {
   @ApiProperty()
@@ -7,7 +7,7 @@ export class UserTeamMembershipDto {
   @ApiProperty()
   teamName: string;
 
-  @ApiProperty({ enum: ['manager', 'member'] })
+  @ApiProperty({ enum: ["manager", "member"] })
   role: string;
 
   @ApiProperty()
@@ -30,7 +30,7 @@ export class UserResponseDto {
   @ApiProperty()
   isAdmin: boolean;
 
-  @ApiProperty({ enum: ['pending', 'active', 'deactivated'] })
+  @ApiProperty({ enum: ["pending", "active", "deactivated"] })
   status: string;
 
   @ApiProperty({ required: false })

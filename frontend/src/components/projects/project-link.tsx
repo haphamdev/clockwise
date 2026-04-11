@@ -1,12 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface ProjectLinkProps {
   id: string;
@@ -15,16 +15,21 @@ interface ProjectLinkProps {
   status?: string;
 }
 
-export function ProjectLink({ id, name, description, status }: ProjectLinkProps) {
-  const isArchived = status === 'archived';
+export function ProjectLink({
+  id,
+  name,
+  description,
+  status,
+}: ProjectLinkProps) {
+  const isArchived = status === "archived";
   const hasTooltip = !!description || isArchived;
 
   const link = (
     <Link
       to={`/projects/${id}`}
       className={cn(
-        'text-sm font-medium hover:underline',
-        isArchived && 'line-through text-muted-foreground',
+        "text-sm font-medium hover:underline",
+        isArchived && "line-through text-muted-foreground",
       )}
     >
       {name}

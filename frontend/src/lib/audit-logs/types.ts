@@ -1,4 +1,4 @@
-import type { PaginationParams } from '@/lib/types';
+import type { PaginationParams } from "@/lib/types";
 
 export interface AuditLogPerformer {
   id: string;

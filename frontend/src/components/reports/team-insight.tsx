@@ -1,24 +1,24 @@
-import { useMemo, useEffect, useCallback, useState } from 'react';
-import { Label } from '@/components/ui/label';
-import { Combobox } from '@/components/ui/combobox';
-import { useTimeSeries } from '@/lib/reports/use-time-series';
-import { useReportSummary } from '@/lib/reports/use-report-summary';
-import { useTeams } from '@/lib/teams/use-teams';
-import { useUsers } from '@/lib/users/use-users';
-import { useProjects } from '@/lib/projects/use-projects';
-import { useSectionModes } from '@/lib/reports/use-section-modes';
-import { parseIds } from '@/lib/reports/report-param-utils';
-import { SummaryCards } from './summary-cards';
-import { ChartToolbar } from './chart-toolbar';
-import { TimeSeriesChart } from './time-series-chart';
-import { TeamAnomaliesSection } from './team-anomalies-section';
-import { TeamDelaySection } from './team-delay-section';
-import type { ChartMode, ChartLayers } from './chart-toolbar';
-import type { ComboboxOption } from '@/components/ui/combobox';
-import type { ReportGranularity } from '@/lib/reports/types';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ComboboxOption } from "@/components/ui/combobox";
+import { Combobox } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
+import { useProjects } from "@/lib/projects/use-projects";
+import { parseIds } from "@/lib/reports/report-param-utils";
+import type { ReportGranularity } from "@/lib/reports/types";
+import { useReportSummary } from "@/lib/reports/use-report-summary";
+import { useSectionModes } from "@/lib/reports/use-section-modes";
+import { useTimeSeries } from "@/lib/reports/use-time-series";
+import { useTeams } from "@/lib/teams/use-teams";
+import { useUsers } from "@/lib/users/use-users";
+import type { ChartLayers, ChartMode } from "./chart-toolbar";
+import { ChartToolbar } from "./chart-toolbar";
+import { SummaryCards } from "./summary-cards";
+import { TeamAnomaliesSection } from "./team-anomalies-section";
+import { TeamDelaySection } from "./team-delay-section";
+import { TimeSeriesChart } from "./time-series-chart";
 
 // Default chart modes by position: chart 0 = Hours by User, chart 1 = Hours by Project
-const TI_MODE_DEFAULTS: ChartMode[] = ['grouped', 'stacked'];
+const TI_MODE_DEFAULTS: ChartMode[] = ["grouped", "stacked"];
 
 interface TeamInsightProps {
   dateFrom: string;
@@ -38,14 +38,28 @@ export function TeamInsight({
   setParams,
 }: TeamInsightProps) {
   // Section-specific URL params
-  const teamId = getParam('teamId');
-  const userIdsParam = getParam('userIds');
+  const teamId = getParam("teamId");
+  const userIdsParam = getParam("userIds");
   const userIds = useMemo(() => parseIds(userIdsParam), [userIdsParam]);
-  const projectIdsParam = getParam('projectIds');
-  const projectIds = useMemo(() => parseIds(projectIdsParam), [projectIdsParam]);
-  const [modes, setMode] = useSectionModes('mode', TI_MODE_DEFAULTS, getParam, setParam);
-  const [layersUser, setLayersUser] = useState<ChartLayers>({ values: true, trend: true });
-  const [layersProject, setLayersProject] = useState<ChartLayers>({ values: true, trend: true });
+  const projectIdsParam = getParam("projectIds");
+  const projectIds = useMemo(
+    () => parseIds(projectIdsParam),
+    [projectIdsParam],
+  );
+  const [modes, setMode] = useSectionModes(
+    "mode",
+    TI_MODE_DEFAULTS,
+    getParam,
+    setParam,
+  );
+  const [layersUser, setLayersUser] = useState<ChartLayers>({
+    values: true,
+    trend: true,
+  });
+  const [layersProject, setLayersProject] = useState<ChartLayers>({
+    values: true,
+    trend: true,
+  });
 
   // Team options (non-archived, sorted alphabetically)
   const { data: teamsData } = useTeams({ limit: 100 });
@@ -65,7 +79,7 @@ export function TeamInsight({
   // Auto-select first team alphabetically when no param is set
   useEffect(() => {
     if (!teamId && availableTeams.length > 0) {
-      setParam('teamId', availableTeams[0].id);
+      setParam("teamId", availableTeams[0].id);
     }
   }, [teamId, availableTeams, setParam]);
 
@@ -85,25 +99,26 @@ export function TeamInsight({
     { enabled: !!teamId },
   );
   const projectOptions: ComboboxOption[] = useMemo(
-    () => (projectsData?.data ?? []).map((p) => ({ value: p.id, label: p.name })),
+    () =>
+      (projectsData?.data ?? []).map((p) => ({ value: p.id, label: p.name })),
     [projectsData],
   );
 
   // Changing team clears user and project filters
   const handleTeamChange = useCallback(
     (newTeamId: string) => {
-      setParams({ teamId: newTeamId, userIds: '', projectIds: '' });
+      setParams({ teamId: newTeamId, userIds: "", projectIds: "" });
     },
     [setParams],
   );
 
   const handleUserIdsChange = useCallback(
-    (ids: string[]) => setParam('userIds', ids.join(',')),
+    (ids: string[]) => setParam("userIds", ids.join(",")),
     [setParam],
   );
 
   const handleProjectIdsChange = useCallback(
-    (ids: string[]) => setParam('projectIds', ids.join(',')),
+    (ids: string[]) => setParam("projectIds", ids.join(",")),
     [setParam],
   );
 
@@ -120,19 +135,28 @@ export function TeamInsight({
   );
 
   const { data: summaryData } = useReportSummary(filters);
-  const { data: userSeries } = useTimeSeries({ ...filters, granularity, groupBy: 'user' });
-  const { data: projectSeries } = useTimeSeries({ ...filters, granularity, groupBy: 'project' });
+  const { data: userSeries } = useTimeSeries({
+    ...filters,
+    granularity,
+    groupBy: "user",
+  });
+  const { data: projectSeries } = useTimeSeries({
+    ...filters,
+    granularity,
+    groupBy: "project",
+  });
   const summaryCards = useMemo(() => {
     if (!summaryData) return [];
     const avgPerMember =
       summaryData.uniqueUsers > 0
-        ? Math.round((summaryData.totalHours / summaryData.uniqueUsers) * 100) / 100
+        ? Math.round((summaryData.totalHours / summaryData.uniqueUsers) * 100) /
+          100
         : 0;
     return [
-      { label: 'Total hours', value: summaryData.totalHours, unit: 'h' },
-      { label: 'Avg / member', value: avgPerMember, unit: 'h' },
-      { label: 'Members', value: summaryData.uniqueUsers },
-      { label: 'Projects', value: summaryData.uniqueProjects },
+      { label: "Total hours", value: summaryData.totalHours, unit: "h" },
+      { label: "Avg / member", value: avgPerMember, unit: "h" },
+      { label: "Members", value: summaryData.uniqueUsers },
+      { label: "Projects", value: summaryData.uniqueProjects },
     ];
   }, [summaryData]);
 
@@ -185,10 +209,12 @@ export function TeamInsight({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Hours by User</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Hours by User
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Each color represents a team member. Compare individual contributions per time
-              period.
+              Each color represents a team member. Compare individual
+              contributions per time period.
             </p>
           </div>
           <ChartToolbar
@@ -211,10 +237,12 @@ export function TeamInsight({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-muted-foreground">Hours by Project</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              Hours by Project
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Each color represents a project. See how team effort is distributed across
-              projects over time.
+              Each color represents a project. See how team effort is
+              distributed across projects over time.
             </p>
           </div>
           <ChartToolbar

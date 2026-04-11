@@ -1,8 +1,8 @@
-import { PageHeader } from '@/components/ui/page-header';
-import { ReportsFilterBar } from '@/components/reports/reports-filter-bar';
-import { useDocumentTitle } from '@/hooks/use-document-title';
-import type { TimeWindow } from '@/lib/dates/time-window-utils';
-import type { ReportGranularity } from '@/lib/reports/types';
+import { ReportsFilterBar } from "@/components/reports/reports-filter-bar";
+import { PageHeader } from "@/components/ui/page-header";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import type { TimeWindow } from "@/lib/dates/time-window-utils";
+import type { ReportGranularity } from "@/lib/reports/types";
 
 interface ReportPageShellProps {
   title: string;

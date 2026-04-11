@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { InvitationTeamAssignmentResponseDto } from './invitation-response.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { InvitationTeamAssignmentResponseDto } from "./invitation-response.dto";
 
 export class ValidateInvitationResponseDto {
   @ApiProperty()

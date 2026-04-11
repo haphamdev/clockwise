@@ -1,56 +1,64 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { Badge } from '@/components/ui/badge';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import { usePaginationParams } from '@/hooks/use-pagination-params';
-import { useImportJobs } from '@/lib/import/use-import-jobs';
-import type { ImportJobListItem, ImportJobStatus } from '@/lib/import/types';
+import type { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { usePaginationParams } from "@/hooks/use-pagination-params";
+import type { ImportJobListItem, ImportJobStatus } from "@/lib/import/types";
+import { useImportJobs } from "@/lib/import/use-import-jobs";
 
 interface ImportHistoryProps {
   type?: string;
 }
 
-const statusConfig: Record<ImportJobStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  pending: { label: 'Pending', variant: 'outline' },
-  processing: { label: 'Processing', variant: 'default' },
-  completed: { label: 'Completed', variant: 'secondary' },
-  failed: { label: 'Failed', variant: 'destructive' },
+const statusConfig: Record<
+  ImportJobStatus,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
+  pending: { label: "Pending", variant: "outline" },
+  processing: { label: "Processing", variant: "default" },
+  completed: { label: "Completed", variant: "secondary" },
+  failed: { label: "Failed", variant: "destructive" },
 };
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 const columns: ColumnDef<ImportJobListItem>[] = [
   {
-    accessorKey: 'createdAt',
-    header: 'Date',
+    accessorKey: "createdAt",
+    header: "Date",
     cell: ({ row }) => (
       <span className="text-sm">{formatDate(row.original.createdAt)}</span>
     ),
   },
   {
-    accessorKey: 'type',
-    header: 'Type',
+    accessorKey: "type",
+    header: "Type",
     cell: ({ row }) => (
-      <span className="text-sm capitalize">{row.original.type.replace(/-/g, ' ')}</span>
+      <span className="text-sm capitalize">
+        {row.original.type.replace(/-/g, " ")}
+      </span>
     ),
   },
   {
-    id: 'status',
-    header: 'Status',
+    id: "status",
+    header: "Status",
     cell: ({ row }) => {
       const config = statusConfig[row.original.status];
       return <Badge variant={config.variant}>{config.label}</Badge>;
     },
   },
   {
-    accessorKey: 'imported',
+    accessorKey: "imported",
     header: () => <div className="text-right">Imported</div>,
     cell: ({ row }) => (
       <div className="text-right tabular-nums">
@@ -59,14 +67,14 @@ const columns: ColumnDef<ImportJobListItem>[] = [
     ),
   },
   {
-    accessorKey: 'errorCount',
+    accessorKey: "errorCount",
     header: () => <div className="text-right">Failed</div>,
     cell: ({ row }) => (
       <div className="text-right tabular-nums">
         {row.original.errorCount > 0 ? (
           <span className="text-destructive">{row.original.errorCount}</span>
         ) : (
-          '0'
+          "0"
         )}
       </div>
     ),
@@ -83,7 +91,9 @@ export function ImportHistory({ type }: ImportHistoryProps) {
     <div className="space-y-4">
       <div>
         <h3 className="text-lg font-semibold">Import History</h3>
-        <p className="text-sm text-muted-foreground">Previous imports for your account.</p>
+        <p className="text-sm text-muted-foreground">
+          Previous imports for your account.
+        </p>
       </div>
       <ServerDataTable
         columns={columns}

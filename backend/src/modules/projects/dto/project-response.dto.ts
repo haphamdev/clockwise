@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class ProjectTeamResponseDto {
   @ApiProperty()
@@ -30,7 +30,7 @@ export class ProjectResponseDto {
   @ApiProperty({ required: false })
   description: string | null;
 
-  @ApiProperty({ enum: ['active', 'archived'] })
+  @ApiProperty({ enum: ["active", "archived"] })
   status: string;
 
   @ApiProperty()
@@ -56,7 +56,7 @@ export class ProjectDetailResponseDto {
   @ApiProperty({ required: false })
   description: string | null;
 
-  @ApiProperty({ enum: ['active', 'archived'] })
+  @ApiProperty({ enum: ["active", "archived"] })
   status: string;
 
   @ApiProperty({ type: [ProjectTeamResponseDto] })

@@ -1,17 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 import {
-  UserNotFoundException,
   UserAlreadyDeactivatedException,
-  UserLastAdminException,
   UserCannotModifySelfException,
   UserInvalidTeamAssignmentException,
-  UserWouldOrphanTeamException,
+  UserLastAdminException,
   UserNotDeactivatedException,
-} from '../../common/exceptions/user.exceptions';
-import { UsersRepository } from './users.repository';
-import { AuditLogService } from '../audit-log/audit-log.service';
-import { CreateAuditLogInput } from '../audit-log/audit-log.repository';
-import { UserEntity, UserWithRefreshToken, UserWithTeams } from './entities/user.entity';
+  UserNotFoundException,
+  UserWouldOrphanTeamException,
+} from "../../common/exceptions/user.exceptions";
+import { CreateAuditLogInput } from "../audit-log/audit-log.repository";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import {
+  UserEntity,
+  UserWithRefreshToken,
+  UserWithTeams,
+} from "./entities/user.entity";
+import { UsersRepository } from "./users.repository";
 
 @Injectable()
 export class UsersService {
@@ -28,24 +32,37 @@ export class UsersService {
     return this.usersRepository.findById(id);
   }
 
-  async createPendingUser(orgId: string, email: string, performedBy: string, source?: string): Promise<UserEntity> {
+  async createPendingUser(
+    orgId: string,
+    email: string,
+    performedBy: string,
+    source?: string,
+  ): Promise<UserEntity> {
     const user = await this.usersRepository.createPendingUser(orgId, email);
     await this.auditLogService.log({
       orgId,
-      entityType: 'user',
+      entityType: "user",
       entityId: user.id,
-      action: 'created',
+      action: "created",
       performedBy,
-      metadata: { after: { email, status: 'pending' }, ...(source && { source }) },
+      metadata: {
+        after: { email, status: "pending" },
+        ...(source && { source }),
+      },
     });
     return user;
   }
 
-  async findByIdWithRefreshToken(id: string): Promise<UserWithRefreshToken | null> {
+  async findByIdWithRefreshToken(
+    id: string,
+  ): Promise<UserWithRefreshToken | null> {
     return this.usersRepository.findByIdWithRefreshToken(id);
   }
 
-  async updateRefreshToken(userId: string, hashedToken: string | null): Promise<void> {
+  async updateRefreshToken(
+    userId: string,
+    hashedToken: string | null,
+  ): Promise<void> {
     return this.usersRepository.updateRefreshToken(userId, hashedToken);
   }
 
@@ -57,11 +74,14 @@ export class UsersService {
     const user = await this.usersRepository.activateUser(userId, data);
     await this.auditLogService.log({
       orgId: user.orgId,
-      entityType: 'user',
+      entityType: "user",
       entityId: userId,
-      action: 'activated',
+      action: "activated",
       performedBy,
-      metadata: { before: { status: 'pending' }, after: { status: 'active', name: data.name } },
+      metadata: {
+        before: { status: "pending" },
+        after: { status: "active", name: data.name },
+      },
     });
     return user;
   }
@@ -84,10 +104,17 @@ export class UsersService {
     return this.usersRepository.findAll(orgId, options);
   }
 
-  async canViewUserDetails(callerId: string, callerIsAdmin: boolean, targetId: string): Promise<boolean> {
+  async canViewUserDetails(
+    callerId: string,
+    callerIsAdmin: boolean,
+    targetId: string,
+  ): Promise<boolean> {
     if (callerIsAdmin) return true;
     if (callerId === targetId) return true;
-    const count = await this.usersRepository.countManagerRelationship(callerId, targetId);
+    const count = await this.usersRepository.countManagerRelationship(
+      callerId,
+      targetId,
+    );
     return count > 0;
   }
 
@@ -105,7 +132,7 @@ export class UsersService {
     orgId: string,
     data: {
       isAdmin?: boolean;
-      teamAssignments?: Array<{ teamId: string; role: 'manager' | 'member' }>;
+      teamAssignments?: Array<{ teamId: string; role: "manager" | "member" }>;
     },
   ): Promise<UserWithTeams> {
     const user = await this.getUserDetail(userId, orgId);
@@ -123,11 +150,14 @@ export class UsersService {
       await this.usersRepository.updateIsAdmin(userId, data.isAdmin);
       await this.auditLogService.log({
         orgId,
-        entityType: 'user',
+        entityType: "user",
         entityId: userId,
-        action: data.isAdmin ? 'admin_granted' : 'admin_revoked',
+        action: data.isAdmin ? "admin_granted" : "admin_revoked",
         performedBy: adminId,
-        metadata: { before: { isAdmin: user.isAdmin }, after: { isAdmin: data.isAdmin } },
+        metadata: {
+          before: { isAdmin: user.isAdmin },
+          after: { isAdmin: data.isAdmin },
+        },
       });
     }
 
@@ -144,24 +174,37 @@ export class UsersService {
         : new Map<string, string>();
 
       const auditInputs = this.computeTeamAssignmentAuditLogs(
-        orgId, userId, user.name, adminId, user.teamMemberships, data.teamAssignments, newTeamNames,
+        orgId,
+        userId,
+        user.name,
+        adminId,
+        user.teamMemberships,
+        data.teamAssignments,
+        newTeamNames,
       );
 
-      await this.usersRepository.replaceTeamAssignments(userId, data.teamAssignments);
+      await this.usersRepository.replaceTeamAssignments(
+        userId,
+        data.teamAssignments,
+      );
       await this.auditLogService.logMany(auditInputs);
     }
 
     return this.getUserDetail(userId, orgId);
   }
 
-  async deactivateUser(adminId: string, userId: string, orgId: string): Promise<void> {
+  async deactivateUser(
+    adminId: string,
+    userId: string,
+    orgId: string,
+  ): Promise<void> {
     if (adminId === userId) {
       throw new UserCannotModifySelfException();
     }
 
     const user = await this.getUserDetail(userId, orgId);
 
-    if (user.status !== 'active') {
+    if (user.status !== "active") {
       throw new UserAlreadyDeactivatedException();
     }
 
@@ -175,29 +218,39 @@ export class UsersService {
     await this.usersRepository.deactivateUser(userId);
     await this.auditLogService.log({
       orgId,
-      entityType: 'user',
+      entityType: "user",
       entityId: userId,
-      action: 'deactivated',
+      action: "deactivated",
       performedBy: adminId,
-      metadata: { before: { status: 'active' }, after: { status: 'deactivated' } },
+      metadata: {
+        before: { status: "active" },
+        after: { status: "deactivated" },
+      },
     });
   }
 
-  async reactivateUser(userId: string, orgId: string, performedBy: string): Promise<void> {
+  async reactivateUser(
+    userId: string,
+    orgId: string,
+    performedBy: string,
+  ): Promise<void> {
     const user = await this.getUserDetail(userId, orgId);
 
-    if (user.status !== 'deactivated') {
+    if (user.status !== "deactivated") {
       throw new UserNotDeactivatedException();
     }
 
     await this.usersRepository.reactivateUser(userId);
     await this.auditLogService.log({
       orgId,
-      entityType: 'user',
+      entityType: "user",
       entityId: userId,
-      action: 'reactivated',
+      action: "reactivated",
       performedBy,
-      metadata: { before: { status: 'deactivated' }, after: { status: 'active' } },
+      metadata: {
+        before: { status: "deactivated" },
+        after: { status: "active" },
+      },
     });
   }
 
@@ -206,12 +259,15 @@ export class UsersService {
    */
   private async validateTeamAssignments(
     orgId: string,
-    assignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    assignments: Array<{ teamId: string; role: "manager" | "member" }>,
   ): Promise<void> {
     if (assignments.length === 0) return;
 
     const teamIds = [...new Set(assignments.map((a) => a.teamId))];
-    const validCount = await this.usersRepository.countValidTeams(orgId, teamIds);
+    const validCount = await this.usersRepository.countValidTeams(
+      orgId,
+      teamIds,
+    );
     if (validCount !== teamIds.length) {
       throw new UserInvalidTeamAssignmentException();
     }
@@ -224,13 +280,14 @@ export class UsersService {
    */
   private async ensureNoOrphanedTeams(
     userId: string,
-    newAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    newAssignments: Array<{ teamId: string; role: "manager" | "member" }>,
   ): Promise<void> {
-    const soloManagerTeamIds = await this.usersRepository.findTeamsWhereOnlyManager(userId);
+    const soloManagerTeamIds =
+      await this.usersRepository.findTeamsWhereOnlyManager(userId);
     if (soloManagerTeamIds.length === 0) return;
 
     const newManagerTeamIds = new Set(
-      newAssignments.filter((a) => a.role === 'manager').map((a) => a.teamId),
+      newAssignments.filter((a) => a.role === "manager").map((a) => a.teamId),
     );
 
     for (const teamId of soloManagerTeamIds) {
@@ -245,8 +302,12 @@ export class UsersService {
     userId: string,
     userName: string,
     performedBy: string,
-    oldMemberships: Array<{ teamId: string; teamName: string; role: 'manager' | 'member' }>,
-    newAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    oldMemberships: Array<{
+      teamId: string;
+      teamName: string;
+      role: "manager" | "member";
+    }>,
+    newAssignments: Array<{ teamId: string; role: "manager" | "member" }>,
     newTeamNames: Map<string, string>,
   ): CreateAuditLogInput[] {
     const inputs: CreateAuditLogInput[] = [];
@@ -255,10 +316,32 @@ export class UsersService {
 
     for (const [teamId, old] of oldMap) {
       if (!newMap.has(teamId)) {
-        const meta = { before: { userId, userName, role: old.role, teamId, teamName: old.teamName } };
+        const meta = {
+          before: {
+            userId,
+            userName,
+            role: old.role,
+            teamId,
+            teamName: old.teamName,
+          },
+        };
         inputs.push(
-          { orgId, entityType: 'team', entityId: teamId, action: 'member_removed', performedBy, metadata: meta },
-          { orgId, entityType: 'user', entityId: userId, action: 'member_removed', performedBy, metadata: meta },
+          {
+            orgId,
+            entityType: "team",
+            entityId: teamId,
+            action: "member_removed",
+            performedBy,
+            metadata: meta,
+          },
+          {
+            orgId,
+            entityType: "user",
+            entityId: userId,
+            action: "member_removed",
+            performedBy,
+            metadata: meta,
+          },
         );
       }
     }
@@ -267,19 +350,61 @@ export class UsersService {
       const old = oldMap.get(teamId);
       if (!old) {
         const teamName = newTeamNames.get(teamId) ?? teamId;
-        const meta = { after: { userId, userName, role: assign.role, teamId, teamName } };
+        const meta = {
+          after: { userId, userName, role: assign.role, teamId, teamName },
+        };
         inputs.push(
-          { orgId, entityType: 'team', entityId: teamId, action: 'member_added', performedBy, metadata: meta },
-          { orgId, entityType: 'user', entityId: userId, action: 'member_added', performedBy, metadata: meta },
+          {
+            orgId,
+            entityType: "team",
+            entityId: teamId,
+            action: "member_added",
+            performedBy,
+            metadata: meta,
+          },
+          {
+            orgId,
+            entityType: "user",
+            entityId: userId,
+            action: "member_added",
+            performedBy,
+            metadata: meta,
+          },
         );
       } else if (old.role !== assign.role) {
         const meta = {
-          before: { userId, userName, role: old.role, teamId, teamName: old.teamName },
-          after: { userId, userName, role: assign.role, teamId, teamName: old.teamName },
+          before: {
+            userId,
+            userName,
+            role: old.role,
+            teamId,
+            teamName: old.teamName,
+          },
+          after: {
+            userId,
+            userName,
+            role: assign.role,
+            teamId,
+            teamName: old.teamName,
+          },
         };
         inputs.push(
-          { orgId, entityType: 'team', entityId: teamId, action: 'role_changed', performedBy, metadata: meta },
-          { orgId, entityType: 'user', entityId: userId, action: 'role_changed', performedBy, metadata: meta },
+          {
+            orgId,
+            entityType: "team",
+            entityId: teamId,
+            action: "role_changed",
+            performedBy,
+            metadata: meta,
+          },
+          {
+            orgId,
+            entityType: "user",
+            entityId: userId,
+            action: "role_changed",
+            performedBy,
+            metadata: meta,
+          },
         );
       }
     }

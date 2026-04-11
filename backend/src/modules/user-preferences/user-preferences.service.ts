@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { UserNotFoundException } from '../../common/exceptions/user.exceptions';
-import { UserPreferencesRepository } from './user-preferences.repository';
-import { UserPreferencesEntity } from './entities/user-preferences.entity';
-import { UpdateUserPreferencesDto } from './dto/update-user-preferences.dto';
+import { Injectable } from "@nestjs/common";
+import { UserNotFoundException } from "../../common/exceptions/user.exceptions";
+import { UpdateUserPreferencesDto } from "./dto/update-user-preferences.dto";
+import { UserPreferencesEntity } from "./entities/user-preferences.entity";
+import { UserPreferencesRepository } from "./user-preferences.repository";
 
 @Injectable()
 export class UserPreferencesService {

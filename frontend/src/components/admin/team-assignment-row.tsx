@@ -1,14 +1,14 @@
-import { Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Combobox } from '@/components/ui/combobox';
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { Team } from '@/lib/teams/types';
+} from "@/components/ui/select";
+import type { Team } from "@/lib/teams/types";
 
 interface TeamAssignmentRowProps {
   teamId: string;

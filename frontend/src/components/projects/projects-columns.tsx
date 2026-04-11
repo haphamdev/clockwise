@@ -1,15 +1,15 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { Loader2, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { ProjectLink } from '@/components/projects/project-link';
+import type { ColumnDef } from "@tanstack/react-table";
+import { Loader2, MoreHorizontal } from "lucide-react";
+import { ProjectLink } from "@/components/projects/project-link";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import type { Project } from '@/lib/projects/types';
+} from "@/components/ui/dropdown-menu";
+import { StatusBadge } from "@/components/ui/status-badge";
+import type { Project } from "@/lib/projects/types";
 
 interface ProjectColumnActions {
   onEdit: (project: Project) => void;
@@ -20,11 +20,13 @@ interface ProjectColumnActions {
   actionPendingId?: string;
 }
 
-export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Project>[] {
+export function getProjectsColumns(
+  actions: ProjectColumnActions,
+): ColumnDef<Project>[] {
   return [
     {
-      accessorKey: 'name',
-      header: 'Name',
+      accessorKey: "name",
+      header: "Name",
       cell: ({ row }) => (
         <ProjectLink
           id={row.original.id}
@@ -34,25 +36,25 @@ export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Pro
       ),
     },
     {
-      accessorKey: 'description',
-      header: 'Description',
+      accessorKey: "description",
+      header: "Description",
       cell: ({ row }) => (
         <span className="text-muted-foreground">
-          {row.original.description || '\u2014'}
+          {row.original.description || "\u2014"}
         </span>
       ),
     },
     {
-      accessorKey: 'teamCount',
-      header: 'Teams',
+      accessorKey: "teamCount",
+      header: "Teams",
     },
     {
-      id: 'status',
-      header: 'Status',
+      id: "status",
+      header: "Status",
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
-      id: 'actions',
+      id: "actions",
       cell: ({ row }) => {
         const project = row.original;
         if (actions.actionPendingId === project.id) {
@@ -63,8 +65,9 @@ export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Pro
           );
         }
         const hasActions =
-          (project.status === 'archived' && actions.canArchive) ||
-          (project.status !== 'archived' && (actions.canEdit || actions.canArchive));
+          (project.status === "archived" && actions.canArchive) ||
+          (project.status !== "archived" &&
+            (actions.canEdit || actions.canArchive));
         if (!hasActions) return null;
 
         return (
@@ -75,9 +78,11 @@ export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Pro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {project.status === 'archived' ? (
+              {project.status === "archived" ? (
                 actions.canArchive && (
-                  <DropdownMenuItem onClick={() => actions.onUnarchive(project)}>
+                  <DropdownMenuItem
+                    onClick={() => actions.onUnarchive(project)}
+                  >
                     Unarchive
                   </DropdownMenuItem>
                 )
@@ -89,7 +94,9 @@ export function getProjectsColumns(actions: ProjectColumnActions): ColumnDef<Pro
                     </DropdownMenuItem>
                   )}
                   {actions.canArchive && (
-                    <DropdownMenuItem onClick={() => actions.onArchive(project)}>
+                    <DropdownMenuItem
+                      onClick={() => actions.onArchive(project)}
+                    >
                       Archive
                     </DropdownMenuItem>
                   )}

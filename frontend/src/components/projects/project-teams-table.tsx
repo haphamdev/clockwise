@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Table,
   TableBody,
@@ -11,8 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import type { ProjectTeam } from '@/lib/projects/types';
+} from "@/components/ui/table";
+import type { ProjectTeam } from "@/lib/projects/types";
 
 interface ProjectTeamsTableProps {
   teams: ProjectTeam[];
@@ -39,7 +39,11 @@ export function ProjectTeamsTable({
   }, [removingTeamId, removingTeam]);
 
   if (teams.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">No teams assigned.</p>;
+    return (
+      <p className="py-6 text-center text-sm text-muted-foreground">
+        No teams assigned.
+      </p>
+    );
   }
 
   return (
@@ -71,8 +75,8 @@ export function ProjectTeamsTable({
                 </TableCell>
                 <TableCell>{team.memberCount}</TableCell>
                 <TableCell>
-                  <Badge variant={team.isArchived ? 'secondary' : 'outline'}>
-                    {team.isArchived ? 'Archived' : 'Active'}
+                  <Badge variant={team.isArchived ? "secondary" : "outline"}>
+                    {team.isArchived ? "Archived" : "Active"}
                   </Badge>
                 </TableCell>
                 {canRemove && (
@@ -83,7 +87,11 @@ export function ProjectTeamsTable({
                       className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                       onClick={() => setRemovingTeamId(team.teamId)}
                       disabled={isLastTeam}
-                      title={isLastTeam ? 'Cannot remove the last team' : 'Remove team'}
+                      title={
+                        isLastTeam
+                          ? "Cannot remove the last team"
+                          : "Remove team"
+                      }
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -102,7 +110,7 @@ export function ProjectTeamsTable({
         description={
           removingTeam
             ? `Are you sure you want to remove "${removingTeam.teamName}" from this project?`
-            : ''
+            : ""
         }
         confirmLabel="Remove"
         variant="destructive"

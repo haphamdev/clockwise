@@ -1,29 +1,29 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
-} from '@/components/ui/form';
-import { useUpdateTeam } from '@/lib/teams/use-update-team';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Textarea } from "@/components/ui/textarea";
+import { useUpdateTeam } from "@/lib/teams/use-update-team";
 
 const schema = z.object({
-  name: z.string().min(1, 'Name is required').max(255),
+  name: z.string().min(1, "Name is required").max(255),
   description: z.string().optional(),
 });
 
@@ -41,16 +41,20 @@ interface EditTeamSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function EditTeamSheet({ team, open, onOpenChange }: EditTeamSheetProps) {
+export function EditTeamSheet({
+  team,
+  open,
+  onOpenChange,
+}: EditTeamSheetProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', description: '' },
+    defaultValues: { name: "", description: "" },
   });
   const updateTeam = useUpdateTeam();
 
   useEffect(() => {
     if (team) {
-      form.reset({ name: team.name, description: team.description ?? '' });
+      form.reset({ name: team.name, description: team.description ?? "" });
     }
   }, [team, form]);
 
@@ -70,7 +74,10 @@ export function EditTeamSheet({ team, open, onOpenChange }: EditTeamSheetProps) 
           <SheetDescription>Update team details.</SheetDescription>
         </SheetHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mt-6 space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"
@@ -97,8 +104,12 @@ export function EditTeamSheet({ team, open, onOpenChange }: EditTeamSheetProps) 
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={updateTeam.isPending} className="w-full">
-              {updateTeam.isPending ? 'Saving...' : 'Save Changes'}
+            <Button
+              type="submit"
+              disabled={updateTeam.isPending}
+              className="w-full"
+            >
+              {updateTeam.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </Form>

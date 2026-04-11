@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { ImportJobStatus } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import { ImportJobEntity } from './entities/import-job.entity';
+import { Injectable } from "@nestjs/common";
+import { ImportJobStatus } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import { ImportJobEntity } from "./entities/import-job.entity";
 
 export interface CreateImportJobInput {
   orgId: string;
@@ -45,7 +45,7 @@ export class ImportJobRepository {
     const [data, total] = await Promise.all([
       this.prisma.importJob.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (options.page - 1) * options.limit,
         take: options.limit,
       }),

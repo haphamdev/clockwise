@@ -1,12 +1,6 @@
-import { useState } from 'react';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Check, ChevronsUpDown, X } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -14,7 +8,13 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 export interface ComboboxOption {
   value: string;
@@ -63,12 +63,31 @@ function groupOptions(options: ComboboxOption[]) {
   return groups;
 }
 
+function ClearButton({ onClick }: { onClick: (e: React.MouseEvent) => void }) {
+  return (
+    // biome-ignore lint/a11y/useSemanticElements: nested inside a <Button>, cannot use <button>
+    <span
+      role="button"
+      tabIndex={0}
+      className="rounded-sm opacity-50 hover:opacity-100"
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClick(e as unknown as React.MouseEvent);
+        }
+      }}
+    >
+      <X className="h-4 w-4" />
+    </span>
+  );
+}
+
 export function Combobox(props: ComboboxProps) {
   const {
     options,
-    placeholder = 'Select...',
-    searchPlaceholder = 'Search...',
-    emptyText = 'No results found.',
+    placeholder = "Select...",
+    searchPlaceholder = "Search...",
+    emptyText = "No results found.",
     disabled,
     className,
   } = props;
@@ -87,7 +106,7 @@ export function Combobox(props: ComboboxProps) {
         : [...props.value, optionValue];
       props.onChange(next);
     } else {
-      props.onChange(optionValue === props.value ? '' : optionValue);
+      props.onChange(optionValue === props.value ? "" : optionValue);
       setOpen(false);
     }
   };
@@ -97,7 +116,7 @@ export function Combobox(props: ComboboxProps) {
     if (props.multiple) {
       props.onChange([]);
     } else {
-      props.onChange('');
+      props.onChange("");
     }
   };
 
@@ -132,28 +151,11 @@ export function Combobox(props: ComboboxProps) {
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className={cn(
-            'h-10 w-full justify-between font-normal',
-            className,
-          )}
+          className={cn("h-10 w-full justify-between font-normal", className)}
         >
           {renderTriggerContent()}
           <div className="ml-2 flex shrink-0 items-center">
-            {hasValue && (
-              <span
-                role="button"
-                tabIndex={0}
-                className="rounded-sm opacity-50 hover:opacity-100"
-                onClick={handleClear}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    handleClear(e as unknown as React.MouseEvent);
-                  }
-                }}
-              >
-                <X className="h-4 w-4" />
-              </span>
-            )}
+            {hasValue && <ClearButton onClick={handleClear} />}
             <ChevronsUpDown className="ml-1 h-4 w-4 opacity-50" />
           </div>
         </Button>
@@ -176,10 +178,8 @@ export function Combobox(props: ComboboxProps) {
                   >
                     <Check
                       className={cn(
-                        'mr-2 h-4 w-4',
-                        isSelected(option.value)
-                          ? 'opacity-100'
-                          : 'opacity-0',
+                        "mr-2 h-4 w-4",
+                        isSelected(option.value) ? "opacity-100" : "opacity-0",
                       )}
                     />
                     {option.label}

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
-import type { ReportGroupBy, ReportGranularity } from './dto/reports-query.dto';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
+import type { ReportGranularity, ReportGroupBy } from "./dto/reports-query.dto";
 
 interface FilterParams {
   orgId: string;
@@ -52,16 +52,16 @@ interface DelayHeatmapRow {
 
 // Validated column references — never from user input
 const GROUP_COLS: Record<ReportGroupBy, { id: string; label: string }> = {
-  user: { id: 'tl.user_id', label: 'u.name' },
-  project: { id: 'tl.project_id', label: 'p.name' },
-  team: { id: 't.id', label: 't.name' },
+  user: { id: "tl.user_id", label: "u.name" },
+  project: { id: "tl.project_id", label: "p.name" },
+  team: { id: "t.id", label: "t.name" },
 };
 
 const GRANULARITY_VALUES: Record<ReportGranularity, string> = {
-  day: 'day',
-  week: 'week',
-  month: 'month',
-  quarter: 'quarter',
+  day: "day",
+  week: "week",
+  month: "month",
+  quarter: "quarter",
 };
 
 @Injectable()
@@ -78,11 +78,14 @@ export class ReportsRepository {
     const groupCol = GROUP_COLS[params.groupBy];
     const stackCol = params.stackBy ? GROUP_COLS[params.stackBy] : null;
     const gran = GRANULARITY_VALUES[params.granularity];
-    const needsTeamJoin = params.groupBy === 'team' || params.stackBy === 'team';
+    const needsTeamJoin =
+      params.groupBy === "team" || params.stackBy === "team";
 
     const selectStack = stackCol
-      ? Prisma.raw(`${stackCol.id} AS stack_id, ${stackCol.label} AS stack_label,`)
-      : Prisma.raw('NULL AS stack_id, NULL AS stack_label,');
+      ? Prisma.raw(
+          `${stackCol.id} AS stack_id, ${stackCol.label} AS stack_label,`,
+        )
+      : Prisma.raw("NULL AS stack_id, NULL AS stack_label,");
 
     const groupByStack = stackCol
       ? Prisma.raw(`, ${stackCol.id}, ${stackCol.label}`)
@@ -90,8 +93,8 @@ export class ReportsRepository {
 
     const teamJoin = needsTeamJoin
       ? Prisma.raw(
-          'JOIN team_member tm ON tm.user_id = tl.user_id ' +
-            'JOIN team t ON t.id = tm.team_id AND t.is_archived = false',
+          "JOIN team_member tm ON tm.user_id = tl.user_id " +
+            "JOIN team t ON t.id = tm.team_id AND t.is_archived = false",
         )
       : Prisma.empty;
 
@@ -110,7 +113,7 @@ export class ReportsRepository {
         JOIN "user" u ON u.id = tl.user_id
         JOIN project p ON p.id = tl.project_id
         ${teamJoin}
-        WHERE ${Prisma.join(conditions, ' AND ')}
+        WHERE ${Prisma.join(conditions, " AND ")}
         GROUP BY period_start, ${Prisma.raw(groupCol.id)}, ${Prisma.raw(groupCol.label)} ${groupByStack}
         ORDER BY period_start, ${Prisma.raw(groupCol.label)}
       `,
@@ -121,12 +124,12 @@ export class ReportsRepository {
     params: FilterParams & { groupBy: ReportGroupBy },
   ): Promise<WeekdayRow[]> {
     const groupCol = GROUP_COLS[params.groupBy];
-    const needsTeamJoin = params.groupBy === 'team';
+    const needsTeamJoin = params.groupBy === "team";
 
     const teamJoin = needsTeamJoin
       ? Prisma.raw(
-          'JOIN team_member tm ON tm.user_id = tl.user_id ' +
-            'JOIN team t ON t.id = tm.team_id AND t.is_archived = false',
+          "JOIN team_member tm ON tm.user_id = tl.user_id " +
+            "JOIN team t ON t.id = tm.team_id AND t.is_archived = false",
         )
       : Prisma.empty;
 
@@ -143,7 +146,7 @@ export class ReportsRepository {
         JOIN "user" u ON u.id = tl.user_id
         JOIN project p ON p.id = tl.project_id
         ${teamJoin}
-        WHERE ${Prisma.join(conditions, ' AND ')}
+        WHERE ${Prisma.join(conditions, " AND ")}
         GROUP BY ${Prisma.raw(groupCol.id)}, ${Prisma.raw(groupCol.label)}, weekday
         ORDER BY ${Prisma.raw(groupCol.label)}, weekday
       `,
@@ -166,7 +169,7 @@ export class ReportsRepository {
         FROM time_log tl
         JOIN "user" u ON u.id = tl.user_id
         JOIN project p ON p.id = tl.project_id
-        WHERE ${Prisma.join(conditions, ' AND ')}
+        WHERE ${Prisma.join(conditions, " AND ")}
         GROUP BY bucket
         ORDER BY bucket
       `,
@@ -202,7 +205,7 @@ export class ReportsRepository {
         FROM time_log tl
         JOIN "user" u ON u.id = tl.user_id
         JOIN project p ON p.id = tl.project_id
-        WHERE ${Prisma.join(conditions, ' AND ')}
+        WHERE ${Prisma.join(conditions, " AND ")}
       `,
     );
 
@@ -211,7 +214,9 @@ export class ReportsRepository {
     // Separate query for unique teams — uses hasTeamJoin=true so teamIds
     // filter applies directly to the joined tm table, avoiding over-counting
     const teamConditions = this.buildConditions(params, true);
-    const teamRows = await this.prisma.$queryRaw<Array<{ unique_teams: bigint }>>(
+    const teamRows = await this.prisma.$queryRaw<
+      Array<{ unique_teams: bigint }>
+    >(
       Prisma.sql`
         SELECT COUNT(DISTINCT tm.team_id) AS unique_teams
         FROM time_log tl
@@ -219,7 +224,7 @@ export class ReportsRepository {
         JOIN project p ON p.id = tl.project_id
         JOIN team_member tm ON tm.user_id = tl.user_id
         JOIN team t ON t.id = tm.team_id AND t.is_archived = false
-        WHERE ${Prisma.join(teamConditions, ' AND ')}
+        WHERE ${Prisma.join(teamConditions, " AND ")}
       `,
     );
 
@@ -249,7 +254,7 @@ export class ReportsRepository {
         FROM time_log tl
         JOIN "user" u ON u.id = tl.user_id
         JOIN project p ON p.id = tl.project_id
-        WHERE ${Prisma.join(conditions, ' AND ')}
+        WHERE ${Prisma.join(conditions, " AND ")}
         GROUP BY tl.user_id, u.name, tl.date
         HAVING SUM(tl.hours) >= ${params.warningThreshold}
         ORDER BY tl.date DESC, u.name
@@ -275,7 +280,7 @@ export class ReportsRepository {
         FROM time_log tl
         JOIN "user" u ON u.id = tl.user_id
         JOIN project p ON p.id = tl.project_id
-        WHERE ${Prisma.join(conditions, ' AND ')}
+        WHERE ${Prisma.join(conditions, " AND ")}
         GROUP BY tl.user_id, u.name, ((EXTRACT(DOW FROM tl.date)::int + 6) % 7)
         HAVING COUNT(*) >= ${params.minEntries}
         ORDER BY u.name, weekday
@@ -285,7 +290,11 @@ export class ReportsRepository {
 
   async findManagedUserIds(managerId: string): Promise<string[]> {
     const memberships = await this.prisma.teamMember.findMany({
-      where: { userId: managerId, role: 'manager', team: { isArchived: false } },
+      where: {
+        userId: managerId,
+        role: "manager",
+        team: { isArchived: false },
+      },
       select: { teamId: true },
     });
 
@@ -295,13 +304,16 @@ export class ReportsRepository {
     const members = await this.prisma.teamMember.findMany({
       where: { teamId: { in: teamIds } },
       select: { userId: true },
-      distinct: ['userId'],
+      distinct: ["userId"],
     });
 
     return members.map((m) => m.userId);
   }
 
-  private buildConditions(params: FilterParams, hasTeamJoin: boolean): Prisma.Sql[] {
+  private buildConditions(
+    params: FilterParams,
+    hasTeamJoin: boolean,
+  ): Prisma.Sql[] {
     const conditions: Prisma.Sql[] = [
       Prisma.sql`u.org_id = ${params.orgId}`,
       Prisma.sql`u.status = 'active'`,
@@ -311,16 +323,22 @@ export class ReportsRepository {
     ];
 
     if (params.userIds?.length) {
-      conditions.push(Prisma.sql`tl.user_id IN (${Prisma.join(params.userIds)})`);
+      conditions.push(
+        Prisma.sql`tl.user_id IN (${Prisma.join(params.userIds)})`,
+      );
     }
 
     if (params.projectIds?.length) {
-      conditions.push(Prisma.sql`tl.project_id IN (${Prisma.join(params.projectIds)})`);
+      conditions.push(
+        Prisma.sql`tl.project_id IN (${Prisma.join(params.projectIds)})`,
+      );
     }
 
     if (params.teamIds?.length) {
       if (hasTeamJoin) {
-        conditions.push(Prisma.sql`tm.team_id IN (${Prisma.join(params.teamIds)})`);
+        conditions.push(
+          Prisma.sql`tm.team_id IN (${Prisma.join(params.teamIds)})`,
+        );
       } else {
         conditions.push(
           Prisma.sql`EXISTS (

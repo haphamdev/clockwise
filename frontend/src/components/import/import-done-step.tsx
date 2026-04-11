@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import { CheckCircle2, XCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { CheckCircle2, XCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export function DoneStep({
   status,
@@ -19,7 +19,7 @@ export function DoneStep({
   doneLink: string;
   doneLinkLabel: string;
 }) {
-  const isSuccess = status === 'completed';
+  const isSuccess = status === "completed";
 
   return (
     <div className="space-y-4">
@@ -31,16 +31,16 @@ export function DoneStep({
         )}
         <div className="text-center">
           <p className="font-medium">
-            {isSuccess ? 'Import complete' : 'Import failed'}
+            {isSuccess ? "Import complete" : "Import failed"}
           </p>
           <p className="text-sm text-muted-foreground">
             {isSuccess
               ? `${imported} of ${totalRows} rows imported successfully.`
-              : 'An error occurred during import.'}
+              : "An error occurred during import."}
           </p>
           {isSuccess && errorCount > 0 && (
             <p className="text-sm text-destructive">
-              {errorCount} {errorCount === 1 ? 'row' : 'rows'} failed to import.
+              {errorCount} {errorCount === 1 ? "row" : "rows"} failed to import.
             </p>
           )}
         </div>

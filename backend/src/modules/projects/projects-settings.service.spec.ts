@@ -1,10 +1,10 @@
-import { ErrorCode } from '../../common/exceptions/error-codes';
-import { ProjectsService } from './projects.service';
-import { ProjectsRepository } from './projects.repository';
-import { TeamsService } from '../teams/teams.service';
-import { AuditLogService } from '../audit-log/audit-log.service';
+import { ErrorCode } from "../../common/exceptions/error-codes";
+import { AuditLogService } from "../audit-log/audit-log.service";
+import { TeamsService } from "../teams/teams.service";
+import { ProjectsRepository } from "./projects.repository";
+import { ProjectsService } from "./projects.service";
 
-describe('ProjectsService — Settings', () => {
+describe("ProjectsService — Settings", () => {
   let service: ProjectsService;
   let repo: jest.Mocked<ProjectsRepository>;
   let teamsService: jest.Mocked<TeamsService>;
@@ -28,14 +28,14 @@ describe('ProjectsService — Settings', () => {
     service = new ProjectsService(repo, teamsService, auditLogService);
   });
 
-  describe('getSettings', () => {
-    it('should return settings for admin', async () => {
+  describe("getSettings", () => {
+    it("should return settings for admin", async () => {
       repo.findEntityById.mockResolvedValue({
-        id: 'project-1',
-        orgId: 'org-1',
-        name: 'Test',
+        id: "project-1",
+        orgId: "org-1",
+        name: "Test",
         description: null,
-        status: 'active',
+        status: "active",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -44,18 +44,23 @@ describe('ProjectsService — Settings', () => {
         weeklyHourLimit: 50,
       });
 
-      const result = await service.getSettings('project-1', 'org-1', 'admin-1', true);
+      const result = await service.getSettings(
+        "project-1",
+        "org-1",
+        "admin-1",
+        true,
+      );
 
       expect(result).toEqual({ dailyHourLimit: 10, weeklyHourLimit: 50 });
     });
 
-    it('should return settings for linked user', async () => {
+    it("should return settings for linked user", async () => {
       repo.findEntityById.mockResolvedValue({
-        id: 'project-1',
-        orgId: 'org-1',
-        name: 'Test',
+        id: "project-1",
+        orgId: "org-1",
+        name: "Test",
         description: null,
-        status: 'active',
+        status: "active",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -65,39 +70,44 @@ describe('ProjectsService — Settings', () => {
         weeklyHourLimit: null,
       });
 
-      const result = await service.getSettings('project-1', 'org-1', 'user-1', false);
+      const result = await service.getSettings(
+        "project-1",
+        "org-1",
+        "user-1",
+        false,
+      );
 
       expect(result).toEqual({ dailyHourLimit: null, weeklyHourLimit: null });
     });
 
-    it('should throw NOT_FOUND for non-linked user', async () => {
+    it("should throw NOT_FOUND for non-linked user", async () => {
       repo.findEntityById.mockResolvedValue({
-        id: 'project-1',
-        orgId: 'org-1',
-        name: 'Test',
+        id: "project-1",
+        orgId: "org-1",
+        name: "Test",
         description: null,
-        status: 'active',
+        status: "active",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
       repo.isUserLinkedToProject.mockResolvedValue(false);
 
       await expect(
-        service.getSettings('project-1', 'org-1', 'random-user', false),
+        service.getSettings("project-1", "org-1", "random-user", false),
       ).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.PROJECT.NOT_FOUND }),
       );
     });
   });
 
-  describe('updateSettings', () => {
+  describe("updateSettings", () => {
     beforeEach(() => {
       repo.findEntityById.mockResolvedValue({
-        id: 'project-1',
-        orgId: 'org-1',
-        name: 'Test',
+        id: "project-1",
+        orgId: "org-1",
+        name: "Test",
         description: null,
-        status: 'active',
+        status: "active",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -107,28 +117,28 @@ describe('ProjectsService — Settings', () => {
       });
     });
 
-    it('should update settings for admin', async () => {
+    it("should update settings for admin", async () => {
       repo.updateSettings.mockResolvedValue({
         dailyHourLimit: 10,
         weeklyHourLimit: 50,
       });
 
       const result = await service.updateSettings(
-        'project-1',
-        'org-1',
+        "project-1",
+        "org-1",
         { dailyHourLimit: 10, weeklyHourLimit: 50 },
-        'admin-1',
+        "admin-1",
         true,
       );
 
       expect(result).toEqual({ dailyHourLimit: 10, weeklyHourLimit: 50 });
-      expect(repo.updateSettings).toHaveBeenCalledWith('project-1', {
+      expect(repo.updateSettings).toHaveBeenCalledWith("project-1", {
         dailyHourLimit: 10,
         weeklyHourLimit: 50,
       });
     });
 
-    it('should update settings for manager of linked team', async () => {
+    it("should update settings for manager of linked team", async () => {
       repo.isManagerOfLinkedTeam.mockResolvedValue(true);
       repo.updateSettings.mockResolvedValue({
         dailyHourLimit: 8,
@@ -136,25 +146,25 @@ describe('ProjectsService — Settings', () => {
       });
 
       const result = await service.updateSettings(
-        'project-1',
-        'org-1',
+        "project-1",
+        "org-1",
         { dailyHourLimit: 8 },
-        'manager-1',
+        "manager-1",
         false,
       );
 
       expect(result.dailyHourLimit).toBe(8);
     });
 
-    it('should throw INSUFFICIENT_ROLE for non-manager', async () => {
+    it("should throw INSUFFICIENT_ROLE for non-manager", async () => {
       repo.isManagerOfLinkedTeam.mockResolvedValue(false);
 
       await expect(
         service.updateSettings(
-          'project-1',
-          'org-1',
+          "project-1",
+          "org-1",
           { dailyHourLimit: 10 },
-          'member-1',
+          "member-1",
           false,
         ),
       ).rejects.toThrow(
@@ -162,23 +172,23 @@ describe('ProjectsService — Settings', () => {
       );
     });
 
-    it('should throw ARCHIVED for archived project', async () => {
+    it("should throw ARCHIVED for archived project", async () => {
       repo.findEntityById.mockResolvedValue({
-        id: 'project-1',
-        orgId: 'org-1',
-        name: 'Test',
+        id: "project-1",
+        orgId: "org-1",
+        name: "Test",
         description: null,
-        status: 'archived',
+        status: "archived",
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
       await expect(
         service.updateSettings(
-          'project-1',
-          'org-1',
+          "project-1",
+          "org-1",
           { dailyHourLimit: 10 },
-          'admin-1',
+          "admin-1",
           true,
         ),
       ).rejects.toThrow(
@@ -186,25 +196,25 @@ describe('ProjectsService — Settings', () => {
       );
     });
 
-    it('should create audit log entry', async () => {
+    it("should create audit log entry", async () => {
       repo.updateSettings.mockResolvedValue({
         dailyHourLimit: 10,
         weeklyHourLimit: null,
       });
 
       await service.updateSettings(
-        'project-1',
-        'org-1',
+        "project-1",
+        "org-1",
         { dailyHourLimit: 10 },
-        'admin-1',
+        "admin-1",
         true,
       );
 
       expect(auditLogService.log).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityType: 'project',
-          entityId: 'project-1',
-          action: 'settings_updated',
+          entityType: "project",
+          entityId: "project-1",
+          action: "settings_updated",
           metadata: {
             before: { dailyHourLimit: null, weeklyHourLimit: null },
             after: { dailyHourLimit: 10, weeklyHourLimit: null },
@@ -213,17 +223,17 @@ describe('ProjectsService — Settings', () => {
       );
     });
 
-    it('should allow clearing limits by passing null', async () => {
+    it("should allow clearing limits by passing null", async () => {
       repo.updateSettings.mockResolvedValue({
         dailyHourLimit: null,
         weeklyHourLimit: null,
       });
 
       const result = await service.updateSettings(
-        'project-1',
-        'org-1',
+        "project-1",
+        "org-1",
         { dailyHourLimit: null, weeklyHourLimit: null },
-        'admin-1',
+        "admin-1",
         true,
       );
 
@@ -231,24 +241,22 @@ describe('ProjectsService — Settings', () => {
     });
   });
 
-  describe('getSettingsInternal', () => {
-    it('should return settings without access check', async () => {
+  describe("getSettingsInternal", () => {
+    it("should return settings without access check", async () => {
       repo.findSettings.mockResolvedValue({
         dailyHourLimit: 10,
         weeklyHourLimit: null,
       });
 
-      const result = await service.getSettingsInternal('project-1');
+      const result = await service.getSettingsInternal("project-1");
 
       expect(result).toEqual({ dailyHourLimit: 10, weeklyHourLimit: null });
     });
 
-    it('should throw NOT_FOUND when project does not exist', async () => {
+    it("should throw NOT_FOUND when project does not exist", async () => {
       repo.findSettings.mockResolvedValue(null);
 
-      await expect(
-        service.getSettingsInternal('bad-id'),
-      ).rejects.toThrow(
+      await expect(service.getSettingsInternal("bad-id")).rejects.toThrow(
         expect.objectContaining({ code: ErrorCode.PROJECT.NOT_FOUND }),
       );
     });

@@ -1,20 +1,20 @@
-import { Controller, Get, Patch, Param, Body, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
-import { AdminOnly, Auth } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity, UserWithTeams } from './entities/user.entity';
-import { UsersService } from './users.service';
-import { ProjectsService } from '../projects/projects.service';
-import { ListUsersQueryDto } from './dto/list-users-query.dto';
-import { ListUserProjectsQueryDto } from './dto/list-user-projects-query.dto';
-import { UserNotFoundException } from '../../common/exceptions/user.exceptions';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UserResponseDto, UserListResponseDto } from './dto/user-response.dto';
-import { ProjectListResponseDto } from '../projects/dto/project-response.dto';
-import { ProjectListItem } from '../projects/entities/project.entity';
+import { Body, Controller, Get, Param, Patch, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { AdminOnly, Auth } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { UserNotFoundException } from "../../common/exceptions/user.exceptions";
+import { ProjectListResponseDto } from "../projects/dto/project-response.dto";
+import { ProjectListItem } from "../projects/entities/project.entity";
+import { ProjectsService } from "../projects/projects.service";
+import { ListUserProjectsQueryDto } from "./dto/list-user-projects-query.dto";
+import { ListUsersQueryDto } from "./dto/list-users-query.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { UserListResponseDto, UserResponseDto } from "./dto/user-response.dto";
+import { UserEntity, UserWithTeams } from "./entities/user.entity";
+import { UsersService } from "./users.service";
 
-@ApiTags('Users')
-@Controller('users')
+@ApiTags("Users")
+@Controller("users")
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -23,7 +23,7 @@ export class UsersController {
 
   @Get()
   @AdminOnly()
-  @ApiOperation({ summary: 'List users (admin only)' })
+  @ApiOperation({ summary: "List users (admin only)" })
   @ApiOkResponse({ type: UserListResponseDto })
   async list(
     @CurrentUser() user: UserEntity,
@@ -47,37 +47,43 @@ export class UsersController {
   }
 
   // Must be declared before @Get(':id') to avoid 'me' matching as a route param
-  @Get('me')
+  @Get("me")
   @Auth()
-  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiOperation({ summary: "Get current user profile" })
   @ApiOkResponse({ type: UserResponseDto })
-  async getMyProfile(@CurrentUser() user: UserEntity): Promise<UserResponseDto> {
+  async getMyProfile(
+    @CurrentUser() user: UserEntity,
+  ): Promise<UserResponseDto> {
     const profile = await this.usersService.getUserDetail(user.id, user.orgId);
     return this.toResponse(profile);
   }
 
-  @Get(':id')
+  @Get(":id")
   @AdminOnly()
-  @ApiOperation({ summary: 'Get user detail (admin only)' })
+  @ApiOperation({ summary: "Get user detail (admin only)" })
   @ApiOkResponse({ type: UserResponseDto })
   async findOne(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<UserResponseDto> {
     const target = await this.usersService.getUserDetail(id, user.orgId);
     return this.toResponse(target);
   }
 
-  @Get(':id/projects')
+  @Get(":id/projects")
   @Auth()
-  @ApiOperation({ summary: 'List projects for a user' })
+  @ApiOperation({ summary: "List projects for a user" })
   @ApiOkResponse({ type: ProjectListResponseDto })
   async listUserProjects(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Query() query: ListUserProjectsQueryDto,
   ): Promise<ProjectListResponseDto> {
-    const canView = await this.usersService.canViewUserDetails(user.id, user.isAdmin, id);
+    const canView = await this.usersService.canViewUserDetails(
+      user.id,
+      user.isAdmin,
+      id,
+    );
     if (!canView) {
       throw new UserNotFoundException();
     }
@@ -103,42 +109,49 @@ export class UsersController {
     };
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @AdminOnly()
-  @ApiOperation({ summary: 'Update user (admin status, team assignments)' })
+  @ApiOperation({ summary: "Update user (admin status, team assignments)" })
   @ApiOkResponse({ type: UserResponseDto })
   async update(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    const updated = await this.usersService.updateUser(user.id, id, user.orgId, dto);
+    const updated = await this.usersService.updateUser(
+      user.id,
+      id,
+      user.orgId,
+      dto,
+    );
     return this.toResponse(updated);
   }
 
-  @Patch(':id/deactivate')
+  @Patch(":id/deactivate")
   @AdminOnly()
-  @ApiOperation({ summary: 'Deactivate a user' })
+  @ApiOperation({ summary: "Deactivate a user" })
   async deactivate(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
     await this.usersService.deactivateUser(user.id, id, user.orgId);
-    return { message: 'User deactivated' };
+    return { message: "User deactivated" };
   }
 
-  @Patch(':id/reactivate')
+  @Patch(":id/reactivate")
   @AdminOnly()
-  @ApiOperation({ summary: 'Reactivate a user' })
+  @ApiOperation({ summary: "Reactivate a user" })
   async reactivate(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<{ message: string }> {
     await this.usersService.reactivateUser(id, user.orgId, user.id);
-    return { message: 'User reactivated' };
+    return { message: "User reactivated" };
   }
 
-  private toProjectResponse(project: ProjectListItem): ProjectListResponseDto['data'][number] {
+  private toProjectResponse(
+    project: ProjectListItem,
+  ): ProjectListResponseDto["data"][number] {
     return {
       id: project.id,
       name: project.name,

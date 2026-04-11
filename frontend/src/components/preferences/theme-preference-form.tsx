@@ -1,18 +1,18 @@
-import { useTheme } from 'next-themes';
+import { useTheme } from "next-themes";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useUpdateUserPreferences } from '@/lib/user-preferences/use-update-user-preferences';
-import type { Theme } from '@/lib/user-preferences/types';
+} from "@/components/ui/select";
+import type { Theme } from "@/lib/user-preferences/types";
+import { useUpdateUserPreferences } from "@/lib/user-preferences/use-update-user-preferences";
 
 const THEME_OPTIONS: { value: Theme; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+  { value: "system", label: "System" },
 ];
 
 export function ThemePreferenceForm({ currentTheme }: { currentTheme: Theme }) {
@@ -27,9 +27,15 @@ export function ThemePreferenceForm({ currentTheme }: { currentTheme: Theme }) {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Theme</label>
-      <Select value={currentTheme} onValueChange={handleChange} disabled={isPending}>
-        <SelectTrigger className="w-48">
+      <label htmlFor="theme" className="text-sm font-medium">
+        Theme
+      </label>
+      <Select
+        value={currentTheme}
+        onValueChange={handleChange}
+        disabled={isPending}
+      >
+        <SelectTrigger id="theme" className="w-48">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

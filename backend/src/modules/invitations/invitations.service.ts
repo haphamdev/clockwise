@@ -1,24 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { randomBytes } from 'crypto';
-import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
+import { randomBytes } from "node:crypto";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { Queue } from "bullmq";
 import {
-  InvitationNotFoundException,
   InvitationAlreadyAcceptedException,
   InvitationAlreadyRevokedException,
-  InvitationExpiredException,
   InvitationEmailAlreadyInvitedException,
   InvitationEmailAlreadyRegisteredException,
+  InvitationExpiredException,
   InvitationInvalidTeamAssignmentException,
-} from '../../common/exceptions/invitation.exceptions';
-import { InvitationsRepository } from './invitations.repository';
-import { UsersService } from '../users/users.service';
-import { TeamsService } from '../teams/teams.service';
-import { OrgService } from '../org/org.service';
-import { MailService } from '../mail/mail.service';
-import { InvitationEntity } from './entities/invitation.entity';
-import { INVITATION_EMAIL_QUEUE, InvitationEmailJobData } from './invitation-email.constants';
+  InvitationNotFoundException,
+} from "../../common/exceptions/invitation.exceptions";
+import { MailService } from "../mail/mail.service";
+import { OrgService } from "../org/org.service";
+import { TeamsService } from "../teams/teams.service";
+import { UsersService } from "../users/users.service";
+import { InvitationEntity } from "./entities/invitation.entity";
+import {
+  INVITATION_EMAIL_QUEUE,
+  InvitationEmailJobData,
+} from "./invitation-email.constants";
+import { InvitationsRepository } from "./invitations.repository";
 
 const INVITE_EXPIRY_DAYS = 7;
 
@@ -31,7 +34,8 @@ export class InvitationsService {
     private readonly orgService: OrgService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
-    @InjectQueue(INVITATION_EMAIL_QUEUE) private readonly emailQueue: Queue<InvitationEmailJobData>,
+    @InjectQueue(INVITATION_EMAIL_QUEUE)
+    private readonly emailQueue: Queue<InvitationEmailJobData>,
   ) {}
 
   async create(
@@ -39,11 +43,11 @@ export class InvitationsService {
     invitedBy: string,
     data: {
       email: string;
-      teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>;
+      teamAssignments: Array<{ teamId: string; role: "manager" | "member" }>;
     },
   ): Promise<InvitationEntity> {
     const existingUser = await this.usersService.findByEmail(data.email);
-    if (existingUser && existingUser.status === 'active') {
+    if (existingUser && existingUser.status === "active") {
       throw new InvitationEmailAlreadyRegisteredException();
     }
 
@@ -57,7 +61,7 @@ export class InvitationsService {
 
     await this.validateTeamAssignments(orgId, data.teamAssignments);
 
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
 
@@ -72,7 +76,7 @@ export class InvitationsService {
       invitedBy,
       token,
       expiresAt,
-      status: 'initiated',
+      status: "initiated",
       teamAssignments: data.teamAssignments,
     });
 
@@ -91,28 +95,28 @@ export class InvitationsService {
   async revoke(invitationId: string, orgId: string): Promise<void> {
     const invitation = await this.getInvitationOrThrow(invitationId, orgId);
 
-    if (invitation.status === 'accepted') {
+    if (invitation.status === "accepted") {
       throw new InvitationAlreadyAcceptedException();
     }
-    if (invitation.status === 'revoked') {
+    if (invitation.status === "revoked") {
       throw new InvitationAlreadyRevokedException();
     }
     // Allow revoking: sent, initiated, sending, failed
 
-    await this.invitationsRepository.updateStatus(invitationId, 'revoked');
+    await this.invitationsRepository.updateStatus(invitationId, "revoked");
   }
 
   async resend(invitationId: string, orgId: string): Promise<InvitationEntity> {
     const invitation = await this.getInvitationOrThrow(invitationId, orgId);
 
-    if (invitation.status === 'accepted') {
+    if (invitation.status === "accepted") {
       throw new InvitationAlreadyAcceptedException();
     }
-    if (invitation.status === 'revoked') {
+    if (invitation.status === "revoked") {
       throw new InvitationAlreadyRevokedException();
     }
 
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
 
@@ -120,7 +124,7 @@ export class InvitationsService {
       invitationId,
       token,
       expiresAt,
-      'initiated',
+      "initiated",
     );
 
     await this.queueInvitationEmail(invitationId);
@@ -131,14 +135,14 @@ export class InvitationsService {
   async updateTeamAssignments(
     invitationId: string,
     orgId: string,
-    teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    teamAssignments: Array<{ teamId: string; role: "manager" | "member" }>,
   ): Promise<InvitationEntity> {
     const invitation = await this.getInvitationOrThrow(invitationId, orgId);
 
-    if (invitation.status === 'accepted') {
+    if (invitation.status === "accepted") {
       throw new InvitationAlreadyAcceptedException();
     }
-    if (invitation.status === 'revoked') {
+    if (invitation.status === "revoked") {
       throw new InvitationAlreadyRevokedException();
     }
 
@@ -147,14 +151,14 @@ export class InvitationsService {
     const isExpired = new Date() > invitation.expiresAt;
 
     if (isExpired) {
-      const token = randomBytes(32).toString('hex');
+      const token = randomBytes(32).toString("hex");
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
 
       const updated = await this.invitationsRepository.updateTeamAssignments(
         invitationId,
         teamAssignments,
-        { token, expiresAt, status: 'initiated' },
+        { token, expiresAt, status: "initiated" },
       );
 
       await this.queueInvitationEmail(invitationId);
@@ -162,7 +166,10 @@ export class InvitationsService {
       return updated;
     }
 
-    return this.invitationsRepository.updateTeamAssignments(invitationId, teamAssignments);
+    return this.invitationsRepository.updateTeamAssignments(
+      invitationId,
+      teamAssignments,
+    );
   }
 
   async validateToken(token: string): Promise<InvitationEntity> {
@@ -171,13 +178,17 @@ export class InvitationsService {
       throw new InvitationNotFoundException();
     }
 
-    if (invitation.status === 'revoked') {
+    if (invitation.status === "revoked") {
       throw new InvitationAlreadyRevokedException();
     }
-    if (invitation.status === 'accepted') {
+    if (invitation.status === "accepted") {
       throw new InvitationAlreadyAcceptedException();
     }
-    if (invitation.status === 'initiated' || invitation.status === 'sending' || invitation.status === 'failed') {
+    if (
+      invitation.status === "initiated" ||
+      invitation.status === "sending" ||
+      invitation.status === "failed"
+    ) {
       throw new InvitationNotFoundException();
     }
     if (new Date() > invitation.expiresAt) {
@@ -201,7 +212,8 @@ export class InvitationsService {
    * Uses email-based lookup since orgId is not available during the OAuth callback.
    */
   async acceptByEmail(email: string, userId: string): Promise<void> {
-    const invitation = await this.invitationsRepository.findActiveByEmailAnyOrg(email);
+    const invitation =
+      await this.invitationsRepository.findActiveByEmailAnyOrg(email);
     if (!invitation) {
       return;
     }
@@ -222,7 +234,7 @@ export class InvitationsService {
 
   private async validateTeamAssignments(
     orgId: string,
-    assignments: Array<{ teamId: string; role: 'manager' | 'member' }>,
+    assignments: Array<{ teamId: string; role: "manager" | "member" }>,
   ): Promise<void> {
     const uniqueTeamIds = new Set(assignments.map((a) => a.teamId));
     if (uniqueTeamIds.size !== assignments.length) {
@@ -238,7 +250,10 @@ export class InvitationsService {
     }
   }
 
-  async findActiveByEmail(orgId: string, email: string): Promise<InvitationEntity | null> {
+  async findActiveByEmail(
+    orgId: string,
+    email: string,
+  ): Promise<InvitationEntity | null> {
     return this.invitationsRepository.findActiveByEmail(orgId, email);
   }
 
@@ -250,15 +265,20 @@ export class InvitationsService {
     invitedBy: string,
     data: {
       email: string;
-      teamAssignments: Array<{ teamId: string; role: 'manager' | 'member' }>;
+      teamAssignments: Array<{ teamId: string; role: "manager" | "member" }>;
     },
   ): Promise<InvitationEntity> {
     const existingUser = await this.usersService.findByEmail(data.email);
     if (!existingUser) {
-      await this.usersService.createPendingUser(orgId, data.email, invitedBy, 'import');
+      await this.usersService.createPendingUser(
+        orgId,
+        data.email,
+        invitedBy,
+        "import",
+      );
     }
 
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(32).toString("hex");
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + INVITE_EXPIRY_DAYS);
 
@@ -268,24 +288,38 @@ export class InvitationsService {
       invitedBy,
       token,
       expiresAt,
-      status: 'initiated',
+      status: "initiated",
       teamAssignments: data.teamAssignments,
     });
   }
 
-  async sendInvitationEmail(orgId: string, invitation: InvitationEntity): Promise<void> {
+  async sendInvitationEmail(
+    orgId: string,
+    invitation: InvitationEntity,
+  ): Promise<void> {
     const orgSettings = await this.orgService.getSettings(orgId);
-    const frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:5173');
+    const frontendUrl = this.configService.get<string>(
+      "FRONTEND_URL",
+      "http://localhost:5173",
+    );
     const inviteUrl = `${frontendUrl}/invite/${invitation.token}`;
-    await this.mailService.sendInvitationEmail(invitation.email, inviteUrl, orgSettings.orgName);
+    await this.mailService.sendInvitationEmail(
+      invitation.email,
+      inviteUrl,
+      orgSettings.orgName,
+    );
   }
 
   /** Public so import processors can queue emails after creating invitations. */
   async queueInvitationEmail(invitationId: string): Promise<void> {
-    await this.emailQueue.add('send-invitation-email', { invitationId }, {
-      attempts: 1,
-      removeOnComplete: { age: 3600 },
-      removeOnFail: { age: 7200 },
-    });
+    await this.emailQueue.add(
+      "send-invitation-email",
+      { invitationId },
+      {
+        attempts: 1,
+        removeOnComplete: { age: 3600 },
+        removeOnFail: { age: 7200 },
+      },
+    );
   }
 }

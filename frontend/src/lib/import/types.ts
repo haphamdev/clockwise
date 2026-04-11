@@ -1,4 +1,4 @@
-export type ImportType = 'time-log' | 'team' | 'project' | 'invitation';
+export type ImportType = "time-log" | "team" | "project" | "invitation";
 
 export interface ImportValidationError {
   row: number;
@@ -35,7 +35,7 @@ export interface ImportExecuteResponse {
   totalRows: number;
 }
 
-export type ImportJobStatus = 'pending' | 'processing' | 'completed' | 'failed';
+export type ImportJobStatus = "pending" | "processing" | "completed" | "failed";
 
 export interface ImportJobResponse {
   jobId: string;

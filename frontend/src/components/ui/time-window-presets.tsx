@@ -1,40 +1,55 @@
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import type { Draft } from "@/components/ui/time-window-picker";
 import {
-  resolvePreset,
-  resolveRolling,
   detectRolling,
   isPresetMatch,
   PRESET_LABELS,
   ROLLING_MAX,
-  type TimeWindowPreset,
   type RollingUnit,
-} from '@/lib/dates/time-window-utils';
-import type { Draft } from '@/components/ui/time-window-picker';
+  resolvePreset,
+  resolveRolling,
+  type TimeWindowPreset,
+} from "@/lib/dates/time-window-utils";
 
-const ROW_1: TimeWindowPreset[] = ['today', 'this-week', 'this-month', 'this-quarter'];
-const ROW_2: TimeWindowPreset[] = ['yesterday', 'last-week', 'last-month', 'last-quarter'];
+const ROW_1: TimeWindowPreset[] = [
+  "today",
+  "this-week",
+  "this-month",
+  "this-quarter",
+];
+const ROW_2: TimeWindowPreset[] = [
+  "yesterday",
+  "last-week",
+  "last-month",
+  "last-quarter",
+];
 
 interface TimeWindowPresetsProps {
   draft: Draft;
   onDraftChange: (draft: Draft) => void;
 }
 
-export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsProps) {
+export function TimeWindowPresets({
+  draft,
+  onDraftChange,
+}: TimeWindowPresetsProps) {
   const today = new Date();
   const detected = !isPresetMatch(draft) ? detectRolling(draft, today) : null;
-  const [rollingN, setRollingN] = useState(detected ? String(detected.n) : '7');
-  const [rollingUnit, setRollingUnit] = useState<RollingUnit>(detected?.unit ?? 'days');
+  const [rollingN, setRollingN] = useState(detected ? String(detected.n) : "7");
+  const [rollingUnit, setRollingUnit] = useState<RollingUnit>(
+    detected?.unit ?? "days",
+  );
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Sync rolling inputs when draft changes from outside (e.g. popover reopen)
@@ -53,12 +68,12 @@ export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsPro
     onDraftChange({
       dateFrom: resolved.dateFrom,
       dateTo: resolved.dateTo,
-      source: 'rolling',
+      source: "rolling",
     });
   };
 
   const handleNumberChange = (raw: string) => {
-    const v = raw.replace(/\D/g, '').slice(0, 3);
+    const v = raw.replace(/\D/g, "").slice(0, 3);
     setRollingN(v);
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -81,17 +96,17 @@ export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsPro
       dateFrom: resolved.dateFrom,
       dateTo: resolved.dateTo,
       preset,
-      source: 'preset',
+      source: "preset",
     });
   };
 
   const isActive = (preset: TimeWindowPreset) =>
-    draft.source === 'preset' && draft.preset === preset;
+    draft.source === "preset" && draft.preset === preset;
 
   const renderPresetButton = (preset: TimeWindowPreset) => (
     <Button
       key={preset}
-      variant={isActive(preset) ? 'secondary' : 'ghost'}
+      variant={isActive(preset) ? "secondary" : "ghost"}
       size="sm"
       className="justify-start text-xs"
       onClick={() => handlePresetClick(preset)}
@@ -120,7 +135,10 @@ export function TimeWindowPresets({ draft, onDraftChange }: TimeWindowPresetsPro
             onChange={(e) => handleNumberChange(e.target.value)}
             className="w-16 h-8 text-sm"
           />
-          <Select value={rollingUnit} onValueChange={(v) => handleUnitChange(v as RollingUnit)}>
+          <Select
+            value={rollingUnit}
+            onValueChange={(v) => handleUnitChange(v as RollingUnit)}
+          >
             <SelectTrigger className="w-24 h-8 text-sm">
               <SelectValue />
             </SelectTrigger>

@@ -1,15 +1,15 @@
-import { type ColumnDef } from '@tanstack/react-table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { ProjectLink } from '@/components/projects/project-link';
-import { ServerDataTable } from '@/components/ui/server-data-table';
-import type { Project } from '@/lib/projects/types';
+import type { ColumnDef } from "@tanstack/react-table";
+import { ProjectLink } from "@/components/projects/project-link";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { ServerDataTable } from "@/components/ui/server-data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import type { Project } from "@/lib/projects/types";
 
 const columns: ColumnDef<Project>[] = [
   {
-    accessorKey: 'name',
-    header: 'Name',
+    accessorKey: "name",
+    header: "Name",
     cell: ({ row }) => (
       <ProjectLink
         id={row.original.id}
@@ -20,8 +20,8 @@ const columns: ColumnDef<Project>[] = [
     ),
   },
   {
-    id: 'status',
-    header: 'Status',
+    id: "status",
+    header: "Status",
     cell: ({ row }) => <StatusBadge status={row.original.status} />,
   },
 ];

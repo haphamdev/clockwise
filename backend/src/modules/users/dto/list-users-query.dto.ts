@@ -1,6 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsInt, Min, Max, IsString, IsIn, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import {
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  Min,
+} from "class-validator";
 
 export class ListUsersQueryDto {
   @ApiProperty({ required: false, default: 1 })
@@ -18,22 +26,25 @@ export class ListUsersQueryDto {
   @Max(100)
   limit?: number = 20;
 
-  @ApiProperty({ required: false, description: 'Search by name or email' })
+  @ApiProperty({ required: false, description: "Search by name or email" })
   @IsOptional()
   @IsString()
   search?: string;
 
-  @ApiProperty({ required: false, enum: ['pending', 'active', 'deactivated'] })
+  @ApiProperty({ required: false, enum: ["pending", "active", "deactivated"] })
   @IsOptional()
-  @IsIn(['pending', 'active', 'deactivated'])
-  status?: 'pending' | 'active' | 'deactivated';
+  @IsIn(["pending", "active", "deactivated"])
+  status?: "pending" | "active" | "deactivated";
 
-  @ApiProperty({ required: false, description: 'Filter by team membership' })
+  @ApiProperty({ required: false, description: "Filter by team membership" })
   @IsOptional()
   @IsUUID()
   teamId?: string;
 
-  @ApiProperty({ required: false, description: 'Filter by project membership (via team chain)' })
+  @ApiProperty({
+    required: false,
+    description: "Filter by project membership (via team chain)",
+  })
   @IsOptional()
   @IsUUID()
   projectId?: string;

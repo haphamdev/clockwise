@@ -1,7 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { AuditLogRepository, CreateAuditLogInput } from './audit-log.repository';
-import { AuditLogEntity } from './entities/audit-log.entity';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import {
+  AuditLogRepository,
+  CreateAuditLogInput,
+} from "./audit-log.repository";
+import { AuditLogEntity } from "./entities/audit-log.entity";
 
 @Injectable()
 export class AuditLogService {
@@ -30,6 +33,11 @@ export class AuditLogService {
     entityId: string,
     options: { page: number; limit: number },
   ): Promise<{ data: AuditLogEntity[]; total: number }> {
-    return this.auditLogRepository.findByEntity(orgId, entityType, entityId, options);
+    return this.auditLogRepository.findByEntity(
+      orgId,
+      entityType,
+      entityId,
+      options,
+    );
   }
 }

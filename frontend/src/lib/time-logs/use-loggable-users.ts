@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { timeLogsKeys } from './time-logs-keys';
-import { fetchLoggableUsers } from './time-logs-api';
+import { useQuery } from "@tanstack/react-query";
+import { fetchLoggableUsers } from "./time-logs-api";
+import { timeLogsKeys } from "./time-logs-keys";
 
 export function useLoggableUsers(options?: { enabled?: boolean }) {
   return useQuery({

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,16 +8,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { buttonVariants } from '@/components/ui/button';
-import { useArchiveTimeLog } from '@/lib/time-logs/use-archive-time-log';
-import { useUnarchiveTimeLog } from '@/lib/time-logs/use-unarchive-time-log';
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useArchiveTimeLog } from "@/lib/time-logs/use-archive-time-log";
+import { useUnarchiveTimeLog } from "@/lib/time-logs/use-unarchive-time-log";
 
 interface ArchiveTimeLogDialogProps {
   timeLogId: string | null;
-  action: 'archive' | 'unarchive' | null;
+  action: "archive" | "unarchive" | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -28,12 +28,12 @@ export function ArchiveTimeLogDialog({
   open,
   onOpenChange,
 }: ArchiveTimeLogDialogProps) {
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState("");
   const archiveTimeLog = useArchiveTimeLog();
   const unarchiveTimeLog = useUnarchiveTimeLog();
 
   const isPending = archiveTimeLog.isPending || unarchiveTimeLog.isPending;
-  const isArchive = action === 'archive';
+  const isArchive = action === "archive";
 
   const handleConfirm = () => {
     if (!timeLogId || !reason.trim()) return;
@@ -43,7 +43,7 @@ export function ArchiveTimeLogDialog({
       { id: timeLogId, reason: reason.trim() },
       {
         onSuccess: () => {
-          setReason('');
+          setReason("");
           onOpenChange(false);
         },
       },
@@ -54,19 +54,19 @@ export function ArchiveTimeLogDialog({
     <AlertDialog
       open={open}
       onOpenChange={(o) => {
-        if (!o) setReason('');
+        if (!o) setReason("");
         onOpenChange(o);
       }}
     >
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {isArchive ? 'Archive Time Log' : 'Unarchive Time Log'}
+            {isArchive ? "Archive Time Log" : "Unarchive Time Log"}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {isArchive
-              ? 'This will mark the time log as archived. Please provide a reason.'
-              : 'This will restore the time log. Please provide a reason.'}
+              ? "This will mark the time log as archived. Please provide a reason."
+              : "This will restore the time log. Please provide a reason."}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-2">
@@ -82,14 +82,16 @@ export function ArchiveTimeLogDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className={buttonVariants({ variant: isArchive ? 'destructive' : 'default' })}
+            className={buttonVariants({
+              variant: isArchive ? "destructive" : "default",
+            })}
             onClick={(e) => {
               e.preventDefault();
               handleConfirm();
             }}
             disabled={isPending || !reason.trim()}
           >
-            {isPending ? 'Processing...' : isArchive ? 'Archive' : 'Unarchive'}
+            {isPending ? "Processing..." : isArchive ? "Archive" : "Unarchive"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

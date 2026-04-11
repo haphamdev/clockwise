@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../prisma/prisma.service";
 
 interface TeamHoursRow {
   teamId: string;
@@ -145,7 +145,9 @@ export class DashboardTeamRepository {
     today: string,
     dailyThreshold: number,
     weeklyThreshold: number,
-  ): Promise<Array<{ teamId: string; dailyCount: number; weeklyCount: number }>> {
+  ): Promise<
+    Array<{ teamId: string; dailyCount: number; weeklyCount: number }>
+  > {
     const rows = await this.prisma.$queryRaw<ThresholdBreachRow[]>(
       Prisma.sql`
         WITH daily_agg AS (
@@ -196,7 +198,14 @@ export class DashboardTeamRepository {
   async findActiveProjectsByTeam(
     teamIds: string[],
     limit: number,
-  ): Promise<Array<{ teamId: string; projectId: string; projectName: string; totalCount: number }>> {
+  ): Promise<
+    Array<{
+      teamId: string;
+      projectId: string;
+      projectName: string;
+      totalCount: number;
+    }>
+  > {
     const rows = await this.prisma.$queryRaw<ActiveProjectRow[]>(
       Prisma.sql`
         WITH ranked AS (
@@ -266,15 +275,24 @@ export class DashboardTeamRepository {
     ]);
 
     return {
-      users: { active: Number(userRows[0].active), deactivated: Number(userRows[0].deactivated) },
-      teams: { active: Number(teamRows[0].active), archived: Number(teamRows[0].archived) },
-      projects: { active: Number(projectRows[0].active), archived: Number(projectRows[0].archived) },
+      users: {
+        active: Number(userRows[0].active),
+        deactivated: Number(userRows[0].deactivated),
+      },
+      teams: {
+        active: Number(teamRows[0].active),
+        archived: Number(teamRows[0].archived),
+      },
+      projects: {
+        active: Number(projectRows[0].active),
+        archived: Number(projectRows[0].archived),
+      },
     };
   }
 
   async findManagedTeamIds(userId: string): Promise<string[]> {
     const memberships = await this.prisma.teamMember.findMany({
-      where: { userId, role: 'manager', team: { isArchived: false } },
+      where: { userId, role: "manager", team: { isArchived: false } },
       select: { teamId: true },
     });
     return memberships.map((m) => m.teamId);

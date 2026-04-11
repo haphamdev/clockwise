@@ -1,30 +1,39 @@
-import { useState, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useImportPreview } from '@/lib/import/use-import-preview';
-import { useImportExecute } from '@/lib/import/use-import-execute';
-import { useImportJob } from '@/lib/import/use-import-job';
-import { importKeys } from '@/lib/import/import-keys';
-import { IMPORT_TYPE_CONFIG } from '@/lib/import/import-type-config';
-import { projectsKeys } from '@/lib/projects/projects-keys';
-import { teamsKeys } from '@/lib/teams/teams-keys';
-import { timeLogsKeys } from '@/lib/time-logs/time-logs-keys';
-import { invitationsKeys } from '@/lib/invitations/invitations-keys';
-import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
-import { UploadStep } from './import-upload-step';
-import { PreviewStep } from './import-preview-step';
-import { ImportingStep } from './import-importing-step';
-import { DoneStep } from './import-done-step';
-import type { ImportType, ImportPreviewResponse } from '@/lib/import/types';
+import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { auditLogsKeys } from "@/lib/audit-logs/audit-logs-keys";
+import { importKeys } from "@/lib/import/import-keys";
+import { IMPORT_TYPE_CONFIG } from "@/lib/import/import-type-config";
+import type { ImportPreviewResponse, ImportType } from "@/lib/import/types";
+import { useImportExecute } from "@/lib/import/use-import-execute";
+import { useImportJob } from "@/lib/import/use-import-job";
+import { useImportPreview } from "@/lib/import/use-import-preview";
+import { invitationsKeys } from "@/lib/invitations/invitations-keys";
+import { projectsKeys } from "@/lib/projects/projects-keys";
+import { teamsKeys } from "@/lib/teams/teams-keys";
+import { timeLogsKeys } from "@/lib/time-logs/time-logs-keys";
+import { DoneStep } from "./import-done-step";
+import { ImportingStep } from "./import-importing-step";
+import { PreviewStep } from "./import-preview-step";
+import { UploadStep } from "./import-upload-step";
 
-const IMPORT_INVALIDATION_KEYS: Record<ImportType, readonly (readonly string[])[]> = {
-  'time-log': [timeLogsKeys.all, auditLogsKeys.all],
+const IMPORT_INVALIDATION_KEYS: Record<
+  ImportType,
+  readonly (readonly string[])[]
+> = {
+  "time-log": [timeLogsKeys.all, auditLogsKeys.all],
   team: [teamsKeys.all, auditLogsKeys.all],
   project: [projectsKeys.all, auditLogsKeys.all],
   invitation: [invitationsKeys.all, auditLogsKeys.all],
 };
 
-type Step = 'upload' | 'preview' | 'importing' | 'done';
+type Step = "upload" | "preview" | "importing" | "done";
 
 interface ImportWizardProps {
   type: ImportType;
@@ -32,7 +41,7 @@ interface ImportWizardProps {
 
 export function ImportWizard({ type }: ImportWizardProps) {
   const config = IMPORT_TYPE_CONFIG[type];
-  const [step, setStep] = useState<Step>('upload');
+  const [step, setStep] = useState<Step>("upload");
   const [preview, setPreview] = useState<ImportPreviewResponse | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +52,14 @@ export function ImportWizard({ type }: ImportWizardProps) {
   const { data: jobData } = useImportJob(jobId);
 
   useEffect(() => {
-    if (step === 'importing' && jobData && (jobData.status === 'completed' || jobData.status === 'failed')) {
-      setStep('done');
+    if (
+      step === "importing" &&
+      jobData &&
+      (jobData.status === "completed" || jobData.status === "failed")
+    ) {
+      setStep("done");
       queryClient.invalidateQueries({ queryKey: importKeys.jobLists() });
-      if (jobData.status === 'completed') {
+      if (jobData.status === "completed") {
         for (const key of IMPORT_INVALIDATION_KEYS[type]) {
           queryClient.invalidateQueries({ queryKey: key });
         }
@@ -56,7 +69,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
 
   const reset = () => {
     queryClient.removeQueries({ queryKey: importKeys.jobs() });
-    setStep('upload');
+    setStep("upload");
     setPreview(null);
     setJobId(null);
     setError(null);
@@ -67,12 +80,12 @@ export function ImportWizard({ type }: ImportWizardProps) {
     if (!file) return;
     setError(null);
 
-    if (!file.name.endsWith('.csv')) {
-      setError('Please select a CSV file.');
+    if (!file.name.endsWith(".csv")) {
+      setError("Please select a CSV file.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setError('File is too large. Maximum size is 5MB.');
+      setError("File is too large. Maximum size is 5MB.");
       return;
     }
 
@@ -82,10 +95,12 @@ export function ImportWizard({ type }: ImportWizardProps) {
       {
         onSuccess: (data) => {
           setPreview(data);
-          setStep('preview');
+          setStep("preview");
         },
         onError: (err) => {
-          setError(err instanceof Error ? err.message : 'Failed to parse CSV file.');
+          setError(
+            err instanceof Error ? err.message : "Failed to parse CSV file.",
+          );
         },
       },
     );
@@ -98,10 +113,12 @@ export function ImportWizard({ type }: ImportWizardProps) {
       {
         onSuccess: (data) => {
           setJobId(data.jobId);
-          setStep('importing');
+          setStep("importing");
         },
         onError: (err) => {
-          setError(err instanceof Error ? err.message : 'Failed to start import.');
+          setError(
+            err instanceof Error ? err.message : "Failed to start import.",
+          );
         },
       },
     );
@@ -112,15 +129,19 @@ export function ImportWizard({ type }: ImportWizardProps) {
       <CardHeader>
         <CardTitle className="text-lg">Upload CSV</CardTitle>
         <CardDescription>
-          {step === 'upload' && config.uploadDescription}
-          {step === 'preview' && 'Review the rows below, then confirm the import.'}
-          {step === 'importing' && 'Your import is being processed...'}
-          {step === 'done' && (jobData?.status === 'completed' ? 'Import complete.' : 'Import failed.')}
+          {step === "upload" && config.uploadDescription}
+          {step === "preview" &&
+            "Review the rows below, then confirm the import."}
+          {step === "importing" && "Your import is being processed..."}
+          {step === "done" &&
+            (jobData?.status === "completed"
+              ? "Import complete."
+              : "Import failed.")}
         </CardDescription>
       </CardHeader>
 
       <CardContent>
-        {step === 'upload' && (
+        {step === "upload" && (
           <UploadStep
             onFileSelect={handleFileSelect}
             isPending={importPreview.isPending}
@@ -129,7 +150,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
           />
         )}
 
-        {step === 'preview' && preview && (
+        {step === "preview" && preview && (
           <PreviewStep
             type={type}
             preview={preview}
@@ -140,7 +161,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
           />
         )}
 
-        {step === 'importing' && (
+        {step === "importing" && (
           <ImportingStep
             importingText={config.importingText}
             totalRows={jobData?.totalRows ?? 0}
@@ -149,7 +170,7 @@ export function ImportWizard({ type }: ImportWizardProps) {
           />
         )}
 
-        {step === 'done' && jobData && (
+        {step === "done" && jobData && (
           <DoneStep
             status={jobData.status}
             imported={jobData.imported}

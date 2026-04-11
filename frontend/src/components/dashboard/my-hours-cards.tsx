@@ -1,7 +1,7 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ChangeBadge } from '@/components/dashboard/change-badge';
-import type { MyHours } from '@/lib/dashboard/types';
+import { ChangeBadge } from "@/components/dashboard/change-badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { MyHours } from "@/lib/dashboard/types";
 
 interface MyHoursCardsProps {
   data: MyHours | undefined;
@@ -11,7 +11,9 @@ interface MyHoursCardsProps {
 
 export function MyHoursCards({ data, isLoading, isError }: MyHoursCardsProps) {
   if (isError) {
-    return <p className="text-sm text-destructive">Failed to load hours data.</p>;
+    return (
+      <p className="text-sm text-destructive">Failed to load hours data.</p>
+    );
   }
 
   if (isLoading) {
@@ -32,18 +34,18 @@ export function MyHoursCards({ data, isLoading, isError }: MyHoursCardsProps) {
   if (!data) return null;
 
   const cards = [
-    { label: 'Today', value: data.today, unit: 'h' },
+    { label: "Today", value: data.today, unit: "h" },
     {
-      label: 'This Week',
+      label: "This Week",
       value: data.thisWeek,
-      unit: 'h',
+      unit: "h",
       change: data.weekOverWeekPct,
       prev: data.lastWeek,
     },
     {
-      label: 'This Month',
+      label: "This Month",
       value: data.thisMonth,
-      unit: 'h',
+      unit: "h",
       change: data.monthOverMonthPct,
       prev: data.lastMonth,
     },
@@ -56,13 +58,17 @@ export function MyHoursCards({ data, isLoading, isError }: MyHoursCardsProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">{card.label}</p>
-              {'change' in card && <ChangeBadge value={card.change!} />}
+              {"change" in card && (
+                <ChangeBadge value={card.change as number} />
+              )}
             </div>
             <p className="mt-1 text-2xl font-semibold">
               {card.value}
-              <span className="ml-1 text-sm font-normal text-muted-foreground">{card.unit}</span>
+              <span className="ml-1 text-sm font-normal text-muted-foreground">
+                {card.unit}
+              </span>
             </p>
-            {'prev' in card && card.prev !== undefined && (
+            {"prev" in card && card.prev !== undefined && (
               <p className="text-xs text-muted-foreground">
                 Last: {card.prev}h
               </p>

@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
-import { Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { EmptyState } from '@/components/ui/empty-state';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -10,10 +10,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { useAuth } from '@/lib/auth/use-auth';
-import { isAdminOrManager } from '@/lib/auth/role-utils';
-import type { UserTeamMembership } from '@/lib/users/types';
+} from "@/components/ui/table";
+import { isAdminOrManager } from "@/lib/auth/role-utils";
+import { useAuth } from "@/lib/auth/use-auth";
+import type { UserTeamMembership } from "@/lib/users/types";
 
 interface ProfileTeamsTableProps {
   memberships: UserTeamMembership[];
@@ -54,7 +54,9 @@ export function ProfileTeamsTable({ memberships }: ProfileTeamsTableProps) {
                       {membership.teamName}
                     </Link>
                   ) : (
-                    <span className="text-sm font-medium">{membership.teamName}</span>
+                    <span className="text-sm font-medium">
+                      {membership.teamName}
+                    </span>
                   )}
                   {membership.isArchived && <StatusBadge status="archived" />}
                 </div>

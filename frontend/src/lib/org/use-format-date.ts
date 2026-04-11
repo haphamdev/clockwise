@@ -1,6 +1,9 @@
-import { useCallback } from 'react';
-import { useEffectiveFormats } from '@/lib/user-preferences/use-effective-formats';
-import { formatDate as formatDateFn, formatDateTime as formatDateTimeFn } from './format-date';
+import { useCallback } from "react";
+import { useEffectiveFormats } from "@/lib/user-preferences/use-effective-formats";
+import {
+  formatDate as formatDateFn,
+  formatDateTime as formatDateTimeFn,
+} from "./format-date";
 
 export function useFormatDate() {
   const { dateFormat, timeFormat } = useEffectiveFormats();

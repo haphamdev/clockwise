@@ -1,31 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { ReportsRepository } from './reports.repository';
-import { ReportInvalidDateRangeException } from '../../common/exceptions/report.exceptions';
+import { Injectable } from "@nestjs/common";
+import { ReportInvalidDateRangeException } from "../../common/exceptions/report.exceptions";
 import type {
-  TimeSeriesQueryDto,
-  WeekdayDistributionQueryDto,
-  LoggingDelayQueryDto,
-  SummaryQueryDto,
   AnomaliesQueryDto,
   LoggingDelayHeatmapQueryDto,
+  LoggingDelayQueryDto,
   ReportGranularity,
-} from './dto/reports-query.dto';
+  SummaryQueryDto,
+  TimeSeriesQueryDto,
+  WeekdayDistributionQueryDto,
+} from "./dto/reports-query.dto";
 import type {
-  TimeSeriesResponseDto,
-  WeekdayDistributionResponseDto,
-  LoggingDelayResponseDto,
-  SummaryResponseDto,
   AnomaliesResponseDto,
   LoggingDelayHeatmapResponseDto,
-} from './dto/reports-response.dto';
+  LoggingDelayResponseDto,
+  SummaryResponseDto,
+  TimeSeriesResponseDto,
+  WeekdayDistributionResponseDto,
+} from "./dto/reports-response.dto";
+import { ReportsRepository } from "./reports.repository";
 
 const DELAY_HEATMAP_MIN_ENTRIES = 5;
 
 const DELAY_BUCKETS = [
-  { label: 'Same day', maxDays: 0 },
-  { label: '1-2 days', maxDays: 2 },
-  { label: '3-5 days', maxDays: 5 },
-  { label: '6+ days', maxDays: null },
+  { label: "Same day", maxDays: 0 },
+  { label: "1-2 days", maxDays: 2 },
+  { label: "3-5 days", maxDays: 5 },
+  { label: "6+ days", maxDays: null },
 ] as const;
 
 @Injectable()
@@ -39,7 +39,11 @@ export class ReportsService {
     query: TimeSeriesQueryDto,
   ): Promise<TimeSeriesResponseDto> {
     this.validateDateRange(query.dateFrom, query.dateTo);
-    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+    const scopedUserIds = await this.resolveScopedUserIds(
+      userId,
+      isAdmin,
+      query.userIds,
+    );
 
     const rows = await this.reportsRepository.findTimeSeries({
       orgId,
@@ -63,7 +67,18 @@ export class ReportsService {
       string,
       {
         periodStart: string;
-        seriesMap: Map<string, { id: string; label: string; value: number; breakdownMap: Map<string, { id: string; label: string; value: number }> }>;
+        seriesMap: Map<
+          string,
+          {
+            id: string;
+            label: string;
+            value: number;
+            breakdownMap: Map<
+              string,
+              { id: string; label: string; value: number }
+            >;
+          }
+        >;
         totalEntries: number;
       }
     >();
@@ -81,6 +96,7 @@ export class ReportsService {
           totalEntries: 0,
         });
       }
+      // biome-ignore lint/style/noNonNullAssertion: value was just set above
       const bucket = bucketMap.get(periodKey)!;
 
       if (!bucket.seriesMap.has(row.group_id)) {
@@ -91,6 +107,7 @@ export class ReportsService {
           breakdownMap: new Map(),
         });
       }
+      // biome-ignore lint/style/noNonNullAssertion: value was just set above
       const seriesItem = bucket.seriesMap.get(row.group_id)!;
 
       if (row.stack_id && row.stack_label) {
@@ -144,7 +161,11 @@ export class ReportsService {
     query: WeekdayDistributionQueryDto,
   ): Promise<WeekdayDistributionResponseDto> {
     this.validateDateRange(query.dateFrom, query.dateTo);
-    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+    const scopedUserIds = await this.resolveScopedUserIds(
+      userId,
+      isAdmin,
+      query.userIds,
+    );
 
     const rows = await this.reportsRepository.findWeekdayDistribution({
       orgId,
@@ -157,7 +178,10 @@ export class ReportsService {
     });
 
     // Group rows by entity, filling all 7 weekday slots
-    const entityMap = new Map<string, { id: string; label: string; weekdays: number[] }>();
+    const entityMap = new Map<
+      string,
+      { id: string; label: string; weekdays: number[] }
+    >();
     const totals = [0, 0, 0, 0, 0, 0, 0];
 
     for (const row of rows) {
@@ -168,6 +192,7 @@ export class ReportsService {
           weekdays: [0, 0, 0, 0, 0, 0, 0],
         });
       }
+      // biome-ignore lint/style/noNonNullAssertion: value was just set above
       const entity = entityMap.get(row.group_id)!;
       const day = row.weekday;
       entity.weekdays[day] = Math.round(row.value * 100) / 100;
@@ -187,7 +212,11 @@ export class ReportsService {
     query: LoggingDelayQueryDto,
   ): Promise<LoggingDelayResponseDto> {
     this.validateDateRange(query.dateFrom, query.dateTo);
-    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+    const scopedUserIds = await this.resolveScopedUserIds(
+      userId,
+      isAdmin,
+      query.userIds,
+    );
 
     const rows = await this.reportsRepository.findLoggingDelay({
       orgId,
@@ -210,7 +239,8 @@ export class ReportsService {
         label: def.label,
         maxDays: def.maxDays,
         count: bucketCounts[i],
-        percentage: total > 0 ? Math.round((bucketCounts[i] / total) * 1000) / 10 : 0,
+        percentage:
+          total > 0 ? Math.round((bucketCounts[i] / total) * 1000) / 10 : 0,
       })),
     };
   }
@@ -222,7 +252,11 @@ export class ReportsService {
     query: SummaryQueryDto,
   ): Promise<SummaryResponseDto> {
     this.validateDateRange(query.dateFrom, query.dateTo);
-    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+    const scopedUserIds = await this.resolveScopedUserIds(
+      userId,
+      isAdmin,
+      query.userIds,
+    );
 
     const result = await this.reportsRepository.findSummary({
       orgId,
@@ -235,9 +269,10 @@ export class ReportsService {
 
     return {
       totalHours: Math.round(result.totalHours * 100) / 100,
-      avgHoursPerDay: result.distinctDays > 0
-        ? Math.round((result.totalHours / result.distinctDays) * 100) / 100
-        : 0,
+      avgHoursPerDay:
+        result.distinctDays > 0
+          ? Math.round((result.totalHours / result.distinctDays) * 100) / 100
+          : 0,
       uniqueProjects: result.uniqueProjects,
       uniqueUsers: result.uniqueUsers,
       uniqueTeams: result.uniqueTeams,
@@ -252,7 +287,11 @@ export class ReportsService {
     query: AnomaliesQueryDto,
   ): Promise<AnomaliesResponseDto> {
     this.validateDateRange(query.dateFrom, query.dateTo);
-    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+    const scopedUserIds = await this.resolveScopedUserIds(
+      userId,
+      isAdmin,
+      query.userIds,
+    );
 
     // TODO: pull from org settings when configurable thresholds are implemented
     const thresholds = { warningHigh: 10, criticalHigh: 12 };
@@ -273,9 +312,9 @@ export class ReportsService {
       date: row.date.toISOString().slice(0, 10),
       weekday: row.weekday,
       totalHours: Math.round(row.total_hours * 100) / 100,
-      severity: (row.total_hours >= thresholds.criticalHigh ? 'critical' : 'warning') as
-        | 'warning'
-        | 'critical',
+      severity: (row.total_hours >= thresholds.criticalHigh
+        ? "critical"
+        : "warning") as "warning" | "critical",
     }));
 
     return { entries, thresholds };
@@ -288,7 +327,11 @@ export class ReportsService {
     query: LoggingDelayHeatmapQueryDto,
   ): Promise<LoggingDelayHeatmapResponseDto> {
     this.validateDateRange(query.dateFrom, query.dateTo);
-    const scopedUserIds = await this.resolveScopedUserIds(userId, isAdmin, query.userIds);
+    const scopedUserIds = await this.resolveScopedUserIds(
+      userId,
+      isAdmin,
+      query.userIds,
+    );
 
     const rows = await this.reportsRepository.findLoggingDelayHeatmap({
       orgId,
@@ -324,7 +367,8 @@ export class ReportsService {
   ): Promise<string[] | undefined> {
     if (isAdmin) return requestedUserIds;
 
-    const managedIds = await this.reportsRepository.findManagedUserIds(currentUserId);
+    const managedIds =
+      await this.reportsRepository.findManagedUserIds(currentUserId);
     const scope =
       managedIds.length > 0
         ? [...new Set([currentUserId, ...managedIds])]
@@ -337,20 +381,23 @@ export class ReportsService {
     return scope;
   }
 
-  private computePeriodEnd(periodStart: string, granularity: ReportGranularity): string {
-    const d = new Date(periodStart + 'T00:00:00Z');
+  private computePeriodEnd(
+    periodStart: string,
+    granularity: ReportGranularity,
+  ): string {
+    const d = new Date(`${periodStart}T00:00:00Z`);
 
     switch (granularity) {
-      case 'day':
+      case "day":
         return periodStart;
-      case 'week':
+      case "week":
         d.setUTCDate(d.getUTCDate() + 6);
         return d.toISOString().slice(0, 10);
-      case 'month':
+      case "month":
         d.setUTCMonth(d.getUTCMonth() + 1);
         d.setUTCDate(0); // last day of previous month
         return d.toISOString().slice(0, 10);
-      case 'quarter':
+      case "quarter":
         d.setUTCMonth(d.getUTCMonth() + 3);
         d.setUTCDate(0);
         return d.toISOString().slice(0, 10);

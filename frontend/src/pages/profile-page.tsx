@@ -1,13 +1,13 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { PageHeader } from '@/components/ui/page-header';
-import { ProfileInfoCard } from '@/components/profile/profile-info-card';
-import { ProfileTeamsTable } from '@/components/profile/profile-teams-table';
-import { AuditTimeline } from '@/components/audit-logs/audit-timeline';
-import { useMyProfile } from '@/lib/users/use-my-profile';
-import { useDocumentTitle } from '@/hooks/use-document-title';
+import { AuditTimeline } from "@/components/audit-logs/audit-timeline";
+import { ProfileInfoCard } from "@/components/profile/profile-info-card";
+import { ProfileTeamsTable } from "@/components/profile/profile-teams-table";
+import { PageHeader } from "@/components/ui/page-header";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useMyProfile } from "@/lib/users/use-my-profile";
 
 export function ProfilePage() {
-  useDocumentTitle('Clockwise - Profile');
+  useDocumentTitle("Clockwise - Profile");
   const { data: user, isLoading, isError } = useMyProfile();
 
   if (isLoading) {
@@ -21,11 +21,19 @@ export function ProfilePage() {
   }
 
   if (isError) {
-    return <p className="py-12 text-center text-muted-foreground">Failed to load profile.</p>;
+    return (
+      <p className="py-12 text-center text-muted-foreground">
+        Failed to load profile.
+      </p>
+    );
   }
 
   if (!user) {
-    return <p className="py-12 text-center text-muted-foreground">Unable to load profile.</p>;
+    return (
+      <p className="py-12 text-center text-muted-foreground">
+        Unable to load profile.
+      </p>
+    );
   }
 
   return (

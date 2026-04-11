@@ -1,33 +1,49 @@
-import { Controller, Get, Post, Patch, Param, Body, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
-import { Auth } from '../../common/decorators/auth.decorators';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserEntity } from '../users/entities/user.entity';
-import { TimeLogsService } from './time-logs.service';
-import { CreateTimeLogDto } from './dto/create-time-log.dto';
-import { UpdateTimeLogDto } from './dto/update-time-log.dto';
-import { ArchiveTimeLogDto, UnarchiveTimeLogDto } from './dto/archive-time-log.dto';
-import { ListTimeLogsQueryDto } from './dto/list-time-logs-query.dto';
-import { WarningsQueryDto } from './dto/warnings-query.dto';
-import { LoggableUserDto } from './dto/loggable-user.dto';
 import {
-  TimeLogResponseDto,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
+import {
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
+import { Auth } from "../../common/decorators/auth.decorators";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { TimeLogCannotLogOnBehalfException } from "../../common/exceptions/time-log.exceptions";
+import { UserEntity } from "../users/entities/user.entity";
+import {
+  ArchiveTimeLogDto,
+  UnarchiveTimeLogDto,
+} from "./dto/archive-time-log.dto";
+import { CreateTimeLogDto } from "./dto/create-time-log.dto";
+import { ListTimeLogsQueryDto } from "./dto/list-time-logs-query.dto";
+import { LoggableUserDto } from "./dto/loggable-user.dto";
+import {
   TimeLogCreateResponseDto,
-  TimeLogUpdateResponseDto,
   TimeLogListResponseDto,
+  TimeLogResponseDto,
+  TimeLogUpdateResponseDto,
   WarningDto,
-} from './dto/time-log-response.dto';
-import { TimeLogListItem } from './entities/time-log.entity';
-import { TimeLogCannotLogOnBehalfException } from '../../common/exceptions/time-log.exceptions';
+} from "./dto/time-log-response.dto";
+import { UpdateTimeLogDto } from "./dto/update-time-log.dto";
+import { WarningsQueryDto } from "./dto/warnings-query.dto";
+import { TimeLogListItem } from "./entities/time-log.entity";
+import { TimeLogsService } from "./time-logs.service";
 
-@ApiTags('Time Logs')
-@Controller('time-logs')
+@ApiTags("Time Logs")
+@Controller("time-logs")
 export class TimeLogsController {
   constructor(private readonly timeLogsService: TimeLogsService) {}
 
   @Post()
   @Auth()
-  @ApiOperation({ summary: 'Create a time log' })
+  @ApiOperation({ summary: "Create a time log" })
   @ApiCreatedResponse({ type: TimeLogCreateResponseDto })
   async create(
     @CurrentUser() user: UserEntity,
@@ -52,7 +68,9 @@ export class TimeLogsController {
 
   @Get()
   @Auth()
-  @ApiOperation({ summary: 'List time logs (paginated, filtered, role-scoped)' })
+  @ApiOperation({
+    summary: "List time logs (paginated, filtered, role-scoped)",
+  })
   @ApiOkResponse({ type: TimeLogListResponseDto })
   async list(
     @CurrentUser() user: UserEntity,
@@ -86,9 +104,9 @@ export class TimeLogsController {
     };
   }
 
-  @Get('warnings')
+  @Get("warnings")
   @Auth()
-  @ApiOperation({ summary: 'Preview warnings for a date (before submitting)' })
+  @ApiOperation({ summary: "Preview warnings for a date (before submitting)" })
   @ApiOkResponse({ type: [WarningDto] })
   async warnings(
     @CurrentUser() user: UserEntity,
@@ -109,22 +127,26 @@ export class TimeLogsController {
     );
   }
 
-  @Get('loggable-users')
+  @Get("loggable-users")
   @Auth()
-  @ApiOperation({ summary: 'List users the caller can log time for' })
+  @ApiOperation({ summary: "List users the caller can log time for" })
   @ApiOkResponse({ type: [LoggableUserDto] })
   async loggableUsers(
     @CurrentUser() user: UserEntity,
   ): Promise<LoggableUserDto[]> {
-    return this.timeLogsService.getLoggableUsers(user.id, user.orgId, user.isAdmin);
+    return this.timeLogsService.getLoggableUsers(
+      user.id,
+      user.orgId,
+      user.isAdmin,
+    );
   }
 
-  @Get(':id')
+  @Get(":id")
   @Auth()
-  @ApiOperation({ summary: 'Get time log detail' })
+  @ApiOperation({ summary: "Get time log detail" })
   @ApiOkResponse({ type: TimeLogResponseDto })
   async findOne(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
   ): Promise<TimeLogResponseDto> {
     const timeLog = await this.timeLogsService.findById(
@@ -136,12 +158,12 @@ export class TimeLogsController {
     return this.toResponse(timeLog);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @Auth()
-  @ApiOperation({ summary: 'Update a time log (reason required)' })
+  @ApiOperation({ summary: "Update a time log (reason required)" })
   @ApiOkResponse({ type: TimeLogUpdateResponseDto })
   async update(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UpdateTimeLogDto,
   ): Promise<TimeLogUpdateResponseDto> {
@@ -155,33 +177,51 @@ export class TimeLogsController {
     return { ...this.toResponse(timeLog), warnings };
   }
 
-  @Patch(':id/archive')
+  @Patch(":id/archive")
   @Auth()
-  @ApiOperation({ summary: 'Archive a time log (reason required)' })
+  @ApiOperation({ summary: "Archive a time log (reason required)" })
   async archive(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: ArchiveTimeLogDto,
   ): Promise<{ message: string }> {
-    await this.timeLogsService.archive(id, user.orgId, user.id, user.isAdmin, dto);
-    return { message: 'Time log archived' };
+    await this.timeLogsService.archive(
+      id,
+      user.orgId,
+      user.id,
+      user.isAdmin,
+      dto,
+    );
+    return { message: "Time log archived" };
   }
 
-  @Patch(':id/unarchive')
+  @Patch(":id/unarchive")
   @Auth()
-  @ApiOperation({ summary: 'Unarchive a time log (reason required)' })
+  @ApiOperation({ summary: "Unarchive a time log (reason required)" })
   async unarchive(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @CurrentUser() user: UserEntity,
     @Body() dto: UnarchiveTimeLogDto,
   ): Promise<{ message: string }> {
-    await this.timeLogsService.unarchive(id, user.orgId, user.id, user.isAdmin, dto);
-    return { message: 'Time log unarchived' };
+    await this.timeLogsService.unarchive(
+      id,
+      user.orgId,
+      user.id,
+      user.isAdmin,
+      dto,
+    );
+    return { message: "Time log unarchived" };
   }
 
-  private async assertCanLogOnBehalf(caller: UserEntity, targetUserId: string): Promise<void> {
+  private async assertCanLogOnBehalf(
+    caller: UserEntity,
+    targetUserId: string,
+  ): Promise<void> {
     const allowed = await this.timeLogsService.canLogOnBehalf(
-      caller.id, caller.isAdmin, targetUserId, caller.orgId,
+      caller.id,
+      caller.isAdmin,
+      targetUserId,
+      caller.orgId,
     );
     if (!allowed) {
       throw new TimeLogCannotLogOnBehalfException();

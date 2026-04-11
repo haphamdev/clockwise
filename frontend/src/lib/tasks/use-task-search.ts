@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { tasksKeys } from './tasks-keys';
-import { searchTasks } from './tasks-api';
+import { useQuery } from "@tanstack/react-query";
+import { searchTasks } from "./tasks-api";
+import { tasksKeys } from "./tasks-keys";
 
 export function useTaskSearch(projectId: string, query: string) {
   return useQuery({

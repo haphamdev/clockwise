@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/lib/auth/use-auth';
-import type { ProjectSummary } from '@/lib/dashboard/types';
+import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/lib/auth/use-auth";
+import type { ProjectSummary } from "@/lib/dashboard/types";
 
 interface MyTeamsProjectsProps {
   projectSummaries: ProjectSummary[] | undefined;
@@ -11,7 +11,11 @@ interface MyTeamsProjectsProps {
   isError: boolean;
 }
 
-export function MyTeamsProjects({ projectSummaries, isLoading, isError }: MyTeamsProjectsProps) {
+export function MyTeamsProjects({
+  projectSummaries,
+  isLoading,
+  isError,
+}: MyTeamsProjectsProps) {
   const { user } = useAuth();
   const teams = user?.teams ?? [];
   const projects = projectSummaries ?? [];
@@ -28,7 +32,10 @@ export function MyTeamsProjects({ projectSummaries, isLoading, isError }: MyTeam
           ) : (
             <ul className="space-y-2">
               {teams.map((team) => (
-                <li key={team.teamId} className="flex items-center justify-between text-sm">
+                <li
+                  key={team.teamId}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span>{team.teamName}</span>
                   <Badge variant="secondary" className="capitalize">
                     {team.role}
@@ -58,7 +65,10 @@ export function MyTeamsProjects({ projectSummaries, isLoading, isError }: MyTeam
           ) : (
             <ul className="space-y-2">
               {projects.map((project) => (
-                <li key={project.projectId} className="flex items-center justify-between text-sm">
+                <li
+                  key={project.projectId}
+                  className="flex items-center justify-between text-sm"
+                >
                   <Link
                     to={`/projects/${project.projectId}`}
                     className="text-foreground hover:underline"
@@ -66,7 +76,8 @@ export function MyTeamsProjects({ projectSummaries, isLoading, isError }: MyTeam
                     {project.projectName}
                   </Link>
                   <span className="text-xs text-muted-foreground tabular-nums">
-                    {project.hoursThisWeek}h · {project.entriesThisWeek} entries this week
+                    {project.hoursThisWeek}h · {project.entriesThisWeek} entries
+                    this week
                   </span>
                 </li>
               ))}

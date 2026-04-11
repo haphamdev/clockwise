@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ImportPreviewTable } from './import-preview-table';
-import type { ImportType, ImportPreviewResponse } from '@/lib/import/types';
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import type { ImportPreviewResponse, ImportType } from "@/lib/import/types";
+import { ImportPreviewTable } from "./import-preview-table";
 
 function getMinutesRemaining(deadline: number): number {
   return Math.max(0, Math.ceil((deadline - Date.now()) / 60_000));
@@ -28,7 +28,9 @@ export function PreviewStep({
   const errorCount = preview.errors.length;
 
   const [deadline] = useState(() =>
-    preview.expiresInSeconds ? Date.now() + preview.expiresInSeconds * 1000 : null,
+    preview.expiresInSeconds
+      ? Date.now() + preview.expiresInSeconds * 1000
+      : null,
   );
 
   const [minutesLeft, setMinutesLeft] = useState(() =>
@@ -66,21 +68,25 @@ export function PreviewStep({
     <div className="space-y-4">
       <div className="flex items-center gap-4 text-sm">
         <span className="text-green-600 dark:text-green-400">
-          {validCount} valid {validCount === 1 ? 'row' : 'rows'}
+          {validCount} valid {validCount === 1 ? "row" : "rows"}
         </span>
         {errorCount > 0 && (
           <span className="text-destructive">
-            {errorCount} {errorCount === 1 ? 'error' : 'errors'}
+            {errorCount} {errorCount === 1 ? "error" : "errors"}
           </span>
         )}
         <span className="text-muted-foreground">{preview.totalRows} total</span>
         {minutesLeft !== null && (
           <span className="ml-auto text-muted-foreground">
-            Expires in {minutesLeft} {minutesLeft === 1 ? 'minute' : 'minutes'}
+            Expires in {minutesLeft} {minutesLeft === 1 ? "minute" : "minutes"}
           </span>
         )}
       </div>
-      <ImportPreviewTable type={type} validRows={preview.validRows} errors={preview.errors} />
+      <ImportPreviewTable
+        type={type}
+        validRows={preview.validRows}
+        errors={preview.errors}
+      />
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -97,7 +103,7 @@ export function PreviewStep({
               Starting...
             </>
           ) : (
-            `Import ${validCount} ${validCount === 1 ? 'row' : 'rows'}`
+            `Import ${validCount} ${validCount === 1 ? "row" : "rows"}`
           )}
         </Button>
       </div>

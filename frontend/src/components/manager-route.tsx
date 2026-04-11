@@ -1,6 +1,6 @@
-import { useAuth } from '@/lib/auth/use-auth';
-import { isAdminOrManager } from '@/lib/auth/role-utils';
-import { ForbiddenPage } from '@/pages/forbidden-page';
+import { isAdminOrManager } from "@/lib/auth/role-utils";
+import { useAuth } from "@/lib/auth/use-auth";
+import { ForbiddenPage } from "@/pages/forbidden-page";
 
 export function ManagerRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();

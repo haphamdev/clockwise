@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -5,11 +6,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { ImportCellValue } from './import-cell-value';
-import { IMPORT_TYPE_CONFIG } from '@/lib/import/import-type-config';
-import type { ImportType, ImportRow, ImportValidationError } from '@/lib/import/types';
+} from "@/components/ui/table";
+import { IMPORT_TYPE_CONFIG } from "@/lib/import/import-type-config";
+import type {
+  ImportRow,
+  ImportType,
+  ImportValidationError,
+} from "@/lib/import/types";
+import { ImportCellValue } from "./import-cell-value";
 
 interface ImportPreviewTableProps {
   type: ImportType;
@@ -17,7 +21,11 @@ interface ImportPreviewTableProps {
   errors: ImportValidationError[];
 }
 
-export function ImportPreviewTable({ type, validRows, errors }: ImportPreviewTableProps) {
+export function ImportPreviewTable({
+  type,
+  validRows,
+  errors,
+}: ImportPreviewTableProps) {
   const config = IMPORT_TYPE_CONFIG[type];
 
   const errorsByRow = new Map<number, ImportValidationError[]>();
@@ -65,12 +73,19 @@ export function ImportPreviewTable({ type, validRows, errors }: ImportPreviewTab
             return (
               <TableRow
                 key={rowNum}
-                className={isValid ? 'bg-green-50 dark:bg-green-950/20' : 'bg-red-50 dark:bg-red-950/20'}
+                className={
+                  isValid
+                    ? "bg-green-50 dark:bg-green-950/20"
+                    : "bg-red-50 dark:bg-red-950/20"
+                }
               >
                 <TableCell className="font-mono text-xs">{rowNum}</TableCell>
                 <TableCell>
                   {isValid ? (
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    >
                       Valid
                     </Badge>
                   ) : (
@@ -79,18 +94,23 @@ export function ImportPreviewTable({ type, validRows, errors }: ImportPreviewTab
                 </TableCell>
                 {config.columns.map((col) => (
                   <TableCell key={col.dataKey}>
-                    <ImportCellValue value={rowData?.[col.dataKey]} isList={col.isList} />
+                    <ImportCellValue
+                      value={rowData?.[col.dataKey]}
+                      isList={col.isList}
+                    />
                   </TableCell>
                 ))}
                 <TableCell>
                   {rowErrors ? (
                     <ul className="list-disc pl-4 text-xs text-destructive">
-                      {rowErrors.map((e, i) => (
-                        <li key={i}>{e.field ? `${e.field}: ${e.message}` : e.message}</li>
+                      {rowErrors.map((e) => (
+                        <li key={`${e.field ?? ""}-${e.message}`}>
+                          {e.field ? `${e.field}: ${e.message}` : e.message}
+                        </li>
                       ))}
                     </ul>
                   ) : (
-                    (config.detailsKey && rowData?.[config.detailsKey]) || '-'
+                    (config.detailsKey && rowData?.[config.detailsKey]) || "-"
                   )}
                 </TableCell>
               </TableRow>

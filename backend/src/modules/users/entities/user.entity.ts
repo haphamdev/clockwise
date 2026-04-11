@@ -5,7 +5,7 @@ export interface UserEntity {
   name: string;
   avatarUrl: string | null;
   isAdmin: boolean;
-  status: 'pending' | 'active' | 'deactivated';
+  status: "pending" | "active" | "deactivated";
   lastLoginAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +18,7 @@ export interface UserWithRefreshToken extends UserEntity {
 export interface TeamMembershipInfo {
   teamId: string;
   teamName: string;
-  role: 'manager' | 'member';
+  role: "manager" | "member";
   isArchived: boolean;
 }
 

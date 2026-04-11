@@ -1,11 +1,17 @@
-import type { PaginationParams } from '@/lib/types';
+import type { PaginationParams } from "@/lib/types";
 
-export type InvitationStatus = 'initiated' | 'sending' | 'sent' | 'accepted' | 'revoked' | 'failed';
+export type InvitationStatus =
+  | "initiated"
+  | "sending"
+  | "sent"
+  | "accepted"
+  | "revoked"
+  | "failed";
 
 export interface InvitationTeamAssignment {
   teamId: string;
   teamName: string;
-  role: 'manager' | 'member';
+  role: "manager" | "member";
 }
 
 export interface Invitation {
@@ -23,14 +29,14 @@ export interface CreateInvitationPayload {
   email: string;
   teamAssignments: {
     teamId: string;
-    role: 'manager' | 'member';
+    role: "manager" | "member";
   }[];
 }
 
 export interface UpdateInvitationTeamAssignmentsPayload {
   teamAssignments: {
     teamId: string;
-    role: 'manager' | 'member';
+    role: "manager" | "member";
   }[];
 }
 

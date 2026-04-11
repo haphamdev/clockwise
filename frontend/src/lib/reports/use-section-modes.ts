@@ -1,6 +1,6 @@
-import { useCallback, useMemo } from 'react';
-import type { ChartMode } from '@/components/reports/chart-toolbar';
-import { parseChartModes, serializeChartModes } from './report-param-utils';
+import { useCallback, useMemo } from "react";
+import type { ChartMode } from "@/components/reports/chart-toolbar";
+import { parseChartModes, serializeChartModes } from "./report-param-utils";
 
 /**
  * Manages per-section chart modes via URL params.

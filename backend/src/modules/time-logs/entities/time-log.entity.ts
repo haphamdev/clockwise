@@ -5,7 +5,7 @@ export interface TimeLogEntity {
   date: Date;
   hours: number;
   notes: string | null;
-  status: 'active' | 'archived';
+  status: "active" | "archived";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,12 +18,17 @@ export interface TimeLogTaskEntity {
 
 export interface TimeLogListItem extends TimeLogEntity {
   user: { id: string; name: string; email: string; status: string };
-  project: { id: string; name: string; description: string | null; status: string };
+  project: {
+    id: string;
+    name: string;
+    description: string | null;
+    status: string;
+  };
   tasks: TimeLogTaskEntity[];
 }
 
 export interface Warning {
-  type: 'daily_limit' | 'weekly_limit';
+  type: "daily_limit" | "weekly_limit";
   message: string;
   currentHours: number;
   threshold: number;

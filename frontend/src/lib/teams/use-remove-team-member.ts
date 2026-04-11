@@ -1,11 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { queryClient } from '@/lib/query-client';
-import { showErrorToast } from '@/lib/api-error-toast';
-import { teamsKeys } from './teams-keys';
-import { usersKeys } from '@/lib/users/users-keys';
-import { auditLogsKeys } from '@/lib/audit-logs/audit-logs-keys';
-import { removeTeamMember } from './teams-api';
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { showErrorToast } from "@/lib/api-error-toast";
+import { auditLogsKeys } from "@/lib/audit-logs/audit-logs-keys";
+import { queryClient } from "@/lib/query-client";
+import { usersKeys } from "@/lib/users/users-keys";
+import { removeTeamMember } from "./teams-api";
+import { teamsKeys } from "./teams-keys";
 
 export function useRemoveTeamMember() {
   return useMutation({
@@ -16,10 +16,10 @@ export function useRemoveTeamMember() {
       queryClient.invalidateQueries({ queryKey: teamsKeys.lists() });
       queryClient.invalidateQueries({ queryKey: usersKeys.all });
       queryClient.invalidateQueries({ queryKey: auditLogsKeys.all });
-      toast.success('Member removed');
+      toast.success("Member removed");
     },
     onError: (err) => {
-      showErrorToast(err, 'Failed to remove member');
+      showErrorToast(err, "Failed to remove member");
     },
   });
 }

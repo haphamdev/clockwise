@@ -1,14 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
-  IsOptional,
-  IsBoolean,
   IsArray,
-  ValidateNested,
-  IsUUID,
+  IsBoolean,
   IsIn,
+  IsOptional,
   IsString,
-} from 'class-validator';
+  IsUUID,
+  ValidateNested,
+} from "class-validator";
 
 export class TeamAssignmentDto {
   @ApiProperty()
@@ -16,9 +16,9 @@ export class TeamAssignmentDto {
   @IsUUID()
   teamId: string;
 
-  @ApiProperty({ enum: ['manager', 'member'] })
-  @IsIn(['manager', 'member'])
-  role: 'manager' | 'member';
+  @ApiProperty({ enum: ["manager", "member"] })
+  @IsIn(["manager", "member"])
+  role: "manager" | "member";
 }
 
 export class UpdateUserDto {

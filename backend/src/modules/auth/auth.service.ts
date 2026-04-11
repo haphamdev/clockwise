@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { createHash } from 'crypto';
+import { createHash } from "node:crypto";
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 import {
-  NoInvitationException,
   AccountDeactivatedException,
-  InvalidRefreshTokenException,
   AccountNotActiveException,
-} from '../../common/exceptions/auth.exceptions';
-import { UsersService } from '../users/users.service';
-import { InvitationsService } from '../invitations/invitations.service';
-import { UserEntity } from '../users/entities/user.entity';
+  InvalidRefreshTokenException,
+  NoInvitationException,
+} from "../../common/exceptions/auth.exceptions";
+import { InvitationsService } from "../invitations/invitations.service";
+import { UserEntity } from "../users/entities/user.entity";
+import { UsersService } from "../users/users.service";
 
 export interface OAuthProfile {
   email: string;
@@ -40,18 +40,25 @@ export class AuthService {
       throw new NoInvitationException();
     }
 
-    if (user.status === 'deactivated') {
+    if (user.status === "deactivated") {
       throw new AccountDeactivatedException();
     }
 
-    if (user.status === 'pending') {
-      const activatedUser = await this.usersService.activateUser(user.id, {
-        name: profile.name,
-        avatarUrl: profile.avatarUrl,
-      }, 'system');
+    if (user.status === "pending") {
+      const activatedUser = await this.usersService.activateUser(
+        user.id,
+        {
+          name: profile.name,
+          avatarUrl: profile.avatarUrl,
+        },
+        "system",
+      );
 
       // Accept invitation and create team memberships
-      await this.invitationsService.acceptByEmail(profile.email, activatedUser.id);
+      await this.invitationsService.acceptByEmail(
+        profile.email,
+        activatedUser.id,
+      );
 
       return activatedUser;
     }
@@ -60,7 +67,9 @@ export class AuthService {
     return user;
   }
 
-  async login(user: UserEntity): Promise<{ accessToken: string; refreshToken: string }> {
+  async login(
+    user: UserEntity,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -70,8 +79,8 @@ export class AuthService {
     const accessToken = this.jwtService.sign(payload);
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: '7d',
+      secret: this.configService.getOrThrow<string>("JWT_REFRESH_SECRET"),
+      expiresIn: "7d",
     });
 
     const hashedToken = this.hashToken(refreshToken);
@@ -86,11 +95,11 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const user = await this.usersService.findByIdWithRefreshToken(userId);
 
-    if (!user || !user.refreshToken) {
+    if (!user?.refreshToken) {
       throw new InvalidRefreshTokenException();
     }
 
-    if (user.status !== 'active') {
+    if (user.status !== "active") {
       throw new AccountNotActiveException();
     }
 
@@ -107,6 +116,6 @@ export class AuthService {
   }
 
   private hashToken(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
+    return createHash("sha256").update(token).digest("hex");
   }
 }

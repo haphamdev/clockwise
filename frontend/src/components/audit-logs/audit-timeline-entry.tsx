@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { formatAuditAction } from '@/lib/audit-logs/format-audit-action';
-import { computeMetadataDiff } from '@/lib/audit-logs/compute-metadata-diff';
-import { TimeDisplay } from '@/components/ui/time-display';
-import type { AuditLogEntry } from '@/lib/audit-logs/types';
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { TimeDisplay } from "@/components/ui/time-display";
+import { computeMetadataDiff } from "@/lib/audit-logs/compute-metadata-diff";
+import { formatAuditAction } from "@/lib/audit-logs/format-audit-action";
+import type { AuditLogEntry } from "@/lib/audit-logs/types";
 
 interface AuditTimelineEntryProps {
   entry: AuditLogEntry;
@@ -17,7 +17,8 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
     () => computeMetadataDiff(entry.metadata.before, entry.metadata.after),
     [entry.metadata.before, entry.metadata.after],
   );
-  const hasDiff = entry.metadata.before && entry.metadata.after && diff.length > 0;
+  const hasDiff =
+    entry.metadata.before && entry.metadata.after && diff.length > 0;
 
   return (
     <div className="group/entry relative flex gap-3 pb-6 last:pb-0">
@@ -30,12 +31,15 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           {description}
-          {entry.metadata.source === 'import' && (
-            <Badge variant="outline" className="ml-1.5 py-0">Imported</Badge>
+          {entry.metadata.source === "import" && (
+            <Badge variant="outline" className="ml-1.5 py-0">
+              Imported
+            </Badge>
           )}
         </p>
         <p className="text-xs text-muted-foreground">
-          {entry.performedBy.name} &middot; <TimeDisplay value={entry.createdAt} mode="datetime" />
+          {entry.performedBy.name} &middot;{" "}
+          <TimeDisplay value={entry.createdAt} mode="datetime" />
         </p>
         {entry.reason && (
           <p className="mt-0.5 text-xs italic text-muted-foreground">
@@ -45,6 +49,7 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
 
         {hasDiff && (
           <button
+            type="button"
             onClick={() => setExpanded(!expanded)}
             className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
@@ -69,7 +74,9 @@ export function AuditTimelineEntry({ entry }: AuditTimelineEntryProps) {
                     <span className="text-green-600">{d.newValue}</span>
                   </>
                 ) : d.oldValue ? (
-                  <span className="text-red-600 line-through">{d.oldValue}</span>
+                  <span className="text-red-600 line-through">
+                    {d.oldValue}
+                  </span>
                 ) : (
                   <span className="text-green-600">{d.newValue}</span>
                 )}
