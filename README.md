@@ -160,3 +160,7 @@ pnpm dev
 ```
 
 Update `DATABASE_URL` and `REDIS_HOST` in `.env` to use `localhost` instead of Docker service names.
+
+## Demo
+
+Please check the demo screenshots in [demo](./demo) directory
