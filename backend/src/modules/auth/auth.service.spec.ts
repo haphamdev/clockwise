@@ -16,6 +16,7 @@ describe("AuthService", () => {
   let usersService: jest.Mocked<UsersService>;
   let invitationsService: jest.Mocked<InvitationsService>;
   let jwtService: jest.Mocked<JwtService>;
+  let configService: jest.Mocked<ConfigService>;
 
   const mockUser: UserEntity = {
     id: "user-1",
@@ -61,6 +62,7 @@ describe("AuthService", () => {
           provide: ConfigService,
           useValue: {
             getOrThrow: jest.fn().mockReturnValue("test-refresh-secret"),
+            get: jest.fn(),
           },
         },
       ],
@@ -70,6 +72,7 @@ describe("AuthService", () => {
     usersService = module.get(UsersService);
     invitationsService = module.get(InvitationsService);
     jwtService = module.get(JwtService);
+    configService = module.get(ConfigService);
   });
 
   describe("validateOAuthUser", () => {
@@ -235,6 +238,76 @@ describe("AuthService", () => {
         "user-1",
         null,
       );
+    });
+  });
+
+  describe("isDemoLoginEnabled", () => {
+    it('is true only when the flag is exactly "true"', () => {
+      configService.get.mockReturnValue("true");
+      expect(service.isDemoLoginEnabled()).toBe(true);
+
+      configService.get.mockReturnValue("false");
+      expect(service.isDemoLoginEnabled()).toBe(false);
+
+      configService.get.mockReturnValue(undefined);
+      expect(service.isDemoLoginEnabled()).toBe(false);
+    });
+  });
+
+  describe("demoLogin", () => {
+    it("throws when demo login is disabled", async () => {
+      configService.get.mockReturnValue("false");
+
+      await expect(service.demoLogin("manager")).rejects.toThrow(AppException);
+      expect(usersService.findByEmail).not.toHaveBeenCalled();
+    });
+
+    it("throws when the demo user is missing", async () => {
+      configService.get.mockReturnValue("true");
+      usersService.findByEmail.mockResolvedValue(null);
+
+      await expect(service.demoLogin("admin")).rejects.toThrow(AppException);
+    });
+
+    it("throws when the demo user is not active", async () => {
+      configService.get.mockReturnValue("true");
+      usersService.findByEmail.mockResolvedValue({
+        ...mockUser,
+        status: "deactivated",
+      });
+
+      await expect(service.demoLogin("member")).rejects.toThrow(AppException);
+    });
+
+    it("maps each role to its demo email and returns a stateless access token", async () => {
+      configService.get.mockReturnValue("true");
+      usersService.findByEmail.mockResolvedValue(mockUser);
+      jwtService.sign.mockReturnValue("demo-access-token");
+
+      await expect(service.demoLogin("member")).resolves.toEqual({
+        accessToken: "demo-access-token",
+      });
+      expect(usersService.findByEmail).toHaveBeenCalledWith(
+        "demo-member@clockwise.demo",
+      );
+
+      await service.demoLogin("manager");
+      expect(usersService.findByEmail).toHaveBeenCalledWith(
+        "demo-manager@clockwise.demo",
+      );
+
+      await service.demoLogin("admin");
+      expect(usersService.findByEmail).toHaveBeenCalledWith(
+        "demo-admin@clockwise.demo",
+      );
+
+      // Stateless: signs an access token with a longer TTL, never a refresh
+      // token, and never persists one (no clobbering of shared demo accounts).
+      expect(jwtService.sign).toHaveBeenCalledWith(
+        { sub: mockUser.id, email: mockUser.email, isAdmin: mockUser.isAdmin },
+        { expiresIn: "8h" },
+      );
+      expect(usersService.updateRefreshToken).not.toHaveBeenCalled();
     });
   });
 });

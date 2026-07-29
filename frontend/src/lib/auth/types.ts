@@ -1,3 +1,5 @@
+export type DemoRole = "member" | "manager" | "admin";
+
 export interface TeamMembership {
   teamId: string;
   teamName: string;

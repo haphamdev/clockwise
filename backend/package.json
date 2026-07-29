@@ -17,7 +17,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "seed:users": "npx ts-node prisma/seed-users.ts"
+    "seed:users": "npx ts-node prisma/seed-users.ts",
+    "seed:demo": "npx ts-node prisma/seed-demo.ts --reset"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",
@@ -28,6 +29,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.4.0",
     "@nestjs/swagger": "^8.1.0",
+    "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^6.0.0",
     "bullmq": "^5.72.1",
     "class-transformer": "^0.5.1",
