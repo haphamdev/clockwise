@@ -1,10 +1,63 @@
+import type { ReactNode } from "react";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { DemoLoginCard } from "@/components/auth/demo-login-card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { useDemoConfig } from "@/lib/auth/use-demo-config";
 
 export function LoginPage() {
   useDocumentTitle("Clockwise - Sign In");
   const { data: demo } = useDemoConfig();
+  const [params] = useSearchParams();
+  const errorSlug = params.get("error");
+  const email = params.get("email");
+
+  // Keys are the OAuth failure slugs from the backend redirect. Keep in sync
+  // with OAUTH_ERROR_SLUGS in backend/src/modules/auth/auth.controller.ts.
+  const errorContent: Record<
+    string,
+    { title: string; description: ReactNode }
+  > = {
+    not_invited: {
+      title: "You need an invitation",
+      description: (
+        <>
+          Clockwise is invite-only.{" "}
+          <strong>{email ?? "That Google account"}</strong> doesn't have an
+          invitation yet. Ask your admin to send one
+          {demo?.enabled ? ", or explore the app with a demo below." : "."}
+        </>
+      ),
+    },
+    deactivated: {
+      title: "Account deactivated",
+      description: (
+        <>
+          <strong>{email ?? "Your account"}</strong> has been deactivated.
+          Contact your admin to restore access.
+        </>
+      ),
+    },
+    signin_failed: {
+      title: "Sign-in failed",
+      description: <>We couldn't sign you in. Please try again.</>,
+    },
+  };
+
+  const activeError =
+    errorSlug != null
+      ? (errorContent[errorSlug] ?? errorContent.signin_failed)
+      : null;
+
+  // Strip the error/email params from the URL bar so a reload doesn't re-show
+  // the alert. Uses the History API directly to avoid a react-router re-render
+  // that would clear the currently displayed message.
+  useEffect(() => {
+    if (errorSlug != null) {
+      window.history.replaceState({}, "", "/login");
+    }
+  }, [errorSlug]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 text-center">
@@ -14,6 +67,12 @@ export function LoginPage() {
             Sign in to track your time
           </p>
         </div>
+        {activeError && (
+          <Alert variant="destructive" className="text-left">
+            <AlertTitle>{activeError.title}</AlertTitle>
+            <AlertDescription>{activeError.description}</AlertDescription>
+          </Alert>
+        )}
         <a
           href="/api/v1/auth/google"
           className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 transition-colors"
@@ -38,7 +97,13 @@ export function LoginPage() {
           </svg>
           Sign in with Google
         </a>
-        {demo?.enabled && <DemoLoginCard />}
+        <p className="text-xs text-muted-foreground">
+          Access is invite-only — use the Google account that received your
+          invitation.
+        </p>
+        {demo?.enabled && (
+          <DemoLoginCard defaultOpen={errorSlug === "not_invited"} />
+        )}
       </div>
     </div>
   );

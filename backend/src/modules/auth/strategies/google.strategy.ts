@@ -2,14 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy, VerifyCallback } from "passport-google-oauth20";
-import { AuthService } from "../auth.service";
+import type { OAuthProfile } from "../auth.service";
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
-  constructor(
-    private readonly authService: AuthService,
-    configService: ConfigService,
-  ) {
+  constructor(configService: ConfigService) {
     super({
       clientID: configService.getOrThrow<string>("GOOGLE_CLIENT_ID"),
       clientSecret: configService.getOrThrow<string>("GOOGLE_CLIENT_SECRET"),
@@ -34,15 +31,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
       return;
     }
 
-    try {
-      const user = await this.authService.validateOAuthUser({
-        email,
-        name: profile.displayName ?? email,
-        avatarUrl: profile.photos?.[0]?.value,
-      });
-      done(null, user);
-    } catch (err) {
-      done(err as Error, undefined);
-    }
+    const oauthProfile: OAuthProfile = {
+      email,
+      name: profile.displayName ?? email,
+      avatarUrl: profile.photos?.[0]?.value,
+    };
+    done(null, oauthProfile);
   }
 }

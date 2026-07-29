@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Post,
   Req,
   Res,
@@ -18,14 +19,16 @@ import {
 } from "@nestjs/swagger";
 import { Throttle, ThrottlerGuard } from "@nestjs/throttler";
 import { Request, Response } from "express";
+import { AppException } from "../../common/exceptions/app.exception";
 import {
   InvalidRefreshTokenException,
   NoRefreshTokenException,
   UserNotFoundException,
 } from "../../common/exceptions/auth.exceptions";
+import { ErrorCode } from "../../common/exceptions/error-codes";
 import { UserEntity } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
-import { AuthService, JwtPayload } from "./auth.service";
+import { AuthService, JwtPayload, OAuthProfile } from "./auth.service";
 import {
   AccessTokenResponseDto,
   UserProfileDto,
@@ -36,9 +39,18 @@ import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 const REFRESH_COOKIE_NAME = "refresh_token";
 const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
+// OAuth failure slugs sent to the frontend /login?error=<slug>. Keep in sync
+// with the errorContent map in frontend/src/pages/LoginPage.tsx.
+const OAUTH_ERROR_SLUGS: Record<string, string> = {
+  [ErrorCode.AUTH.NO_INVITATION]: "not_invited",
+  [ErrorCode.AUTH.ACCOUNT_DEACTIVATED]: "deactivated",
+};
+
 @ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
@@ -57,13 +69,26 @@ export class AuthController {
   @UseGuards(AuthGuard("google"))
   @ApiOperation({ summary: "Google OAuth callback" })
   async googleCallback(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as UserEntity;
-    const tokens = await this.authService.login(user);
-
-    this.setRefreshTokenCookie(res, tokens.refreshToken);
-
+    const profile = req.user as OAuthProfile;
     const frontendUrl = this.configService.getOrThrow<string>("FRONTEND_URL");
-    res.redirect(`${frontendUrl}/auth/callback#token=${tokens.accessToken}`);
+    try {
+      const user = await this.authService.validateOAuthUser(profile);
+      const tokens = await this.authService.login(user);
+      this.setRefreshTokenCookie(res, tokens.refreshToken);
+      res.redirect(`${frontendUrl}/auth/callback#token=${tokens.accessToken}`);
+    } catch (err) {
+      const mapped = err instanceof AppException && OAUTH_ERROR_SLUGS[err.code];
+      if (!mapped) {
+        this.logger.error(
+          "OAuth callback failed",
+          err instanceof Error ? err.stack : err,
+        );
+      }
+      const slug = mapped || "signin_failed";
+      res.redirect(
+        `${frontendUrl}/login?error=${slug}&email=${encodeURIComponent(profile.email)}`,
+      );
+    }
   }
 
   @Post("refresh")
