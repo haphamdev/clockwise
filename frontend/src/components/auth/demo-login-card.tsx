@@ -30,8 +30,12 @@ const DEMO_OPTIONS: Array<{
   },
 ];
 
-export function DemoLoginCard() {
-  const [open, setOpen] = useState(false);
+export function DemoLoginCard({
+  defaultOpen = false,
+}: {
+  defaultOpen?: boolean;
+} = {}) {
+  const [open, setOpen] = useState(defaultOpen);
   const navigate = useNavigate();
   const demo = useDemoLogin();
 

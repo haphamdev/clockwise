@@ -1,9 +1,14 @@
+import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ThrottlerGuard } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import { AppException } from "../../common/exceptions/app.exception";
+import {
+  AccountDeactivatedException,
+  NoInvitationException,
+} from "../../common/exceptions/auth.exceptions";
 import { UserEntity, UserWithTeams } from "../users/entities/user.entity";
 import { UsersService } from "../users/users.service";
 import { AuthController } from "./auth.controller";
@@ -54,6 +59,7 @@ describe("AuthController", () => {
           provide: AuthService,
           useValue: {
             login: jest.fn(),
+            validateOAuthUser: jest.fn(),
             refreshTokens: jest.fn(),
             logout: jest.fn(),
             demoLogin: jest.fn(),
@@ -94,7 +100,10 @@ describe("AuthController", () => {
   describe("googleCallback", () => {
     it("should redirect with access token in URL hash", async () => {
       const res = mockRes();
-      const req = { user: mockUser } as unknown as Request;
+      const req = {
+        user: { email: "test@example.com", name: "Test User", avatarUrl: null },
+      } as unknown as Request;
+      authService.validateOAuthUser.mockResolvedValue(mockUser);
       authService.login.mockResolvedValue({
         accessToken: "at-123",
         refreshToken: "rt-123",
@@ -110,6 +119,59 @@ describe("AuthController", () => {
       expect(res.redirect).toHaveBeenCalledWith(
         "http://localhost:5173/auth/callback#token=at-123",
       );
+    });
+
+    it("redirects to /login when the email has no invitation", async () => {
+      const res = mockRes();
+      const req = {
+        user: { email: "nobody@example.com", name: "N", avatarUrl: null },
+      } as unknown as Request;
+      authService.validateOAuthUser.mockRejectedValue(
+        new NoInvitationException(),
+      );
+
+      await controller.googleCallback(req, res as unknown as Response);
+
+      expect(res.redirect).toHaveBeenCalledWith(
+        "http://localhost:5173/login?error=not_invited&email=nobody%40example.com",
+      );
+      expect(authService.login).not.toHaveBeenCalled();
+    });
+
+    it("redirects with deactivated slug for a deactivated account", async () => {
+      const res = mockRes();
+      const req = {
+        user: { email: "gone@example.com", name: "G", avatarUrl: null },
+      } as unknown as Request;
+      authService.validateOAuthUser.mockRejectedValue(
+        new AccountDeactivatedException(),
+      );
+
+      await controller.googleCallback(req, res as unknown as Response);
+
+      expect(res.redirect).toHaveBeenCalledWith(
+        "http://localhost:5173/login?error=deactivated&email=gone%40example.com",
+      );
+      expect(authService.login).not.toHaveBeenCalled();
+    });
+
+    it("falls back to signin_failed and logs an unexpected error", async () => {
+      const res = mockRes();
+      const req = {
+        user: { email: "boom@example.com", name: "B", avatarUrl: null },
+      } as unknown as Request;
+      const logSpy = jest
+        .spyOn(Logger.prototype, "error")
+        .mockImplementation(() => undefined);
+      authService.validateOAuthUser.mockRejectedValue(new Error("db down"));
+
+      await controller.googleCallback(req, res as unknown as Response);
+
+      expect(res.redirect).toHaveBeenCalledWith(
+        "http://localhost:5173/login?error=signin_failed&email=boom%40example.com",
+      );
+      expect(logSpy).toHaveBeenCalled();
+      logSpy.mockRestore();
     });
   });
 
