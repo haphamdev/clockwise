@@ -2,7 +2,6 @@ import { Fragment, useMemo } from "react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { UserLink } from "@/components/users/user-link";
@@ -57,7 +56,7 @@ export function DelayHeatmap({ cells, minEntries }: DelayHeatmapProps) {
   }
 
   return (
-    <TooltipProvider>
+    <>
       <div className="flex justify-end overflow-x-auto">
         <div
           className="grid gap-1 text-xs"
@@ -124,6 +123,6 @@ export function DelayHeatmap({ cells, minEntries }: DelayHeatmapProps) {
           </div>
         ))}
       </div>
-    </TooltipProvider>
+    </>
   );
 }

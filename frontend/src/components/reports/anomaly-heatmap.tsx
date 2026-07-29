@@ -2,7 +2,6 @@ import { Fragment, useMemo } from "react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { UserLink } from "@/components/users/user-link";
@@ -96,54 +95,52 @@ export function AnomalyHeatmap({ entries }: AnomalyHeatmapProps) {
   }
 
   return (
-    <TooltipProvider>
-      <div className="flex justify-end overflow-x-auto">
-        <div
-          className="grid gap-1 text-xs"
-          style={{ gridTemplateColumns: "auto repeat(7, 40px)" }}
-        >
-          {/* Header row */}
-          <div />
-          {WEEKDAYS.map((d) => (
-            <div
-              key={d}
-              className="text-center font-medium text-muted-foreground"
-            >
-              {d}
-            </div>
-          ))}
+    <div className="flex justify-end overflow-x-auto">
+      <div
+        className="grid gap-1 text-xs"
+        style={{ gridTemplateColumns: "auto repeat(7, 40px)" }}
+      >
+        {/* Header row */}
+        <div />
+        {WEEKDAYS.map((d) => (
+          <div
+            key={d}
+            className="text-center font-medium text-muted-foreground"
+          >
+            {d}
+          </div>
+        ))}
 
-          {/* User rows */}
-          {users.map(([userId, userName]) => (
-            <Fragment key={userId}>
-              <div className="truncate pr-2 leading-[28px]">
-                <UserLink id={userId} name={userName} />
-              </div>
-              {WEEKDAYS.map((dayName, wi) => {
-                const cell = grid.get(`${userId}:${wi}`);
-                const bg = cell
-                  ? COLOR_STEPS[getStepIndex((cell.weight / maxWeight) * 100)]
-                  : undefined;
-                return (
-                  <Tooltip key={`${userId}:${dayName}`}>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`h-7 w-10 rounded ${!cell ? "bg-muted" : ""}`}
-                        style={cell ? { backgroundColor: bg } : undefined}
-                      />
-                    </TooltipTrigger>
-                    {cell && (
-                      <TooltipContent>
-                        <p>{formatTooltip(cell)}</p>
-                      </TooltipContent>
-                    )}
-                  </Tooltip>
-                );
-              })}
-            </Fragment>
-          ))}
-        </div>
+        {/* User rows */}
+        {users.map(([userId, userName]) => (
+          <Fragment key={userId}>
+            <div className="truncate pr-2 leading-[28px]">
+              <UserLink id={userId} name={userName} />
+            </div>
+            {WEEKDAYS.map((dayName, wi) => {
+              const cell = grid.get(`${userId}:${wi}`);
+              const bg = cell
+                ? COLOR_STEPS[getStepIndex((cell.weight / maxWeight) * 100)]
+                : undefined;
+              return (
+                <Tooltip key={`${userId}:${dayName}`}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={`h-7 w-10 rounded ${!cell ? "bg-muted" : ""}`}
+                      style={cell ? { backgroundColor: bg } : undefined}
+                    />
+                  </TooltipTrigger>
+                  {cell && (
+                    <TooltipContent>
+                      <p>{formatTooltip(cell)}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              );
+            })}
+          </Fragment>
+        ))}
       </div>
-    </TooltipProvider>
+    </div>
   );
 }

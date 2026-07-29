@@ -10,29 +10,36 @@ interface MyHoursCardsProps {
 }
 
 export function MyHoursCards({ data, isLoading, isError }: MyHoursCardsProps) {
-  if (isError) {
-    return (
-      <p className="text-sm text-destructive">Failed to load hours data.</p>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="mt-2 h-8 w-16" />
-            </CardContent>
-          </Card>
-        ))}
+  return (
+    <section className="space-y-3">
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold">My Hours</h2>
+        <p className="text-sm text-muted-foreground">
+          Your logged hours for today, this week, and this month. Percentages
+          compare each period with the one before.
+        </p>
       </div>
-    );
-  }
+      {isError ? (
+        <p className="text-sm text-destructive">Failed to load hours data.</p>
+      ) : isLoading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="mt-2 h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : !data ? null : (
+        <HoursGrid data={data} />
+      )}
+    </section>
+  );
+}
 
-  if (!data) return null;
-
+function HoursGrid({ data }: { data: MyHours }) {
   const cards = [
     { label: "Today", value: data.today, unit: "h" },
     {

@@ -3,7 +3,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -34,16 +33,14 @@ export function UserLink({ id, name, email, status }: UserLinkProps) {
   if (!hasTooltip) return link;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>{link}</TooltipTrigger>
-        <TooltipContent>
-          <div className="flex flex-col items-start gap-1">
-            {email && <span>{email}</span>}
-            {isDeactivated && <StatusBadge status="deactivated" />}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipContent>
+        <div className="flex flex-col items-start gap-1">
+          {email && <span>{email}</span>}
+          {isDeactivated && <StatusBadge status="deactivated" />}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }

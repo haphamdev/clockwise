@@ -3,7 +3,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -39,16 +38,14 @@ export function ProjectLink({
   if (!hasTooltip) return link;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>{link}</TooltipTrigger>
-        <TooltipContent>
-          <div className="flex flex-col items-start gap-1">
-            {description && <span>{description}</span>}
-            {isArchived && <StatusBadge status="archived" />}
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>{link}</TooltipTrigger>
+      <TooltipContent>
+        <div className="flex flex-col items-start gap-1">
+          {description && <span>{description}</span>}
+          {isArchived && <StatusBadge status="archived" />}
+        </div>
+      </TooltipContent>
+    </Tooltip>
   );
 }
