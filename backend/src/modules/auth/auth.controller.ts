@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { AuthGuard } from "@nestjs/passport";
@@ -8,6 +16,7 @@ import {
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
+import { Throttle, ThrottlerGuard } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import {
   InvalidRefreshTokenException,
@@ -21,6 +30,7 @@ import {
   AccessTokenResponseDto,
   UserProfileDto,
 } from "./dto/auth-response.dto";
+import { DemoConfigResponseDto, DemoLoginDto } from "./dto/demo-login.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
 const REFRESH_COOKIE_NAME = "refresh_token";
@@ -124,6 +134,22 @@ export class AuthController {
         role: tm.role,
       })),
     };
+  }
+
+  @Post("demo-login")
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({ summary: "Log in as a pre-seeded demo user" })
+  @ApiOkResponse({ type: AccessTokenResponseDto })
+  async demoLogin(@Body() dto: DemoLoginDto): Promise<AccessTokenResponseDto> {
+    return this.authService.demoLogin(dto.role);
+  }
+
+  @Get("demo-config")
+  @ApiOperation({ summary: "Whether demo login is available" })
+  @ApiOkResponse({ type: DemoConfigResponseDto })
+  demoConfig(): DemoConfigResponseDto {
+    return { enabled: this.authService.isDemoLoginEnabled() };
   }
 
   private setRefreshTokenCookie(res: Response, token: string) {

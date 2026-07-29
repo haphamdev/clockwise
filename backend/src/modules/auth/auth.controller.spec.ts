@@ -1,6 +1,7 @@
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { Test, TestingModule } from "@nestjs/testing";
+import { ThrottlerGuard } from "@nestjs/throttler";
 import { Request, Response } from "express";
 import { AppException } from "../../common/exceptions/app.exception";
 import { UserEntity, UserWithTeams } from "../users/entities/user.entity";
@@ -55,6 +56,8 @@ describe("AuthController", () => {
             login: jest.fn(),
             refreshTokens: jest.fn(),
             logout: jest.fn(),
+            demoLogin: jest.fn(),
+            isDemoLoginEnabled: jest.fn(),
           },
         },
         {
@@ -77,7 +80,10 @@ describe("AuthController", () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(ThrottlerGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get(AuthController);
     authService = module.get(AuthService);
@@ -206,6 +212,27 @@ describe("AuthController", () => {
       usersService.findById.mockResolvedValue(null);
 
       await expect(controller.me(req)).rejects.toThrow(AppException);
+    });
+  });
+
+  describe("demoLogin", () => {
+    it("returns the access token without setting a refresh cookie", async () => {
+      authService.demoLogin.mockResolvedValue({ accessToken: "demo-at" });
+
+      const result = await controller.demoLogin({ role: "manager" });
+
+      expect(authService.demoLogin).toHaveBeenCalledWith("manager");
+      expect(result).toEqual({ accessToken: "demo-at" });
+    });
+  });
+
+  describe("demoConfig", () => {
+    it("reports the service enabled flag", () => {
+      authService.isDemoLoginEnabled.mockReturnValue(true);
+      expect(controller.demoConfig()).toEqual({ enabled: true });
+
+      authService.isDemoLoginEnabled.mockReturnValue(false);
+      expect(controller.demoConfig()).toEqual({ enabled: false });
     });
   });
 });

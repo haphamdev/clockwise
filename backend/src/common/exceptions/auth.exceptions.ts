@@ -71,3 +71,23 @@ export class NotAuthenticatedException extends AppException {
     );
   }
 }
+
+export class DemoLoginDisabledException extends AppException {
+  constructor() {
+    super(
+      ErrorCode.AUTH.DEMO_LOGIN_DISABLED,
+      "Demo login is disabled",
+      HttpStatus.FORBIDDEN,
+    );
+  }
+}
+
+export class DemoUserNotAvailableException extends AppException {
+  constructor() {
+    super(
+      ErrorCode.AUTH.DEMO_USER_NOT_AVAILABLE,
+      "Demo account is not available. Re-run the demo seed.",
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
+  }
+}

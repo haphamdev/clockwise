@@ -11,4 +11,7 @@ pnpm prisma:migrate:deploy
 echo "Seeding database..."
 npx ts-node prisma/seed.ts
 
+echo "Seeding demo data..."
+npx ts-node prisma/seed-demo.ts
+
 exec "$@"

@@ -1,7 +1,10 @@
+import { DemoLoginCard } from "@/components/auth/demo-login-card";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useDemoConfig } from "@/lib/auth/use-demo-config";
 
 export function LoginPage() {
   useDocumentTitle("Clockwise - Sign In");
+  const { data: demo } = useDemoConfig();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 text-center">
@@ -35,6 +38,7 @@ export function LoginPage() {
           </svg>
           Sign in with Google
         </a>
+        {demo?.enabled && <DemoLoginCard />}
       </div>
     </div>
   );
