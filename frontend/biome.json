@@ -1,12 +1,11 @@
 {
-  "extends": ["../biome.json"],
+  "extends": "//",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true,
     "root": ".."
   },
-  // Overrides base includes to also exclude index.css (Biome arrays replace, not merge)
   "files": {
     "includes": ["**", "!!**/dist", "!!src/index.css"]
   },
