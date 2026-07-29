@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TimeDisplay } from "@/components/ui/time-display";
 import type { Gap } from "@/lib/dashboard/types";
@@ -13,7 +14,10 @@ export function GapsList({ gaps, isLoading, isError }: GapsListProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">Gaps This Month</CardTitle>
+        <CardTitle className="flex items-center gap-1.5 text-base">
+          Gaps This Month
+          <InfoTooltip label="Working days this month where you logged fewer hours than expected, with the hours you recorded on each." />
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {isError ? (

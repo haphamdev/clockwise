@@ -2,8 +2,13 @@ import { Link } from "react-router-dom";
 import { ChangeBadge } from "@/components/dashboard/change-badge";
 import { ProjectLink } from "@/components/projects/project-link";
 import { Card, CardContent } from "@/components/ui/card";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { UserLink } from "@/components/users/user-link";
 import type { TeamBreakdownItem } from "@/lib/dashboard/types";
+
+const fieldLabelClass = "flex items-center gap-1 text-xs text-muted-foreground";
+const sectionLabelClass =
+  "flex items-center gap-1 text-xs font-medium text-muted-foreground";
 
 interface TeamBreakdownCardProps {
   team: TeamBreakdownItem;
@@ -26,11 +31,17 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
         <div className="mt-3 grid grid-cols-3 gap-6">
           <div className="space-y-3">
             <div>
-              <p className="text-xs text-muted-foreground">Members</p>
+              <p className={fieldLabelClass}>
+                Members
+                <InfoTooltip label="Number of people on this team." />
+              </p>
               <p className="text-lg font-semibold">{team.memberCount}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">This Week</p>
+              <p className={fieldLabelClass}>
+                This Week
+                <InfoTooltip label="Hours the whole team logged this week. The badge compares it with last week." />
+              </p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-semibold">
                   {team.hoursThisWeek}h
@@ -39,7 +50,10 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
               </div>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">This Month</p>
+              <p className={fieldLabelClass}>
+                This Month
+                <InfoTooltip label="Hours the whole team logged this month. The badge compares it with last month." />
+              </p>
               <div className="flex items-baseline gap-1.5">
                 <span className="text-lg font-semibold">
                   {team.hoursThisMonth}h
@@ -50,7 +64,7 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
 
             {(team.thresholdBreaches.dailyCount > 0 ||
               team.thresholdBreaches.weeklyCount > 0) && (
-              <div className="flex gap-3 text-xs">
+              <div className="flex items-center gap-3 text-xs">
                 {team.thresholdBreaches.dailyCount > 0 && (
                   <span className="text-amber-500">
                     {team.thresholdBreaches.dailyCount} daily breach
@@ -63,13 +77,15 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
                     {team.thresholdBreaches.weeklyCount !== 1 ? "es" : ""}
                   </span>
                 )}
+                <InfoTooltip label="How many times the team went over the org's daily or weekly hour limits." />
               </div>
             )}
           </div>
 
           <div className="border-l pl-6">
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className={sectionLabelClass}>
               Not logged this week
+              <InfoTooltip label="Team members who haven't logged any time yet this week." />
             </p>
             {team.notLoggedThisWeek.length > 0 ? (
               <ul className="mt-1 list-disc pl-4">
@@ -91,8 +107,9 @@ export function TeamBreakdownCard({ team, isAdmin }: TeamBreakdownCardProps) {
           </div>
 
           <div className="border-l pl-6">
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className={sectionLabelClass}>
               Active Projects
+              <InfoTooltip label="Projects this team is currently assigned to." />
             </p>
             {team.activeProjects.length > 0 ? (
               <ul className="mt-1 list-disc pl-4">

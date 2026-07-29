@@ -2,7 +2,6 @@ import { cva, type VariantProps } from "class-variance-authority";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -57,11 +56,9 @@ export function TaskDisplay({
   if (!hasTooltip) return content;
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>{content}</TooltipTrigger>
-        <TooltipContent>{task.description}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>{content}</TooltipTrigger>
+      <TooltipContent>{task.description}</TooltipContent>
+    </Tooltip>
   );
 }

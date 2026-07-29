@@ -9,7 +9,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { DATE_TOKENS, TIME_TOKENS, toDate } from "@/lib/org/format-date";
@@ -123,13 +122,11 @@ export function TimeDisplay({
   const tooltip = computeTooltip(date, mode, dateFormat, timeFormat);
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className={className}>{text}</span>
-        </TooltipTrigger>
-        <TooltipContent>{tooltip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={className}>{text}</span>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }

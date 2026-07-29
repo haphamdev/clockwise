@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth/use-auth";
 import type { ProjectSummary } from "@/lib/dashboard/types";
@@ -49,7 +50,10 @@ export function MyTeamsProjects({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">My Projects</CardTitle>
+          <CardTitle className="flex items-center gap-1.5 text-base">
+            My Projects
+            <InfoTooltip label="Projects you're assigned to, showing the hours and number of entries you logged this week." />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {isError ? (

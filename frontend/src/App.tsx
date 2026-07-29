@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { ManagerRoute } from "@/components/manager-route";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/query-client";
 import { AuthCallbackPage } from "@/pages/AuthCallbackPage";
@@ -55,120 +56,125 @@ export default function App() {
     >
       <BrowserRouter>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/auth/callback" element={<AuthCallbackPage />} />
-              <Route path="/invite/:token" element={<InviteLandingPage />} />
+          <TooltipProvider>
+            <AuthProvider>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/auth/callback" element={<AuthCallbackPage />} />
+                <Route path="/invite/:token" element={<InviteLandingPage />} />
 
-              {/* Authenticated routes with layout */}
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/time-logs" element={<TimeLogsPage />} />
-                <Route path="/import" element={<ImportPage />} />
-                <Route path="/projects" element={<ProjectsPage />} />
-                <Route path="/projects/:id" element={<ProjectDetailPage />} />
+                {/* Authenticated routes with layout */}
                 <Route
-                  path="/reports"
-                  element={<Navigate to="/reports/personal" replace />}
-                />
-                <Route
-                  path="/reports/personal"
                   element={
-                    <Suspense fallback={<ReportFallback />}>
-                      <PersonalInsightPage />
-                    </Suspense>
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
                   }
-                />
-                <Route
-                  path="/reports/team"
-                  element={
-                    <ManagerRoute>
+                >
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/time-logs" element={<TimeLogsPage />} />
+                  <Route path="/import" element={<ImportPage />} />
+                  <Route path="/projects" element={<ProjectsPage />} />
+                  <Route path="/projects/:id" element={<ProjectDetailPage />} />
+                  <Route
+                    path="/reports"
+                    element={<Navigate to="/reports/personal" replace />}
+                  />
+                  <Route
+                    path="/reports/personal"
+                    element={
                       <Suspense fallback={<ReportFallback />}>
-                        <TeamInsightPage />
+                        <PersonalInsightPage />
                       </Suspense>
-                    </ManagerRoute>
-                  }
-                />
-                <Route
-                  path="/reports/project"
-                  element={
-                    <ManagerRoute>
-                      <Suspense fallback={<ReportFallback />}>
-                        <ProjectInsightPage />
-                      </Suspense>
-                    </ManagerRoute>
-                  }
-                />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route
-                  path="/profile/settings"
-                  element={<UserPreferencesPage />}
-                />
+                    }
+                  />
+                  <Route
+                    path="/reports/team"
+                    element={
+                      <ManagerRoute>
+                        <Suspense fallback={<ReportFallback />}>
+                          <TeamInsightPage />
+                        </Suspense>
+                      </ManagerRoute>
+                    }
+                  />
+                  <Route
+                    path="/reports/project"
+                    element={
+                      <ManagerRoute>
+                        <Suspense fallback={<ReportFallback />}>
+                          <ProjectInsightPage />
+                        </Suspense>
+                      </ManagerRoute>
+                    }
+                  />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route
+                    path="/profile/settings"
+                    element={<UserPreferencesPage />}
+                  />
 
-                {/* Manager+ routes */}
-                <Route
-                  path="/teams"
-                  element={
-                    <ManagerRoute>
-                      <TeamsPage />
-                    </ManagerRoute>
-                  }
-                />
-                <Route
-                  path="/teams/:id"
-                  element={
-                    <ManagerRoute>
-                      <TeamDetailPage />
-                    </ManagerRoute>
-                  }
-                />
+                  {/* Manager+ routes */}
+                  <Route
+                    path="/teams"
+                    element={
+                      <ManagerRoute>
+                        <TeamsPage />
+                      </ManagerRoute>
+                    }
+                  />
+                  <Route
+                    path="/teams/:id"
+                    element={
+                      <ManagerRoute>
+                        <TeamDetailPage />
+                      </ManagerRoute>
+                    }
+                  />
 
-                {/* Admin routes */}
-                <Route
-                  path="/admin/users"
-                  element={
-                    <AdminRoute>
-                      <UsersPage />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users/:id"
-                  element={
-                    <AdminRoute>
-                      <UserDetailPage />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/invitations"
-                  element={
-                    <AdminRoute>
-                      <InvitationsPage />
-                    </AdminRoute>
-                  }
-                />
-                <Route
-                  path="/admin/settings"
-                  element={
-                    <AdminRoute>
-                      <OrgSettingsPage />
-                    </AdminRoute>
-                  }
-                />
-              </Route>
+                  {/* Admin routes */}
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <AdminRoute>
+                        <UsersPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users/:id"
+                    element={
+                      <AdminRoute>
+                        <UserDetailPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/invitations"
+                    element={
+                      <AdminRoute>
+                        <InvitationsPage />
+                      </AdminRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/settings"
+                    element={
+                      <AdminRoute>
+                        <OrgSettingsPage />
+                      </AdminRoute>
+                    }
+                  />
+                </Route>
 
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </AuthProvider>
+                <Route
+                  path="/"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+              </Routes>
+            </AuthProvider>
+          </TooltipProvider>
         </QueryClientProvider>
       </BrowserRouter>
     </ThemeProvider>
