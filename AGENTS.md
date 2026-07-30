@@ -1,5 +1,17 @@
 # Repository Guidelines
 
+Detailed conventions are modular and live under `.omp/rules/`. They are
+auto-expanded into this file via the `@` imports in the **Detailed Rules**
+section at the bottom, so you always have them in context:
+
+- `.omp/rules/coding-conventions.md` — code style & implementation patterns
+- `.omp/rules/testing.md` — how to test (Jest, Vitest, Testcontainers, TDD)
+- `.omp/rules/security.md` — authorization, secrets, data integrity, audit
+
+Per-app specifics have their own entry points: **`backend/AGENTS.md`** and
+**`frontend/AGENTS.md`** (each routes to the relevant backend/frontend sections
+of the shared rules). They load automatically when you work in those folders.
+
 ## Project Overview
 
 Clockwise is a single-tenant, containerized **time-tracking application**. Team members log working hours against projects/tasks; managers and admins view reports and dashboards. Roles are **per-team** — a user can be Manager in one team and Member in another; Admin is org-wide.
@@ -83,36 +95,6 @@ pnpm test                   # vitest run --project unit
 pnpm storybook              # storybook dev -p 6006
 ```
 
-## Code Conventions & Common Patterns
-
-- **Formatter/linter: Biome 2.4.11** (root `biome.json`, extended by each app). Double quotes, trailing commas, space indent, auto import organization. `.prettierrc` exists but Biome is authoritative. `*.spec.ts` relax `noExplicitAny`/`noNonNullAssertion`.
-- **No barrel imports** — never create `index.ts` re-export files; import directly from source.
-- **Path alias `@/*`** → `src/*` (backend) / `./src/*` (frontend).
-- **File size:** keep files small & single-purpose (~100 lines, hard max 300).
-- **Never delete records** — soft-delete only for audit integrity. Users use `status` (`pending|active|deactivated`); time logs/projects use `status` (`active|archived`); teams use `isArchived`. (`ProjectTeam.isDeleted` is the lone boolean-flag exception.)
-- **DB naming:** tables/columns are `snake_case` via `@@map`/`@map`; Prisma fields stay `camelCase`; PKs are UUIDs; org settings stored as JSONB on `organization`.
-- **Backend errors:** throw `AppException(ErrorCode.<NS>.<CODE>, message, HttpStatus)` from services (never raw Nest exceptions); repositories catch Prisma `P2002` and convert. Error codes are namespaced (`ErrorCode.TEAM.NOT_FOUND`). Global `AppExceptionFilter` shapes responses `{ code, message, statusCode }`.
-- **Auth decorators (backend):** `@Auth()` (JWT), `@AdminOnly()` (JWT + `IsAdminGuard`), `@TeamRole('manager')` (JWT + `RolesGuard` + `@Roles()`), `@TeamMember()` (JWT + `TeamMemberGuard`). Admins bypass team guards. `@CurrentUser()` injects the JWT-decoded user.
-- **DI:** constructor injection via `@Injectable()`; modules `export` services only (not repositories/processors); `PrismaModule` & `ConfigModule` are `@Global()` — do not re-import.
-- **Async:** async/await throughout; parallelize with `await Promise.all([...])` in repositories.
-- **Audit logging:** every mutation calls `auditLogService.log()`/`logMany()` with `{ before, after, source? }` metadata.
-- **`*ForImport` service methods** bypass normal guards — must carry JSDoc listing skipped validations; called only by import processors.
-- **Frontend naming:** components `PascalCase`; hooks `use-*.ts`; per-domain query-key factories (`timeLogsKeys.list(params)`); mutations invalidate keys `onSuccess` and toast via `sonner` / `showErrorToast`.
-- **Frontend forms:** `react-hook-form` + `zod` (`zodResolver`). Use shadcn `<FormField>` for standard inputs, `<Controller>` + `<Label>` for custom inputs (Combobox). Avoid `z.coerce.number()` (breaks inference — use `z.string()` + `parseFloat`); avoid `type="number"` (locale issues — use `type="text"` + `inputMode="decimal"`); prefer `mode:"onSubmit"`, `reValidateMode:"onBlur"`.
-- **Frontend auth/HTTP:** `apiClient<T>()` in `lib/api-client.ts` — Bearer token held in a module variable (not localStorage), auto-refreshes on 401 via `/api/v1/auth/refresh`; `ApiError` carries `.status`/`.code`/`.serverMessage`.
-- **Styling:** Tailwind v4 (`@theme` in `src/index.css`, no config file); merge classes with `cn()` (`clsx` + `tailwind-merge`); theme via `next-themes` (dark default).
-
-## Important Files
-
-- `backend/src/main.ts`, `backend/src/app.module.ts` — backend entry/wiring
-- `backend/prisma/schema.prisma` — single source of DB truth
-- `backend/src/common/exceptions/{app.exception.ts,error-codes.ts,app-exception.filter.ts}` — error model
-- `backend/src/common/decorators/auth.decorators.ts`, `backend/src/common/guards/` — authz
-- `frontend/src/main.tsx`, `frontend/src/App.tsx` — FE entry, providers, routes (code-split via `React.lazy`)
-- `frontend/src/lib/api-client.ts`, `frontend/src/lib/query-client.ts`, `frontend/src/contexts/AuthContext.tsx`
-- Config: root/`backend`/`frontend` `biome.json`, `backend/nest-cli.json`, `frontend/vite.config.ts`, `frontend/components.json`, `docker-compose*.yml`
-- `.env.example` — copy to `.env`. Required: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`, `ADMIN_EMAIL`, `FRONTEND_URL`, `REDIS_HOST/PORT/PASSWORD`, `POSTGRES_USER/PASSWORD/DB`; optional `SMTP_*`, `LOG_*`.
-
 ## Runtime / Tooling Preferences
 
 - **Node 20** (CI + Docker `node:20-alpine`; README states 22+ for bare-metal dev). **pnpm** is the exclusive package manager (Docker uses corepack `pnpm@10.33.0`, CI `PNPM_VERSION=9.15`). **Bun is not used.**
@@ -120,9 +102,43 @@ pnpm storybook              # storybook dev -p 6006
 - `enable-pre-post-scripts=true` in `.npmrc`; backend `postinstall` runs `prisma generate`.
 - CI (`.github/workflows/ci.yml`, push/PR to `master`): two jobs — `backend` and `frontend-unit`, each `lint → test → build`. Frontend E2E (Playwright) is scaffolded but commented out.
 
-## Testing & QA
+## Important Files
 
-- **Backend: Jest** (`ts-jest`). Tests live beside source as `*.spec.ts` under `backend/src/`; `testRegex: .*\.spec\.ts$`. Integration tests use **Testcontainers** (auto-spins PostgreSQL). Run `pnpm test` / `pnpm test:cov`. TDD (red-green-refactor) is the norm — mock repositories in unit tests; cover happy path, auth/permission failures, edge cases, and error codes.
-- **Frontend: Vitest** — two projects: `unit` (`src/**/*.test.ts`, node env) and `storybook` (Playwright headless chromium via `@storybook/addon-vitest`). Run `pnpm test`; `pnpm test:e2e` is currently a placeholder.
-- **Manual API testing:** open the `bruno/clockwise/` collection in Bruno (folders: `import`, `projects`, `tasks`, `time-logs`, `user-preferences`).
-- **Import testing:** run `pnpm seed:users`, then use CSVs in `resources/example-import-data/` (happy-path and mixed-valid/error fixtures reference seeded `@clockwise.test` users).
+- `backend/src/main.ts`, `backend/src/app.module.ts` — backend entry/wiring
+- `backend/prisma/schema.prisma` — single source of DB truth
+- `backend/src/common/exceptions/{app.exception.ts,error-codes.ts,app-exception.filter.ts}` — error model
+- `backend/src/common/decorators/auth.decorators.ts`, `backend/src/common/guards/` — authz (see `.omp/rules/security.md`)
+- `frontend/src/main.tsx`, `frontend/src/App.tsx` — FE entry, providers, routes (code-split via `React.lazy`)
+- `frontend/src/lib/api-client.ts`, `frontend/src/lib/query-client.ts`, `frontend/src/contexts/AuthContext.tsx`
+- Config: root/`backend`/`frontend` `biome.json`, `backend/nest-cli.json`, `frontend/vite.config.ts`, `frontend/components.json`, `docker-compose*.yml`
+- `.env.example` — copy to `.env` (required vars listed in `.omp/rules/security.md`)
+
+## Communication & Asking Questions
+
+When you ask me a question with options to choose from, make each option
+understandable on its own. For **every** question:
+
+- **Explain the question** in plain language — what is being decided and why it
+  matters — before listing options. Don't assume I know the jargon.
+- **Give a concrete example** of what each option looks like in practice.
+- **List pros and cons for each option**, so the trade-off is explicit.
+- **Recommend a default** and say why, so I can just accept it if unsure.
+
+Example of the expected shape:
+> **Question:** Should error responses include a stack trace in dev?
+> - **Option A — Include stack in dev only.** Example: `{ code, message, stack }`
+>   when `NODE_ENV=development`. *Pros:* faster debugging. *Cons:* easy to leak
+>   into prod if the env check is wrong.
+> - **Option B — Never include stack.** Example: always `{ code, message }`.
+>   *Pros:* safe by default. *Cons:* slower local debugging.
+> - **Recommended:** A — the dev-only guard is standard and the speed-up is worth it.
+
+## Detailed Rules
+
+The following modular rules are auto-expanded here from `.omp/rules/`:
+
+@.omp/rules/coding-conventions.md
+
+@.omp/rules/testing.md
+
+@.omp/rules/security.md
